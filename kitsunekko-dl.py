@@ -29,12 +29,24 @@ def file_exists(file_path: str) -> bool:
     )
 
 
-async def download_sub(client: httpx.AsyncClient, url: str, anime_title: str):
-    if not os.path.isdir(dir_path := os.path.join(config.destination, anime_title)):
+@dataclasses.dataclass(frozen=True)
+class AnimeSubtitleUrl:
+    url: str
+    title: str
+
+
+@dataclasses.dataclass(frozen=True)
+class PageFetchResult:
+    to_visit: set[str]
+    to_download: set[AnimeSubtitleUrl]
+
+
+async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl):
+    if not os.path.isdir(dir_path := os.path.join(config.destination, subtitle.title)):
         os.mkdir(dir_path)
-    if not file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(url)))):
+    if not file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(subtitle.url)))):
         try:
-            r = await client.get(url)
+            r = await client.get(subtitle.url)
         except (
                 asyncio.exceptions.CancelledError,
                 httpx.ReadTimeout,
@@ -59,18 +71,6 @@ def get_anime_title(page_text: str):
         .replace('\\', ' ')
     )
     return title.strip()
-
-
-@dataclasses.dataclass(frozen=True)
-class AnimeSubtitleUrl:
-    url: str
-    title: str
-
-
-@dataclasses.dataclass(frozen=True)
-class PageFetchResult:
-    to_visit: set[str]
-    to_download: set[AnimeSubtitleUrl]
 
 
 async def find_subs(client: httpx.AsyncClient, url: str):
@@ -101,7 +101,7 @@ async def main():
 
             print(f"visited {len(visited_pages)} pages, found {len(to_download)} subtitles.")
 
-            await asyncio.gather(*[download_sub(client, subtitle.url, subtitle.title) for subtitle in to_download])
+            await asyncio.gather(*[download_sub(client, subtitle) for subtitle in to_download])
     with open(os.path.join(config.destination, '.updated'), 'w') as of:
         of.write(datetime.utcnow().strftime('%c'))
 
