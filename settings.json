@@ -1,5 +1,6 @@
 {
   "destination": "/mnt/archive/japanese/kitsunekko-mirror",
+  "download_root": "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/",
   "proxy": "socks5://127.0.0.1:9050",
   "timeout": 120,
   "headers": {

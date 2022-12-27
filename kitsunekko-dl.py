@@ -7,11 +7,10 @@ import os.path
 import re
 from types import SimpleNamespace
 from urllib.parse import unquote
-
+from datetime import datetime
 import httpx
 
 DOMAIN = "https://kitsunekko.net"
-DOWNLOAD_ROOT = f"{DOMAIN}/dirlist.php?dir=subtitles/japanese/"
 REPO = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -90,7 +89,7 @@ async def find_subs(client: httpx.AsyncClient, url: str):
 
 async def main():
     async with httpx.AsyncClient(proxies=config.proxy, headers=config.headers, timeout=config.timeout) as client:
-        to_visit: set[str] = {DOWNLOAD_ROOT, }
+        to_visit: set[str] = {config.download_root, }
         visited_pages: set[str] = set()
 
         while to_visit:
@@ -103,6 +102,8 @@ async def main():
             print(f"visited {len(visited_pages)} pages, found {len(to_download)} subtitles.")
 
             await asyncio.gather(*[download_sub(client, subtitle.url, subtitle.title) for subtitle in to_download])
+    with open(os.path.join(config.destination, '.updated'), 'w') as of:
+        of.write(datetime.utcnow().strftime('%c'))
 
 
 if __name__ == '__main__':
