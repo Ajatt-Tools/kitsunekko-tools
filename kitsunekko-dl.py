@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 import asyncio
 import dataclasses
-import itertools
 import json
 import os.path
 import re
-from types import SimpleNamespace
-from urllib.parse import unquote
 from datetime import datetime
+from types import SimpleNamespace
+from typing import NewType, Collection
+from urllib.parse import unquote
+
 import httpx
 
 DOMAIN = "https://kitsunekko.net"
@@ -36,30 +37,69 @@ class AnimeSubtitleUrl:
 
 
 @dataclasses.dataclass(frozen=True)
-class PageFetchResult:
+class FetchResult:
     to_visit: set[str]
     to_download: set[AnimeSubtitleUrl]
 
+    @classmethod
+    def new(cls):
+        return cls(to_visit=set(), to_download=set())
 
-async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl):
+    def update(self, other: 'FetchResult'):
+        self.to_visit.update(other.to_visit)
+        self.to_download.update(other.to_download)
+
+
+DownloadResult = NewType('DownloadResult', str)
+
+
+@dataclasses.dataclass(frozen=True)
+class FetchState:
+    to_visit: set[str]
+    visited: set[str]
+
+    @classmethod
+    def new(cls, download_root: str):
+        return cls(to_visit={download_root, }, visited=set())
+
+    def balance(self, prev_result: FetchResult):
+        self.visited.update(self.to_visit)
+        self.to_visit.clear()
+        self.to_visit.update(prev_result.to_visit - self.visited)
+
+    def has_unvisited(self) -> bool:
+        return len(self.to_visit) > 0
+
+
+@dataclasses.dataclass(frozen=True)
+class DownloadError(Exception):
+    url: str
+
+    @property
+    def errname(self) -> str:
+        return type(self.__cause__).__name__
+
+
+async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) -> DownloadResult:
     if not os.path.isdir(dir_path := os.path.join(config.destination, subtitle.title)):
         os.mkdir(dir_path)
-    if not file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(subtitle.url)))):
+    if file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(subtitle.url)))):
+        return DownloadResult(f"already exists: {file_path}")
+    try:
+        r = await client.get(subtitle.url)
+    except Exception as e:
+        raise DownloadError(subtitle.url) from e
+    with open(file_path, 'wb') as f:
+        f.write(r.content)
+    return DownloadResult(f"saved: {file_path}")
+
+
+async def download_subs(client: httpx.AsyncClient, to_download: Collection[AnimeSubtitleUrl]):
+    for fut in asyncio.as_completed([download_sub(client, subtitle) for subtitle in to_download]):
         try:
-            r = await client.get(subtitle.url)
-        except (
-                asyncio.exceptions.CancelledError,
-                httpx.ReadTimeout,
-                httpx.RemoteProtocolError,
-                httpx.ProxyError,
-                httpx.PoolTimeout,
-        ):
-            return print(f"cancelled: {file_path}")
-        with open(file_path, 'wb') as f:
-            f.write(r.content)
-        return print(f"saved: {file_path}")
-    else:
-        return print(f"already exists: {file_path}")
+            print(await fut)
+        except DownloadError as e:
+            print(f"got {e.errname} while trying to download {e.url}")
 
 
 def get_anime_title(page_text: str):
@@ -73,35 +113,43 @@ def get_anime_title(page_text: str):
     return title.strip()
 
 
-async def find_subs(client: httpx.AsyncClient, url: str):
-    r = await client.get(url)
+async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
+    try:
+        r = await client.get(url)
+    except Exception as e:
+        raise DownloadError(url) from e
 
-    subtitle_urls = set()
-    for subtitle in re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', r.text):
-        subtitle_urls.add(AnimeSubtitleUrl(f'{DOMAIN}/{subtitle}', get_anime_title(r.text)))
+    return FetchResult(
+        to_visit={
+            f'{DOMAIN}/{anime_dir}'
+            for anime_dir in re.findall(r'(?<="/)dirlist.php\?[^"\']+(?=")', r.text)
+        },
+        to_download={
+            AnimeSubtitleUrl(f'{DOMAIN}/{subtitle}', get_anime_title(r.text))
+            for subtitle in re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', r.text)
+        },
+    )
 
-    unvisited_pages = set()
-    for anime_dir in re.findall(r'(?<="/)dirlist.php\?[^"\']+(?=")', r.text):
-        unvisited_pages.add(f'{DOMAIN}/{anime_dir}')
 
-    return PageFetchResult(unvisited_pages, subtitle_urls)
+async def find_subs_all(client: httpx.AsyncClient, to_visit: set[str]) -> FetchResult:
+    result = FetchResult.new()
+    for fut in asyncio.as_completed([crawl_page(client, page) for page in to_visit]):
+        try:
+            result.update(await fut)
+        except DownloadError as e:
+            print(f"got {e.errname} while trying to download {e.url}")
+    return result
 
 
 async def main():
     async with httpx.AsyncClient(proxies=config.proxy, headers=config.headers, timeout=config.timeout) as client:
-        to_visit: set[str] = {config.download_root, }
-        visited_pages: set[str] = set()
+        state = FetchState.new(config.download_root)
+        while state.has_unvisited():
+            task: FetchResult = await find_subs_all(client, state.to_visit)
+            print(f"visited {len(state.to_visit)} pages, found {len(task.to_download)} subtitles.")
+            await download_subs(client, task.to_download)
+            state.balance(task)
 
-        while to_visit:
-            results = await asyncio.gather(*[find_subs(client, page) for page in to_visit])
-            visited_pages.update(to_visit)
-
-            to_download: set[AnimeSubtitleUrl] = set(itertools.chain(*[result.to_download for result in results]))
-            to_visit: set[str] = set(itertools.chain(*[result.to_visit for result in results])) - visited_pages
-
-            print(f"visited {len(visited_pages)} pages, found {len(to_download)} subtitles.")
-
-            await asyncio.gather(*[download_sub(client, subtitle) for subtitle in to_download])
     with open(os.path.join(config.destination, '.updated'), 'w') as of:
         of.write(datetime.utcnow().strftime('%c'))
 
