@@ -164,7 +164,7 @@ async def main():
         state = FetchState.new(config.download_root)
         while state.has_unvisited():
             task: FetchResult = await find_subs_all(client, state.to_visit)
-            print(f"visited {len(state.to_visit)} pages, found {len(task.to_download)} subtitles.")
+            print(f"visited {len(state.to_visit)} pages, found {len(task.to_download)} files.")
             await download_subs(client, task.to_download)
             state.balance(task)
 
