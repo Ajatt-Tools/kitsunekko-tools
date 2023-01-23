@@ -11,13 +11,31 @@ from urllib.parse import unquote
 
 import httpx
 
+PROG = 'kitsunekko-tools'
+SETTINGS = 'settings.json'
 DOMAIN = "https://kitsunekko.net"
 REPO = os.path.abspath(os.path.dirname(__file__))
 
 
+def get_xdg_config_dir() -> str:
+    return os.environ.get('XDG_CONFIG_HOME', os.path.join(os.environ['HOME'], '.config'))
+
+
+def config_locations():
+    return (
+        os.path.join(get_xdg_config_dir(), PROG, SETTINGS),
+        os.path.join('/etc/', PROG, SETTINGS),
+        os.path.join(REPO, SETTINGS),
+    )
+
+
 def read_config():
-    with open(os.path.join(REPO, 'settings.json'), encoding='utf8') as f:
-        return SimpleNamespace(**json.load(f))
+    for config_file_path in config_locations():
+        if os.path.isfile(config_file_path):
+            print(f"Reading config file: {config_file_path}")
+            with open(config_file_path, encoding='utf8') as f:
+                return SimpleNamespace(**json.load(f))
+    raise RuntimeError("Couldn't find config file.")
 
 
 config = read_config()
