@@ -1,6 +1,8 @@
 # kitsunekko-tools
 
-A set of scripts for creating a local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc) mirror.
+A set of scripts for creating a
+local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc)
+mirror.
 
 ## Usage
 
@@ -10,17 +12,19 @@ A set of scripts for creating a local [kitsunekko](http://kitsunekko.net/dirlist
     pip install -r requirements.txt
     ```
 2) Change [settings](settings.json).
-    
+
     ``` bash
     vim settings.json
     ```
-    
+
+   Or you can copy the config file to `~/.config/kitsunekko-tools/settings.json` and edit it there.
+
     * `destination` - the local folder the files should be downloaded to.
     * `proxy` - Your proxy settings.
-       Set to `null` if you don't use proxies.
-       By default, it is set to the Tor address.
-    
-    Everything else usually doesn't need to be changed.
+      Set to `null` if you don't use proxies.
+      By default, it is set to the Tor address.
+
+   Everything else usually doesn't need to be changed.
 3) Run.
 
     ``` bash
