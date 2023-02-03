@@ -70,6 +70,10 @@ class AnimeSubtitleUrl:
     url: str
     title: str
 
+    @property
+    def file_name(self) -> str:
+        return os.path.basename(unquote(self.url))
+
 
 @dataclasses.dataclass(frozen=True)
 class FetchResult:
@@ -118,7 +122,7 @@ class DownloadError(Exception):
 async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) -> DownloadResult:
     if not os.path.isdir(dir_path := os.path.join(config.destination, subtitle.title)):
         os.mkdir(dir_path)
-    if file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(subtitle.url)))):
+    if file_exists(file_path := os.path.join(dir_path, subtitle.file_name)):
         return DownloadResult(f"already exists: {file_path}")
     if ignore.is_matching(file_path):
         return DownloadResult(f"explicitly ignored: {file_path}")
