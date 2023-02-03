@@ -30,3 +30,9 @@ mirror.
     ``` bash
     bash run
     ```
+
+## Ignoring certain files
+
+To prevent some files from being downloaded (because they are too big, broken, etc.),
+Create a file named `.kitsuignore` in the root of `destination`
+and fill it with Unix shell-style wildcards, one per line.

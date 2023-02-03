@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import asyncio
 import dataclasses
+import fnmatch
 import json
 import os.path
 import re
@@ -15,6 +16,7 @@ PROG = 'kitsunekko-tools'
 SETTINGS = 'settings.json'
 DOMAIN = "https://kitsunekko.net"
 REPO = os.path.abspath(os.path.dirname(__file__))
+IGNORE_FILENAME = '.kitsuignore'
 
 
 def get_xdg_config_dir() -> str:
@@ -38,7 +40,22 @@ def read_config():
     raise RuntimeError("Couldn't find config file.")
 
 
+class IgnoreList:
+    def __init__(self):
+        self._ignore_filepath = os.path.join(config.destination, IGNORE_FILENAME)
+        self._patterns = []
+        if os.path.isfile(self._ignore_filepath):
+            with open(self._ignore_filepath, encoding='utf8') as f:
+                print(f"Reading ignore file: {self._ignore_filepath}")
+                self._patterns.extend(f.read().splitlines())
+
+    def is_matching(self, file_path: str) -> bool:
+        path_dest_stripped = os.path.relpath(file_path, config.destination)
+        return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
+
+
 config = read_config()
+ignore = IgnoreList()
 
 
 def file_exists(file_path: str) -> bool:
@@ -103,6 +120,8 @@ async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) ->
         os.mkdir(dir_path)
     if file_exists(file_path := os.path.join(dir_path, os.path.basename(unquote(subtitle.url)))):
         return DownloadResult(f"already exists: {file_path}")
+    if ignore.is_matching(file_path):
+        return DownloadResult(f"explicitly ignored: {file_path}")
     try:
         r = await client.get(subtitle.url)
     except Exception as e:
