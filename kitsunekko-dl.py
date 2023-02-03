@@ -17,6 +17,7 @@ SETTINGS = 'settings.json'
 DOMAIN = "https://kitsunekko.net"
 REPO = os.path.abspath(os.path.dirname(__file__))
 IGNORE_FILENAME = '.kitsuignore'
+UPDATED_FILENAME = '.updated'
 
 
 def get_xdg_config_dir() -> str:
@@ -191,7 +192,7 @@ async def main():
             await download_subs(client, task.to_download)
             state.balance(task)
 
-    with open(os.path.join(config.destination, '.updated'), 'w') as of:
+    with open(os.path.join(config.destination, UPDATED_FILENAME), 'w') as of:
         of.write(datetime.utcnow().strftime('%c'))
 
 
