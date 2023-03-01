@@ -5,6 +5,7 @@ import fnmatch
 import json
 import os.path
 import re
+import sys
 from datetime import datetime
 from types import SimpleNamespace
 from typing import NewType, Collection
@@ -35,7 +36,7 @@ def config_locations():
 def read_config():
     for config_file_path in config_locations():
         if os.path.isfile(config_file_path):
-            print(f"Reading config file: {config_file_path}")
+            print(f"Reading config file: {config_file_path}", file=sys.stderr)
             with open(config_file_path, encoding='utf8') as f:
                 return SimpleNamespace(**json.load(f))
     raise RuntimeError("Couldn't find config file.")
@@ -47,7 +48,7 @@ class IgnoreList:
         self._patterns = []
         if os.path.isfile(self._ignore_filepath):
             with open(self._ignore_filepath, encoding='utf8') as f:
-                print(f"Reading ignore file: {self._ignore_filepath}")
+                print(f"Reading ignore file: {self._ignore_filepath}", file=sys.stderr)
                 self._patterns.extend(f.read().splitlines())
 
     def is_matching(self, file_path: str) -> bool:
@@ -183,7 +184,7 @@ async def find_subs_all(client: httpx.AsyncClient, to_visit: set[str]) -> FetchR
     return result
 
 
-async def main():
+async def sync_all():
     async with httpx.AsyncClient(proxies=config.proxy, headers=config.headers, timeout=config.timeout) as client:
         state = FetchState.new(config.download_root)
         while state.has_unvisited():
@@ -194,6 +195,16 @@ async def main():
 
     with open(os.path.join(config.destination, UPDATED_FILENAME), 'w') as of:
         of.write(datetime.utcnow().strftime('%c'))
+
+
+async def main():
+    match ''.join(sys.argv[1:]):
+        case "" | "run" | "sync":
+            await sync_all()
+        case "destination":
+            print(config.destination)
+        case _:
+            print("Unknown command.")
 
 
 if __name__ == '__main__':

@@ -15,4 +15,4 @@ activate() {
 
 activate
 
-exec python3 ./kitsunekko-dl.py
+exec python3 ./kitsunekko-dl.py "$@"
