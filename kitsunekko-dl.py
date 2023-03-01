@@ -198,6 +198,14 @@ async def sync_all():
         of.write(datetime.utcnow().strftime('%c'))
 
 
+def mega_upload():
+    return subprocess.run(
+        args=(os.path.join(REPO, "upload"), config.destination),
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+    )
+
+
 async def main():
     match ''.join(sys.argv[1:]):
         case "run" | "sync":
@@ -205,11 +213,10 @@ async def main():
         case "destination":
             print(config.destination)
         case "upload":
-            subprocess.run(
-                args=(os.path.join(REPO, "upload"), config.destination),
-                stdout=sys.stdout,
-                stderr=sys.stderr,
-            )
+            mega_upload()
+        case "all":
+            await sync_all()
+            mega_upload()
         case _:
             print("Unknown command.")
 
