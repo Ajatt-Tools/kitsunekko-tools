@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -euo pipefail
+
+readonly this_dir=$(dirname -- "$(readlink -e -- "$0")")
+cd -- "$this_dir" || exit 1
+
+readonly local=$(bash run destination)
+readonly remote=/Root/${local##*/}
+
+megamkdir "$remote"
+megacopy --local "$local" --remote "$remote" --no-follow
