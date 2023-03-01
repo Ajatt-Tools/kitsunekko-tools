@@ -24,8 +24,14 @@ mirror.
 3) Run.
 
     ``` bash
-    bash run
+    bash run sync
     ```
+
+## Upload your mirror to Mega
+
+1) Install [megatools](https://aur.archlinux.org/packages/megatools).
+2) Create `~/.megarc` and [specify](https://megatools.megous.com/man/megarc.html) your credentials.
+3) Run `bash run upload`.
 
 ## Ignoring certain files
 

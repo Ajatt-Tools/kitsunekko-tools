@@ -5,6 +5,7 @@ import fnmatch
 import json
 import os.path
 import re
+import subprocess
 import sys
 from datetime import datetime
 from types import SimpleNamespace
@@ -199,10 +200,16 @@ async def sync_all():
 
 async def main():
     match ''.join(sys.argv[1:]):
-        case "" | "run" | "sync":
+        case "run" | "sync":
             await sync_all()
         case "destination":
             print(config.destination)
+        case "upload":
+            subprocess.run(
+                args=(os.path.join(REPO, "upload"), config.destination),
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+            )
         case _:
             print("Unknown command.")
 
