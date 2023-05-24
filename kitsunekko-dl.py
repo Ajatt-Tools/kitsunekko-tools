@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import asyncio
 import dataclasses
 import fnmatch
@@ -219,6 +220,7 @@ async def main():
             mega_upload()
         case _:
             print("Unknown command.")
+            print("Available commands: sync, upload, all, destination")
 
 
 if __name__ == '__main__':
