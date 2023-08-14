@@ -140,6 +140,8 @@ async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) ->
         r = await client.get(subtitle.url)
     except Exception as e:
         raise DownloadError(subtitle.url) from e
+    if r.status_code != httpx.codes.OK:
+        return DownloadResult("download failed", file_path)
     with open(file_path, 'wb') as f:
         f.write(r.content)
     return DownloadResult("saved", file_path)
