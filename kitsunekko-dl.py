@@ -10,7 +10,7 @@ import subprocess
 import sys
 from datetime import datetime
 from types import SimpleNamespace
-from typing import NewType, Collection
+from collections.abc import Collection
 from urllib.parse import unquote
 
 import httpx
@@ -93,7 +93,13 @@ class FetchResult:
         self.to_download.update(other.to_download)
 
 
-DownloadResult = NewType('DownloadResult', str)
+@dataclasses.dataclass(frozen=True)
+class DownloadResult:
+    reason: str
+    file_path: str
+
+    def __repr__(self):
+        return f"{self.reason}: {self.file_path}"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -127,16 +133,16 @@ async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) ->
     if not os.path.isdir(dir_path := os.path.join(config.destination, subtitle.title)):
         os.mkdir(dir_path)
     if file_exists(file_path := os.path.join(dir_path, subtitle.file_name)):
-        return DownloadResult(f"already exists: {file_path}")
+        return DownloadResult("already exists", file_path)
     if ignore.is_matching(file_path):
-        return DownloadResult(f"explicitly ignored: {file_path}")
+        return DownloadResult("explicitly ignored", file_path)
     try:
         r = await client.get(subtitle.url)
     except Exception as e:
         raise DownloadError(subtitle.url) from e
     with open(file_path, 'wb') as f:
         f.write(r.content)
-    return DownloadResult(f"saved: {file_path}")
+    return DownloadResult("saved", file_path)
 
 
 async def download_subs(client: httpx.AsyncClient, to_download: Collection[AnimeSubtitleUrl]):
