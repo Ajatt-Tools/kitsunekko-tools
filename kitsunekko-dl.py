@@ -8,9 +8,9 @@ import os.path
 import re
 import subprocess
 import sys
+from collections.abc import Collection
 from datetime import datetime
 from types import SimpleNamespace
-from collections.abc import Collection
 from urllib.parse import unquote
 
 import httpx
@@ -166,6 +166,14 @@ def get_anime_title(page_text: str):
     return title.strip()
 
 
+def find_all_subtitle_dir_urls(html_text: str) -> list[str]:
+    return re.findall(r'(?<="/)dirlist.php\?[^"\']+(?=")', html_text)
+
+
+def find_all_subtitle_file_urls(html_text: str) -> list[str]:
+    return re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', html_text)
+
+
 async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
     try:
         r = await client.get(url)
@@ -175,11 +183,11 @@ async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
     return FetchResult(
         to_visit={
             f'{DOMAIN}/{anime_dir}'
-            for anime_dir in re.findall(r'(?<="/)dirlist.php\?[^"\']+(?=")', r.text)
+            for anime_dir in find_all_subtitle_dir_urls(r.text)
         },
         to_download={
             AnimeSubtitleUrl(f'{DOMAIN}/{subtitle}', get_anime_title(r.text))
-            for subtitle in re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', r.text)
+            for subtitle in find_all_subtitle_file_urls(r.text)
         },
     )
 
