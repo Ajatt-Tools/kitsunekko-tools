@@ -4,6 +4,10 @@ A set of scripts for creating a
 local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc)
 mirror.
 
+The main benefit of having all subtitles saved locally
+is that you can browse them using [lf](https://wiki.archlinux.org/title/Lf)
+and quickly search with [fzf](https://wiki.archlinux.org/title/Fzf).
+
 ## Usage
 
 1) Clone the repository.
