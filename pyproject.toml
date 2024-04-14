@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "kitsunekko-tools"
+version = "0.1.0"
+description = ""
+authors = ["Ren Tatsumoto <tatsu@autistici.org>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+# ktools = "kitsunekko_tools.__main__:main"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
