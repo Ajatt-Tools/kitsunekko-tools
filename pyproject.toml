@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.11"
+httpx = { version = ">=0.27", extras = ["socks"] }
 
 [build-system]
 requires = ["poetry-core"]
