@@ -1,17 +1,23 @@
-[tool.poetry]
+[tool.hatch.build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "kitsunekko_tools/__init__.py"
+
+[project]
 name = "kitsunekko-tools"
-version = "0.1.0"
-description = ""
-authors = ["Ren Tatsumoto <tatsu@autistici.org>"]
+description = "A set of scripts for creating a local kitsunekko mirror."
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.11"
-httpx = { version = ">=0.27", extras = ["socks"] }
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+dynamic = ["version"]
+authors = [
+  { name = "Ren Tatsumoto", email = "tatsu@autistici.org" },
+]
+dependencies = [
+  "httpx[socks]>=0.27"
+]
+license = "AGPL-3.0"
+requires-python = ">=3.11"
 
 [project.scripts]
 # ktools = "kitsunekko_tools.__main__:main"
