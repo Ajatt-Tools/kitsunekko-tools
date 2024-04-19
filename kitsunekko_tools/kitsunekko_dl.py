@@ -16,22 +16,22 @@ from urllib.parse import unquote
 
 import httpx
 
-PROG = 'kitsunekko-tools'
-SETTINGS = 'settings.json'
+PROG = "kitsunekko-tools"
+SETTINGS = "settings.json"
 DOMAIN = "https://kitsunekko.net"
 REPO = os.path.abspath(os.path.dirname(__file__))
-IGNORE_FILENAME = '.kitsuignore'
-UPDATED_FILENAME = '.updated'
+IGNORE_FILENAME = ".kitsuignore"
+UPDATED_FILENAME = ".updated"
 
 
 def get_xdg_config_dir() -> str:
-    return os.environ.get('XDG_CONFIG_HOME', os.path.join(os.environ['HOME'], '.config'))
+    return os.environ.get("XDG_CONFIG_HOME", os.path.join(os.environ["HOME"], ".config"))
 
 
 def config_locations():
     return (
         os.path.join(get_xdg_config_dir(), PROG, SETTINGS),
-        os.path.join('/etc/', PROG, SETTINGS),
+        os.path.join("/etc/", PROG, SETTINGS),
         os.path.join(REPO, SETTINGS),
     )
 
@@ -40,7 +40,7 @@ def read_config():
     for config_file_path in config_locations():
         if os.path.isfile(config_file_path):
             print(f"Reading config file: {config_file_path}", file=sys.stderr)
-            with open(config_file_path, encoding='utf8') as f:
+            with open(config_file_path, encoding="utf8") as f:
                 return SimpleNamespace(**json.load(f))
     raise RuntimeError("Couldn't find config file.")
 
@@ -50,7 +50,7 @@ class IgnoreList:
         self._ignore_filepath = os.path.join(config.destination, IGNORE_FILENAME)
         self._patterns = []
         if os.path.isfile(self._ignore_filepath):
-            with open(self._ignore_filepath, encoding='utf8') as f:
+            with open(self._ignore_filepath, encoding="utf8") as f:
                 print(f"Reading ignore file: {self._ignore_filepath}", file=sys.stderr)
                 self._patterns.extend(f.read().splitlines())
 
@@ -64,10 +64,7 @@ ignore = IgnoreList()
 
 
 def file_exists(file_path: str) -> bool:
-    return (
-            os.path.isfile(file_path)
-            and os.stat(file_path).st_size > 0
-    )
+    return os.path.isfile(file_path) and os.stat(file_path).st_size > 0
 
 
 @dataclasses.dataclass(frozen=True)
@@ -89,7 +86,7 @@ class FetchResult:
     def new(cls):
         return cls(to_visit=set(), to_download=set())
 
-    def update(self, other: 'FetchResult'):
+    def update(self, other: "FetchResult"):
         self.to_visit.update(other.to_visit)
         self.to_download.update(other.to_download)
 
@@ -110,7 +107,12 @@ class FetchState:
 
     @classmethod
     def new(cls, download_root: str):
-        return cls(to_visit={download_root, }, visited=set())
+        return cls(
+            to_visit={
+                download_root,
+            },
+            visited=set(),
+        )
 
     def balance(self, prev_result: FetchResult):
         self.visited.update(self.to_visit)
@@ -143,7 +145,7 @@ async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) ->
         raise DownloadError(subtitle.url) from e
     if r.status_code != httpx.codes.OK:
         return DownloadResult("download failed", file_path)
-    with open(file_path, 'wb') as f:
+    with open(file_path, "wb") as f:
         f.write(r.content)
     return DownloadResult("saved", file_path)
 
@@ -157,13 +159,8 @@ async def download_subs(client: httpx.AsyncClient, to_download: Collection[Anime
 
 
 def get_anime_title(page_text: str):
-    title = re.search(r'<title>([^<>]+)</title>', page_text, flags=re.IGNORECASE | re.MULTILINE).group(1)
-    title = (
-        title
-        .replace(' - Japanese subtitles - kitsunekko.net', '')
-        .replace('/', ' ')
-        .replace('\\', ' ')
-    )
+    title = re.search(r"<title>([^<>]+)</title>", page_text, flags=re.IGNORECASE | re.MULTILINE).group(1)
+    title = title.replace(" - Japanese subtitles - kitsunekko.net", "").replace("/", " ").replace("\\", " ")
     return title.strip()
 
 
@@ -182,12 +179,9 @@ async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
         raise DownloadError(url) from e
 
     return FetchResult(
-        to_visit={
-            f'{DOMAIN}/{anime_dir}'
-            for anime_dir in find_all_subtitle_dir_urls(r.text)
-        },
+        to_visit={f"{DOMAIN}/{anime_dir}" for anime_dir in find_all_subtitle_dir_urls(r.text)},
         to_download={
-            AnimeSubtitleUrl(f'{DOMAIN}/{subtitle}', get_anime_title(r.text))
+            AnimeSubtitleUrl(f"{DOMAIN}/{subtitle}", get_anime_title(r.text))
             for subtitle in find_all_subtitle_file_urls(r.text)
         },
     )
@@ -212,8 +206,8 @@ async def sync_all():
             await download_subs(client, task.to_download)
             state.balance(task)
 
-    with open(os.path.join(config.destination, UPDATED_FILENAME), 'w') as of:
-        of.write(datetime.utcnow().strftime('%c'))
+    with open(os.path.join(config.destination, UPDATED_FILENAME), "w") as of:
+        of.write(datetime.utcnow().strftime("%c"))
 
 
 def mega_upload():
@@ -224,8 +218,8 @@ def mega_upload():
     )
 
 
-async def main():
-    match ''.join(sys.argv[1:]):
+async def async_main():
+    match "".join(sys.argv[1:]):
         case "run" | "sync":
             await sync_all()
         case "destination":
@@ -240,5 +234,5 @@ async def main():
             print("Available commands: sync, upload, all, destination")
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(async_main())
