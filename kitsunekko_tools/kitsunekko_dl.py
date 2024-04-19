@@ -16,12 +16,7 @@ from urllib.parse import unquote
 
 import httpx
 
-PROG = "kitsunekko-tools"
-SETTINGS = "settings.json"
-DOMAIN = "https://kitsunekko.net"
-REPO = os.path.abspath(os.path.dirname(__file__))
-IGNORE_FILENAME = ".kitsuignore"
-UPDATED_FILENAME = ".updated"
+from kitsunekko_tools.consts import *
 
 
 def get_xdg_config_dir() -> str:
