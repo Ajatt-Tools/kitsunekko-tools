@@ -10,7 +10,7 @@ and quickly search with [fzf](https://wiki.archlinux.org/title/Fzf).
 
 ## Install
 
-Install using [pipx](https://pipx.pypa.io/stable/).
+Install using [pipx](https://pipx.pypa.io/stable/) from [pypi](https://pypi.org/project/kitsunekko-tools/).
 
 ```bash
 pipx install kitsunekko-tools
