@@ -3,8 +3,10 @@
 
 import fire
 
+from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import ConfigFileNotFoundError, KitsuConfig, get_config
-from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.download import Sync
+from kitsunekko_tools.ignore import IgnoreList, IgnoreListException
 
 
 class ConfigCli:
@@ -35,7 +37,7 @@ class ConfigCli:
         try:
             data, location = get_config()
         except ConfigFileNotFoundError as ex:
-            print(ex.describe())
+            print(ex.what)
         else:
             print(location)
 
@@ -47,7 +49,7 @@ class ConfigCli:
         try:
             data, location = get_config()
         except ConfigFileNotFoundError as ex:
-            print(ex.describe())
+            print(ex.what)
         else:
             print(data.as_toml_str())
 
@@ -56,6 +58,7 @@ class IgnoreCli:
     """
     Manage the list of ignore patterns.
     """
+
     def __init__(self, ignore_list: IgnoreList):
         self._ignore_list = ignore_list
 
@@ -96,7 +99,7 @@ class Application:
         try:
             data, location = get_config()
         except ConfigFileNotFoundError as ex:
-            print(ex.describe())
+            print(ex.what)
         else:
             print(data.destination)
 
@@ -105,7 +108,19 @@ class Application:
         """
         Manage the list of ignore patterns.
         """
-        return IgnoreCli(IgnoreList())
+        try:
+            return IgnoreCli(IgnoreList())
+        except IgnoreListException as ex:
+            print(ex.what)
+
+    @staticmethod
+    async def sync():
+        try:
+            s = Sync()
+        except KitsuException as ex:
+            print(ex.what)
+        else:
+            await s.sync_all()
 
 
 def main() -> None:

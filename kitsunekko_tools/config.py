@@ -11,6 +11,7 @@ import sys
 import tomllib
 import typing
 
+from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import *
 
 DEFAULT_HEADERS = {
@@ -37,9 +38,9 @@ def config_locations():
     )
 
 
-class ConfigFileNotFoundError(FileNotFoundError):
-    @staticmethod
-    def describe() -> str:
+class ConfigFileNotFoundError(KitsuException, FileNotFoundError):
+    @property
+    def what(self) -> str:
         with io.StringIO() as si:
             si.write("Couldn't find config file. ")
             si.write("Create the file in one of the following locations:\n")
@@ -90,4 +91,4 @@ def get_config() -> ReadConfigResult:
             print(f"Reading config file: {config_file_path}", file=sys.stderr)
             with open(config_file_path, "rb") as f:
                 return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
-    raise ConfigFileNotFoundError("Couldn't find config file.")
+    raise ConfigFileNotFoundError()

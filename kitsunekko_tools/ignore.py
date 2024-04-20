@@ -8,12 +8,13 @@ import pathlib
 import sys
 import typing
 
+from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
 from kitsunekko_tools.consts import *
 
 
 @dataclasses.dataclass
-class IgnoreListException(Exception):
+class IgnoreListException(KitsuException):
     what: str
 
 
@@ -22,7 +23,7 @@ class IgnoreList:
     _ignore_filepath: pathlib.Path
 
     def __init__(self, config: typing.Optional[KitsuConfig] = None):
-        self._config = (config or get_config().data)
+        self._config = config or get_config().data
         self._ignore_filepath = pathlib.Path(self._config.destination) / IGNORE_FILENAME
         self._patterns = set()
         if not self._config.destination.is_dir():
@@ -45,8 +46,14 @@ class IgnoreList:
         return self._patterns
 
     def add(self, pattern: str):
+        """
+        Add a new ignore pattern to the list.
+        """
         self._patterns.add(pattern)
         self._ignore_filepath.write_text("\n".join(self._patterns))
 
     def path(self) -> pathlib.Path:
+        """
+        Return path to ignore file.
+        """
         return self._ignore_filepath
