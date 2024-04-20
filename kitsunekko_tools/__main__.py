@@ -63,13 +63,19 @@ class IgnoreCli:
     def __init__(self, ignore_list: IgnoreList):
         self._ignore_list = ignore_list
 
-    def show(self):
+    def locate(self) -> None:
+        """
+        Print path to the ignore file.
+        """
+        print(self._ignore_list.ignore_filepath)
+
+    def show(self) -> None:
         """
         Print the list of ignore rules as Unix shell-style wildcards.
         """
         print("\n".join(self._ignore_list.patterns()))
 
-    def add(self, pattern: str):
+    def add(self, pattern: str)-> None:
         """
         Add a new ignore rule.
         """

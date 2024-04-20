@@ -35,6 +35,10 @@ class IgnoreList:
         except FileNotFoundError:
             pass
 
+    @property
+    def ignore_filepath(self) -> pathlib.Path:
+        return self._ignore_filepath
+
     def is_matching(self, file_path: str) -> bool:
         path_dest_stripped = os.path.relpath(file_path, self._config.destination)
         return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
