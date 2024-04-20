@@ -28,14 +28,14 @@ and quickly search with [fzf](https://wiki.archlinux.org/title/Fzf).
 3) Run.
 
     ``` bash
-    bash run sync
+    ktools sync
     ```
 
 ## Upload your mirror to Mega
 
 1) Install [megatools](https://aur.archlinux.org/packages/megatools).
 2) Create `~/.megarc` and [specify](https://megatools.megous.com/man/megarc.html) your credentials.
-3) Run `bash run upload`.
+3) Run `ktools upload`.
 
 ## Ignoring certain files
 
