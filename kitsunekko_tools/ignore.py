@@ -22,7 +22,7 @@ class IgnoreList:
     _config: KitsuConfig
     _ignore_filepath: pathlib.Path
 
-    def __init__(self, config: typing.Optional[KitsuConfig] = None):
+    def __init__(self, config: KitsuConfig | None = None):
         self._config = config or get_config().data
         self._ignore_filepath = pathlib.Path(self._config.destination) / IGNORE_FILENAME
         self._patterns = set()

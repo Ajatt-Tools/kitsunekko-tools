@@ -3,7 +3,6 @@
 import dataclasses
 import subprocess
 import sys
-from typing import Sequence
 
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
@@ -19,22 +18,19 @@ def raise_for_status(out: subprocess.CompletedProcess):
         raise MegaError(f"Command failed with code {out.returncode}")
 
 
-def run(args: Sequence[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        args=args,
+def mega_upload(config: KitsuConfig):
+    remote_destination = f"/Root/{config.destination.name}"
+    print(f"Remote destination: {remote_destination}")
+
+    subprocess.run(  # will return 1 if directory already exists.
+        args=("megamkdir", remote_destination),
         stdout=sys.stdout,
         stderr=sys.stderr,
     )
 
-
-def mega_upload(config: KitsuConfig):
-    remote_destination = f"/Root/{config.destination.name}"
-    print(f"Remote destination: {remote_destination}")
-    out = run(
-        args=("megamkdir", remote_destination),
-    )
-    raise_for_status(out)
-    out = run(
+    out = subprocess.run(
         args=("megacopy", "--local", config.destination, "--remote", remote_destination, "--no-follow"),
+        stdout=sys.stdout,
+        stderr=sys.stderr,
     )
     raise_for_status(out)
