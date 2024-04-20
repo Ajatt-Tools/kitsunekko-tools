@@ -3,22 +3,27 @@
 
 import asyncio
 import dataclasses
+import enum
 import os.path
+import pathlib
 import re
 import typing
-from collections.abc import Collection
 from datetime import datetime
 from urllib.parse import unquote
 
 import httpx
 
-from kitsunekko_tools.config import get_config
+from kitsunekko_tools.common import KitsuException
+from kitsunekko_tools.config import get_config, KitsuConfig
 from kitsunekko_tools.consts import *
 from kitsunekko_tools.ignore import IgnoreList
 
 
-def file_exists(file_path: str) -> bool:
-    return os.path.isfile(file_path) and os.stat(file_path).st_size > 0
+def is_file_non_empty(file_path: pathlib.Path) -> bool:
+    """
+    Returns True if file exists and is not empty.
+    """
+    return file_path.is_file() and file_path.stat().st_size > 0
 
 
 @dataclasses.dataclass(frozen=True)
@@ -28,12 +33,15 @@ class AnimeSubtitleUrl:
 
     @property
     def file_name(self) -> str:
-        return os.path.basename(unquote(self.url))
+        return unquote(self.url).split("/")[-1]
+
+
+AnimeDirUrl = typing.NewType("AnimeDirUrl", str)
 
 
 @dataclasses.dataclass(frozen=True)
 class FetchResult:
-    to_visit: set[str]
+    to_visit: set[AnimeDirUrl]
     to_download: set[AnimeSubtitleUrl]
 
     @classmethod
@@ -45,10 +53,20 @@ class FetchResult:
         self.to_download.update(other.to_download)
 
 
+class DownloadStatus(enum.Enum):
+    already_exists = enum.auto()
+    explicitly_ignored = enum.auto()
+    download_failed = enum.auto()
+    saved = enum.auto()
+
+    def __repr__(self) -> str:
+        return self.name.replace("_", " ")
+
+
 @dataclasses.dataclass(frozen=True)
 class DownloadResult:
-    reason: str
-    file_path: str
+    reason: DownloadStatus
+    file_path: pathlib.Path
 
     def __repr__(self):
         return f"{self.reason}: {self.file_path}"
@@ -56,11 +74,11 @@ class DownloadResult:
 
 @dataclasses.dataclass(frozen=True)
 class FetchState:
-    to_visit: set[str]
-    visited: set[str]
+    to_visit: set[AnimeDirUrl]
+    visited: set[AnimeDirUrl]
 
     @classmethod
-    def new(cls, download_root: str) -> typing.Self:
+    def new(cls, download_root: AnimeDirUrl) -> typing.Self:
         return cls(
             to_visit={
                 download_root,
@@ -78,11 +96,11 @@ class FetchState:
 
 
 @dataclasses.dataclass(frozen=True)
-class DownloadError(Exception):
+class DownloadError(KitsuException):
     url: str
 
     @property
-    def errname(self) -> str:
+    def what(self) -> str:
         return type(self.__cause__).__name__
 
 
@@ -107,7 +125,9 @@ async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
         raise DownloadError(url) from e
 
     return FetchResult(
-        to_visit={f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}" for anime_dir in find_all_subtitle_dir_urls(r.text)},
+        to_visit={
+            AnimeDirUrl(f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}") for anime_dir in find_all_subtitle_dir_urls(r.text)
+        },
         to_download={
             AnimeSubtitleUrl(f"{KITSUNEKKO_DOMAIN_URL}/{subtitle}", get_anime_title(r.text))
             for subtitle in find_all_subtitle_file_urls(r.text)
@@ -121,8 +141,24 @@ async def find_subs_all(client: httpx.AsyncClient, to_visit: set[str]) -> FetchR
         try:
             result.update(await fut)
         except DownloadError as e:
-            print(f"got {e.errname} while trying to download {e.url}")
+            print(f"got {e.what} while trying to download {e.url}")
     return result
+
+
+class AnimeSubtitleFile:
+    def __init__(self, remote: AnimeSubtitleUrl, root_dir_path: pathlib.Path):
+        self.dir_path = root_dir_path / remote.title
+        self.file_path = self.dir_path / remote.file_name
+        self.remote_url = remote.url
+
+    def ensure_subtitle_dir(self) -> None:
+        """
+        Create directory to store the subtitle file.
+        """
+        return self.dir_path.mkdir(exist_ok=True)
+
+    def is_already_downloaded(self) -> bool:
+        return is_file_non_empty(self.file_path)
 
 
 class Sync:
@@ -131,29 +167,31 @@ class Sync:
         self._ignore = IgnoreList(self._config)
         self._config.raise_for_destination()
 
-    async def download_sub(self, client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) -> DownloadResult:
-        if not os.path.isdir(dir_path := os.path.join(self._config.destination, subtitle.title)):
-            os.mkdir(dir_path)
-        if file_exists(file_path := os.path.join(dir_path, subtitle.file_name)):
-            return DownloadResult("already exists", file_path)
-        if self._ignore.is_matching(file_path):
-            return DownloadResult("explicitly ignored", file_path)
-        try:
-            r = await client.get(subtitle.url)
-        except Exception as e:
-            raise DownloadError(subtitle.url) from e
-        if r.status_code != httpx.codes.OK:
-            return DownloadResult("download failed", file_path)
-        with open(file_path, "wb") as f:
-            f.write(r.content)
-        return DownloadResult("saved", file_path)
+    async def download_sub(self, client: httpx.AsyncClient, subtitle: AnimeSubtitleFile) -> DownloadResult:
+        subtitle.ensure_subtitle_dir()
 
-    async def download_subs(self, client: httpx.AsyncClient, to_download: Collection[AnimeSubtitleUrl]) -> None:
-        for fut in asyncio.as_completed([self.download_sub(client, subtitle) for subtitle in to_download]):
+        if subtitle.is_already_downloaded():
+            return DownloadResult(DownloadStatus.already_exists, subtitle.file_path)
+
+        if self._ignore.is_matching(subtitle.file_path):
+            return DownloadResult(DownloadStatus.explicitly_ignored, subtitle.file_path)
+
+        try:
+            r = await client.get(subtitle.remote_url)
+        except Exception as e:
+            raise DownloadError(subtitle.remote_url) from e
+        if r.status_code != httpx.codes.OK:
+            return DownloadResult(DownloadStatus.download_failed, subtitle.file_path)
+        with open(subtitle.file_path, "wb") as f:
+            f.write(r.content)
+        return DownloadResult(DownloadStatus.saved, subtitle.file_path)
+
+    async def download_subs(self, client: httpx.AsyncClient, to_download: typing.Iterable[AnimeSubtitleFile]) -> None:
+        for fut in asyncio.as_completed(self.download_sub(client, subtitle) for subtitle in to_download):
             try:
                 print(await fut)
             except DownloadError as e:
-                print(f"got {e.errname} while trying to download {e.url}")
+                print(f"got {e.what} while trying to download {e.url}")
 
     async def sync_all(self) -> None:
         async with httpx.AsyncClient(
@@ -161,11 +199,14 @@ class Sync:
             headers=self._config.headers,
             timeout=self._config.timeout,
         ) as client:
-            state = FetchState.new(self._config.download_root)
+            state = FetchState.new(AnimeDirUrl(self._config.download_root))
             while state.has_unvisited():
                 task: FetchResult = await find_subs_all(client, state.to_visit)
                 print(f"visited {len(state.to_visit)} pages, found {len(task.to_download)} files.")
-                await self.download_subs(client, task.to_download)
+                await self.download_subs(
+                    client,
+                    (AnimeSubtitleFile(url, self._config.destination) for url in task.to_download),
+                )
                 state.balance(task)
 
         with open(os.path.join(self._config.destination, UPDATED_FILENAME), "w") as of:
