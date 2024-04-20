@@ -63,7 +63,7 @@ class KitsuConfig:
         with io.StringIO() as si:
             for key, value in dataclasses.asdict(self).items():
                 match value:
-                    case str():
+                    case str() | pathlib.Path():
                         si.write(f'{key} = "{value}"\n')
                     case int():
                         si.write(f"{key} = {value}\n")
