@@ -145,7 +145,10 @@ class Application:
 
 
 def main() -> None:
-    fire.Fire(Application)
+    try:
+        fire.Fire(Application)
+    except KeyboardInterrupt:
+        print("Aborted by the user.")
 
 
 if __name__ == "__main__":
