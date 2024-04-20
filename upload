@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -euo pipefail
-
-readonly local=$1
-readonly remote=/Root/${local##*/}
-
-megamkdir "$remote" || true
-megacopy --local "$local" --remote "$remote" --no-follow

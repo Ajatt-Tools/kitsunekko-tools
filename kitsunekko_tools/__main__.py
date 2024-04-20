@@ -7,6 +7,7 @@ from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import ConfigFileNotFoundError, KitsuConfig, get_config
 from kitsunekko_tools.download import Sync
 from kitsunekko_tools.ignore import IgnoreList, IgnoreListException
+from kitsunekko_tools.mega_upload import MegaError, mega_upload
 
 
 class ConfigCli:
@@ -121,6 +122,17 @@ class Application:
             print(ex.what)
         else:
             await s.sync_all()
+
+    @staticmethod
+    def upload():
+        """
+        Upload the local folder to mega.nz.
+        The ~/.megarc file must exist.
+        """
+        try:
+            mega_upload(get_config().data)
+        except KitsuException as ex:
+            print(ex.what)
 
 
 def main() -> None:
