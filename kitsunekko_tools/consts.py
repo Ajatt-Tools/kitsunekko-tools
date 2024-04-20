@@ -11,4 +11,4 @@ REPO = pathlib.Path(__file__).parent.absolute()
 IGNORE_FILENAME = ".kitsuignore"
 UPDATED_FILENAME = ".updated"
 
-del pathlib
+__all__ = [name for name in globals() if name.isupper()]

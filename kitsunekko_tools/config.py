@@ -7,7 +7,7 @@ import functools
 import json
 import os.path
 import sys
-
+import pathlib
 from kitsunekko_tools.consts import *
 
 DEFAULT_HEADERS = {
