@@ -116,6 +116,9 @@ class Application:
 
     @staticmethod
     async def sync():
+        """
+        Download everything from Kitsunekko to a local folder.
+        """
         try:
             s = Sync()
         except KitsuException as ex:
