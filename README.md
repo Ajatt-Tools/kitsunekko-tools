@@ -8,28 +8,38 @@ The main benefit of having all subtitles saved locally
 is that you can browse them using [lf](https://wiki.archlinux.org/title/Lf)
 and quickly search with [fzf](https://wiki.archlinux.org/title/Fzf).
 
+## Install
+
+Install using [pipx](https://pipx.pypa.io/stable/).
+
+```bash
+pipx install kitsunekko-tools
+```
+
+## Configure
+
+Run this command to create the config file.
+
+```bash
+ktools config create
+```
+
+Edit the config file.
+
+ * `destination` - the local folder where the files should be downloaded.
+ * `proxy` - Your proxy settings.
+   Set to `null` if you don't use proxies.
+   By default, it is set to the default Tor address.
+
+Everything else usually doesn't need to be changed.
+
 ## Usage
 
-1) Clone the repository.
-2) Change [settings](settings.json).
+Run sync.
 
-    ``` bash
-    vim settings.json
-    ```
-
-   Or you can copy the config file to `~/.config/kitsunekko-tools/settings.json` and edit it there.
-
-    * `destination` - the local folder the files should be downloaded to.
-    * `proxy` - Your proxy settings.
-      Set to `null` if you don't use proxies.
-      By default, it is set to the Tor address.
-
-   Everything else usually doesn't need to be changed.
-3) Run.
-
-    ``` bash
-    ktools sync
-    ```
+``` bash
+ktools sync
+```
 
 ## Upload your mirror to Mega
 
