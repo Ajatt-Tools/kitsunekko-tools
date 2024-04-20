@@ -49,6 +49,11 @@ class ConfigFileNotFoundError(KitsuException, FileNotFoundError):
 
 
 @dataclasses.dataclass
+class DestDirNotFoundError(KitsuException):
+    what: str
+
+
+@dataclasses.dataclass
 class KitsuConfig:
     destination: pathlib.Path = "/mnt/archive/japanese/kitsunekko-mirror"
     proxy: str = "socks5://127.0.0.1:9050"
@@ -58,6 +63,10 @@ class KitsuConfig:
 
     def __post_init__(self):
         self.destination = pathlib.Path(self.destination)
+
+    def raise_for_destination(self):
+        if not self.destination.is_dir():
+            raise DestDirNotFoundError(f"Destination directory does not exist: {self.destination}")
 
     def as_toml_str(self) -> str:
         with io.StringIO() as si:

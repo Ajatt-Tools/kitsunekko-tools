@@ -26,8 +26,7 @@ class IgnoreList:
         self._config = config or get_config().data
         self._ignore_filepath = pathlib.Path(self._config.destination) / IGNORE_FILENAME
         self._patterns = set()
-        if not self._config.destination.is_dir():
-            raise IgnoreListException(f"Destination directory does not exist: {self._config.destination}")
+        self._config.raise_for_destination()
         try:
             with open(self._ignore_filepath, encoding="utf8") as f:
                 self._patterns.update(filter(bool, map(str.strip, f.read().splitlines())))

@@ -129,6 +129,7 @@ class Sync:
     def __init__(self):
         self._config = get_config().data
         self._ignore = IgnoreList(self._config)
+        self._config.raise_for_destination()
 
     async def download_sub(self, client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) -> DownloadResult:
         if not os.path.isdir(dir_path := os.path.join(self._config.destination, subtitle.title)):
