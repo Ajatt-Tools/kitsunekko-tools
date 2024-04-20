@@ -47,18 +47,16 @@ class ConfigFileNotFoundError(FileNotFoundError):
             return si.getvalue()
 
 
-class ReadConfigResult(typing.NamedTuple):
-    data: "KitsuConfigData"
-    file_path: pathlib.Path
-
-
-@dataclasses.dataclass(frozen=True)
-class KitsuConfigData:
-    destination: str = "/mnt/archive/japanese/kitsunekko-mirror"
+@dataclasses.dataclass
+class KitsuConfig:
+    destination: pathlib.Path = "/mnt/archive/japanese/kitsunekko-mirror"
     proxy: str = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
+
+    def __post_init__(self):
+        self.destination = pathlib.Path(self.destination)
 
     def as_toml_str(self) -> str:
         with io.StringIO() as si:
@@ -75,40 +73,21 @@ class KitsuConfigData:
                         raise RuntimeError(f"Unknown value type {type(value)}")
             return si.getvalue()
 
-    @classmethod
-    def read(cls) -> ReadConfigResult:
-        return read_config()
-
     @staticmethod
     def default_location() -> pathlib.Path:
         return config_locations()[0]
 
 
+class ReadConfigResult(typing.NamedTuple):
+    data: KitsuConfig
+    file_path: pathlib.Path
+
+
 @functools.cache
-def read_config() -> ReadConfigResult:
+def get_config() -> ReadConfigResult:
     for config_file_path in config_locations():
         if os.path.isfile(config_file_path):
             print(f"Reading config file: {config_file_path}", file=sys.stderr)
             with open(config_file_path, "rb") as f:
-                return ReadConfigResult(KitsuConfigData(**tomllib.load(f)), config_file_path)
+                return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
     raise ConfigFileNotFoundError("Couldn't find config file.")
-
-
-class IgnoreList:
-    _config: KitsuConfigData
-    _ignore_filepath: pathlib.Path
-
-    def __init__(self, config: KitsuConfigData):
-        self._config = config
-        self._ignore_filepath = pathlib.Path(config.destination) / IGNORE_FILENAME
-        self._patterns = set()
-        if os.path.isfile(self._ignore_filepath):
-            with open(self._ignore_filepath, encoding="utf8") as f:
-                print(f"Reading ignore file: {self._ignore_filepath}", file=sys.stderr)
-                self._patterns.update(filter(bool, map(str.strip, f.read().splitlines())))
-        print("Ignore patterns:")
-        print("\n".join(self._patterns))
-
-    def is_matching(self, file_path: str) -> bool:
-        path_dest_stripped = os.path.relpath(file_path, self._config.destination)
-        return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
