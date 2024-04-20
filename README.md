@@ -43,7 +43,7 @@ ktools sync
 
 ## Upload your mirror to Mega
 
-1) Install [megatools](https://aur.archlinux.org/packages/megatools).
+1) Install [megatools](https://archlinux.org/packages/extra/x86_64/megatools/).
 2) Create `~/.megarc` and [specify](https://megatools.megous.com/man/megarc.html) your credentials.
 3) Run `ktools upload`.
 
