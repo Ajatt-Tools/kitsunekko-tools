@@ -14,7 +14,7 @@ from urllib.parse import unquote
 import httpx
 
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import get_config, KitsuConfig
+from kitsunekko_tools.config import get_config
 from kitsunekko_tools.consts import *
 from kitsunekko_tools.ignore import IgnoreList
 
@@ -59,7 +59,7 @@ class DownloadStatus(enum.Enum):
     download_failed = enum.auto()
     saved = enum.auto()
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.name.replace("_", " ")
 
 

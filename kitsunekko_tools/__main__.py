@@ -7,7 +7,7 @@ from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import ConfigFileNotFoundError, KitsuConfig, get_config
 from kitsunekko_tools.download import Sync
 from kitsunekko_tools.ignore import IgnoreList, IgnoreListException
-from kitsunekko_tools.mega_upload import MegaError, mega_upload
+from kitsunekko_tools.mega_upload import mega_upload
 
 
 class ConfigCli:
