@@ -4,10 +4,12 @@
 import dataclasses
 import fnmatch
 import functools
-import json
+import io
 import os.path
-import sys
 import pathlib
+import sys
+import tomllib
+
 from kitsunekko_tools.consts import *
 
 DEFAULT_HEADERS = {
@@ -28,6 +30,21 @@ class KitsuConfigData:
     timeout: int = 120
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
+    def as_toml_str(self) -> str:
+        with io.StringIO() as si:
+            for key, value in dataclasses.asdict(self).items():
+                match value:
+                    case str():
+                        si.write(f'{key} = "{value}"\n')
+                    case int():
+                        si.write(f"{key} = {value}\n")
+                    case dict():
+                        si.write(f"[{key}]\n")
+                        si.write("\n".join(f'{k} = "{v}"' for k, v in value.items()))
+                    case _:
+                        raise RuntimeError(f"Unknown value type {type(value)}")
+            return si.getvalue()
+
 
 @functools.cache
 def get_xdg_config_dir() -> pathlib.Path:
@@ -38,18 +55,27 @@ def get_xdg_config_dir() -> pathlib.Path:
 def config_locations():
     return (
         get_xdg_config_dir() / PROG_NAME / SETTINGS_FILE_NAME,
-        get_xdg_config_dir() / SETTINGS_FILE_NAME,
+        pathlib.Path.home() / SETTINGS_FILE_NAME,
         pathlib.Path("/etc/") / PROG_NAME / SETTINGS_FILE_NAME,
     )
 
 
-def read_config():
+def read_config() -> KitsuConfigData:
     for config_file_path in config_locations():
         if os.path.isfile(config_file_path):
             print(f"Reading config file: {config_file_path}", file=sys.stderr)
             with open(config_file_path, encoding="utf8") as f:
-                return KitsuConfigData(**json.load(f))
-    raise RuntimeError("Couldn't find config file.")
+                return KitsuConfigData(**tomllib.load(f))
+    raise ConfigFileNotFoundError("Couldn't find config file.")
+
+
+class ConfigFileNotFoundError(FileNotFoundError):
+    def describe(self) -> str:
+        with io.StringIO() as si:
+            si.write("Couldn't find config file.\n")
+            si.write("Create the file in one of the following locations:\n")
+            si.write("\n".join(f"・ {location}" for location in config_locations()))
+            return si.getvalue()
 
 
 class IgnoreList:
@@ -68,5 +94,10 @@ class IgnoreList:
         return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
 
 
-config = read_config()
+try:
+    config = read_config()
+except ConfigFileNotFoundError as ex:
+    print(ex.describe())
+    sys.exit(1)
+
 ignore = IgnoreList()
