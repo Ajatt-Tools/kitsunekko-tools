@@ -177,8 +177,6 @@ async def async_main() -> None:
     match "".join(sys.argv[1:]):
         case "run" | "sync":
             await sync_all()
-        case "destination":
-            print(config.destination)
         case "upload":
             mega_upload()
         case "all":
