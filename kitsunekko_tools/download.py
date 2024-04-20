@@ -187,7 +187,7 @@ class Sync:
         return DownloadResult(DownloadStatus.saved, subtitle.file_path)
 
     async def download_subs(self, client: httpx.AsyncClient, to_download: typing.Iterable[AnimeSubtitleFile]) -> None:
-        for fut in asyncio.as_completed(self.download_sub(client, subtitle) for subtitle in to_download):
+        for fut in asyncio.as_completed(tuple(self.download_sub(client, subtitle) for subtitle in to_download)):
             try:
                 print(await fut)
             except DownloadError as e:
