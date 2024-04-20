@@ -88,7 +88,6 @@ class ReadConfigResult(typing.NamedTuple):
 def get_config() -> ReadConfigResult:
     for config_file_path in config_locations():
         if os.path.isfile(config_file_path):
-            print(f"Reading config file: {config_file_path}", file=sys.stderr)
             with open(config_file_path, "rb") as f:
                 return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
     raise ConfigFileNotFoundError()

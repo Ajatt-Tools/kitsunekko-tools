@@ -30,7 +30,6 @@ class IgnoreList:
             raise IgnoreListException(f"Destination directory does not exist: {self._config.destination}")
         try:
             with open(self._ignore_filepath, encoding="utf8") as f:
-                print(f"Reading ignore file: {self._ignore_filepath}", file=sys.stderr)
                 self._patterns.update(filter(bool, map(str.strip, f.read().splitlines())))
         except FileNotFoundError:
             pass
