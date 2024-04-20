@@ -52,3 +52,12 @@ ktools sync
 To prevent some files from being downloaded (because they are too big, broken, etc.),
 Create a file named `.kitsuignore` in the root of `destination`
 and fill it with Unix shell-style wildcards, one per line.
+
+## Help
+
+Run `ktools --help` to print a help page. 
+
+## Kitsunekko mirror
+
+[kitsunekko-mirror](https://github.com/Ajatt-Tools/kitsunekko-mirror)
+is a git repository with Japanese anime subtitles.
