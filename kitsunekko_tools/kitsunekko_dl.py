@@ -3,59 +3,19 @@
 
 import asyncio
 import dataclasses
-import fnmatch
-import json
 import os.path
 import re
 import subprocess
 import sys
+import typing
 from collections.abc import Collection
 from datetime import datetime
-from types import SimpleNamespace
 from urllib.parse import unquote
 
 import httpx
 
+from kitsunekko_tools.config import config, ignore
 from kitsunekko_tools.consts import *
-
-
-def get_xdg_config_dir() -> str:
-    return os.environ.get("XDG_CONFIG_HOME", os.path.join(os.environ["HOME"], ".config"))
-
-
-def config_locations():
-    return (
-        os.path.join(get_xdg_config_dir(), PROG, SETTINGS),
-        os.path.join("/etc/", PROG, SETTINGS),
-        os.path.join(REPO, SETTINGS),
-    )
-
-
-def read_config():
-    for config_file_path in config_locations():
-        if os.path.isfile(config_file_path):
-            print(f"Reading config file: {config_file_path}", file=sys.stderr)
-            with open(config_file_path, encoding="utf8") as f:
-                return SimpleNamespace(**json.load(f))
-    raise RuntimeError("Couldn't find config file.")
-
-
-class IgnoreList:
-    def __init__(self):
-        self._ignore_filepath = os.path.join(config.destination, IGNORE_FILENAME)
-        self._patterns = []
-        if os.path.isfile(self._ignore_filepath):
-            with open(self._ignore_filepath, encoding="utf8") as f:
-                print(f"Reading ignore file: {self._ignore_filepath}", file=sys.stderr)
-                self._patterns.extend(f.read().splitlines())
-
-    def is_matching(self, file_path: str) -> bool:
-        path_dest_stripped = os.path.relpath(file_path, config.destination)
-        return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
-
-
-config = read_config()
-ignore = IgnoreList()
 
 
 def file_exists(file_path: str) -> bool:
@@ -101,7 +61,7 @@ class FetchState:
     visited: set[str]
 
     @classmethod
-    def new(cls, download_root: str):
+    def new(cls, download_root: str) -> typing.Self:
         return cls(
             to_visit={
                 download_root,
@@ -109,7 +69,7 @@ class FetchState:
             visited=set(),
         )
 
-    def balance(self, prev_result: FetchResult):
+    def balance(self, prev_result: FetchResult) -> None:
         self.visited.update(self.to_visit)
         self.to_visit.clear()
         self.to_visit.update(prev_result.to_visit - self.visited)
@@ -145,7 +105,7 @@ async def download_sub(client: httpx.AsyncClient, subtitle: AnimeSubtitleUrl) ->
     return DownloadResult("saved", file_path)
 
 
-async def download_subs(client: httpx.AsyncClient, to_download: Collection[AnimeSubtitleUrl]):
+async def download_subs(client: httpx.AsyncClient, to_download: Collection[AnimeSubtitleUrl]) -> None:
     for fut in asyncio.as_completed([download_sub(client, subtitle) for subtitle in to_download]):
         try:
             print(await fut)
@@ -153,7 +113,7 @@ async def download_subs(client: httpx.AsyncClient, to_download: Collection[Anime
             print(f"got {e.errname} while trying to download {e.url}")
 
 
-def get_anime_title(page_text: str):
+def get_anime_title(page_text: str) -> str:
     title = re.search(r"<title>([^<>]+)</title>", page_text, flags=re.IGNORECASE | re.MULTILINE).group(1)
     title = title.replace(" - Japanese subtitles - kitsunekko.net", "").replace("/", " ").replace("\\", " ")
     return title.strip()
@@ -174,9 +134,9 @@ async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
         raise DownloadError(url) from e
 
     return FetchResult(
-        to_visit={f"{DOMAIN}/{anime_dir}" for anime_dir in find_all_subtitle_dir_urls(r.text)},
+        to_visit={f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}" for anime_dir in find_all_subtitle_dir_urls(r.text)},
         to_download={
-            AnimeSubtitleUrl(f"{DOMAIN}/{subtitle}", get_anime_title(r.text))
+            AnimeSubtitleUrl(f"{KITSUNEKKO_DOMAIN_URL}/{subtitle}", get_anime_title(r.text))
             for subtitle in find_all_subtitle_file_urls(r.text)
         },
     )
@@ -192,7 +152,7 @@ async def find_subs_all(client: httpx.AsyncClient, to_visit: set[str]) -> FetchR
     return result
 
 
-async def sync_all():
+async def sync_all() -> None:
     async with httpx.AsyncClient(proxies=config.proxy, headers=config.headers, timeout=config.timeout) as client:
         state = FetchState.new(config.download_root)
         while state.has_unvisited():
@@ -205,7 +165,7 @@ async def sync_all():
         of.write(datetime.utcnow().strftime("%c"))
 
 
-def mega_upload():
+def mega_upload() -> subprocess.CompletedProcess:
     return subprocess.run(
         args=(os.path.join(REPO, "upload"), config.destination),
         stdout=sys.stdout,
@@ -213,7 +173,7 @@ def mega_upload():
     )
 
 
-async def async_main():
+async def async_main() -> None:
     match "".join(sys.argv[1:]):
         case "run" | "sync":
             await sync_all()
