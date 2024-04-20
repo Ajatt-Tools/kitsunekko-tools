@@ -75,7 +75,7 @@ class IgnoreCli:
         """
         print("\n".join(self._ignore_list.patterns()))
 
-    def add(self, pattern: str)-> None:
+    def add(self, pattern: str) -> None:
         """
         Add a new ignore rule.
         """
