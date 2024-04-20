@@ -31,11 +31,6 @@ build-backend = "hatchling.build"
 source = "vcs"
 path = "kitsunekko_tools/__version__.py"
 
-[tool.hatch.build]
-include = [
-  "/kitsunekko_tools",
-]
-
 [tool.hatch.build.hooks.vcs]
 version-file = "kitsunekko_tools/__version__.py"
 
