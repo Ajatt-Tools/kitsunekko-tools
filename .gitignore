@@ -2,3 +2,7 @@
 /.venv
 *.egg-info
 /dist
+
+__pycache__
+__version__*
+*TODO*
