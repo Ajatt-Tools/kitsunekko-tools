@@ -56,7 +56,7 @@ class IgnoreList:
         Add a new ignore pattern to the list.
         """
         self._patterns.add(pattern)
-        self._ignore_filepath.write_text("\n".join(self._patterns))
+        self._ignore_filepath.write_text("\n".join(sorted(self._patterns)))
 
     def path(self) -> pathlib.Path:
         """
