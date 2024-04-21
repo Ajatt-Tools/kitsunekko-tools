@@ -40,6 +40,9 @@ class IgnoreList:
 
     def is_matching(self, file_path: pathlib.Path) -> bool:
         path_dest_stripped = str(file_path.relative_to(self._config.destination))
+        if path_dest_stripped in self._patterns:
+            # try without wildcards first.
+            return True
         return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
 
     def patterns(self) -> set[str]:
