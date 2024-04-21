@@ -21,6 +21,7 @@ class IgnoreListException(KitsuException):
 class IgnoreList:
     _config: KitsuConfig
     _ignore_filepath: pathlib.Path
+    _patterns: set[str]
 
     def __init__(self, config: KitsuConfig | None = None):
         self._config = config or get_config().data
