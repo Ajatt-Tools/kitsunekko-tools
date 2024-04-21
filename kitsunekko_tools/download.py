@@ -48,7 +48,7 @@ class FetchResult:
     def new(cls):
         return cls(to_visit=set(), to_download=set())
 
-    def update(self, other: "FetchResult"):
+    def update(self, other: typing.Self):
         self.to_visit.update(other.to_visit)
         self.to_download.update(other.to_download)
 
