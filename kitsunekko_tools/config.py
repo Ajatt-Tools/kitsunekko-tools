@@ -2,12 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
-import fnmatch
 import functools
 import io
 import os.path
 import pathlib
-import sys
 import tomllib
 import typing
 
@@ -93,10 +91,16 @@ class ReadConfigResult(typing.NamedTuple):
     file_path: pathlib.Path
 
 
+def read_config_file(config_file_path: pathlib.Path) -> ReadConfigResult:
+    with open(config_file_path, "rb") as f:
+        return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
+
+
 @functools.cache
 def get_config() -> ReadConfigResult:
     for config_file_path in config_locations():
-        if os.path.isfile(config_file_path):
-            with open(config_file_path, "rb") as f:
-                return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
+        try:
+            return read_config_file(config_file_path)
+        except FileNotFoundError:
+            continue
     raise ConfigFileNotFoundError()
