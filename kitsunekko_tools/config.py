@@ -36,14 +36,17 @@ def config_locations():
     )
 
 
+def default_config_not_found_description() -> str:
+    with io.StringIO() as si:
+        si.write("Couldn't find config file. ")
+        si.write("Create the file in one of the following locations:\n")
+        si.write("\n".join(f"・ {location}" for location in config_locations()))
+        return si.getvalue()
+
+
+@dataclasses.dataclass
 class ConfigFileNotFoundError(KitsuException, FileNotFoundError):
-    @property
-    def what(self) -> str:
-        with io.StringIO() as si:
-            si.write("Couldn't find config file. ")
-            si.write("Create the file in one of the following locations:\n")
-            si.write("\n".join(f"・ {location}" for location in config_locations()))
-            return si.getvalue()
+    what: str = default_config_not_found_description()
 
 
 @dataclasses.dataclass
