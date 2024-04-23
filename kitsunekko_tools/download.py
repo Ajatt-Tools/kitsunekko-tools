@@ -39,18 +39,26 @@ class AnimeSubtitleUrl:
 AnimeDirUrl = typing.NewType("AnimeDirUrl", str)
 
 
+class PageCrawlResult(typing.NamedTuple):
+    visited_dir: AnimeDirUrl
+    found_dirs: list[AnimeDirUrl]
+    found_files: list[AnimeSubtitleUrl]
+
+
 @dataclasses.dataclass(frozen=True)
 class FetchResult:
     to_visit: set[AnimeDirUrl]
     to_download: set[AnimeSubtitleUrl]
+    visited: set[AnimeDirUrl]
 
     @classmethod
     def new(cls):
-        return cls(to_visit=set(), to_download=set())
+        return cls(to_visit=set(), to_download=set(), visited=set())
 
-    def update(self, other: typing.Self):
-        self.to_visit.update(other.to_visit)
-        self.to_download.update(other.to_download)
+    def update(self, dir_result: PageCrawlResult):
+        self.to_visit.update(dir_result.found_dirs)
+        self.to_download.update(dir_result.found_files)
+        self.visited.add(dir_result.visited_dir)
 
 
 class DownloadStatus(enum.Enum):
@@ -118,31 +126,35 @@ def find_all_subtitle_file_urls(html_text: str) -> list[str]:
     return re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', html_text)
 
 
-async def crawl_page(client: httpx.AsyncClient, url: str) -> FetchResult:
+async def crawl_page(client: httpx.AsyncClient, url: AnimeDirUrl) -> PageCrawlResult:
     try:
         r = await client.get(url)
     except Exception as e:
         raise DownloadError(url) from e
 
-    return FetchResult(
-        to_visit={
+    return PageCrawlResult(
+        visited_dir=url,
+        found_dirs=[
             AnimeDirUrl(f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}") for anime_dir in find_all_subtitle_dir_urls(r.text)
-        },
-        to_download={
+        ],
+        found_files=[
             AnimeSubtitleUrl(f"{KITSUNEKKO_DOMAIN_URL}/{subtitle}", get_anime_title(r.text))
             for subtitle in find_all_subtitle_file_urls(r.text)
-        },
+        ],
     )
 
 
-async def find_subs_all(client: httpx.AsyncClient, to_visit: set[str]) -> FetchResult:
-    result = FetchResult.new()
+async def find_subs_all(client: httpx.AsyncClient, to_visit: set[AnimeDirUrl]) -> FetchResult:
+    results = FetchResult.new()
     for fut in asyncio.as_completed([crawl_page(client, page) for page in to_visit]):
         try:
-            result.update(await fut)
+            result = await fut
         except DownloadError as e:
             print(f"got {e.what} while trying to download {e.url}")
-    return result
+        else:
+            print(f"visited page {result.visited_dir}, found {len(result.found_files)} files.")
+            results.update(result)
+    return results
 
 
 class AnimeSubtitleFile:
@@ -202,7 +214,7 @@ class Sync:
             state = FetchState.new(AnimeDirUrl(self._config.download_root))
             while state.has_unvisited():
                 task: FetchResult = await find_subs_all(client, state.to_visit)
-                print(f"visited {len(state.to_visit)} pages, found {len(task.to_download)} files.")
+                print(f"visited {len(task.visited)} pages, found {len(task.to_download)} files.")
                 await self.download_subs(
                     client,
                     (AnimeSubtitleFile(url, self._config.destination) for url in task.to_download),
