@@ -4,7 +4,7 @@
 import pathlib as _pathlib
 
 PROG_NAME = "kitsunekko-tools"
-SETTINGS_FILE_NAME = "kitsunekko-tools.toml"
+SETTINGS_FILE_NAME = f"{PROG_NAME}.toml"
 KITSUNEKKO_DOMAIN_URL = "https://kitsunekko.net"
 REPO = _pathlib.Path(__file__).parent.absolute()
 IGNORE_FILENAME = ".kitsuignore"
