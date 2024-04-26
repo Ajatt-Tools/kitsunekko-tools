@@ -54,6 +54,22 @@ class DestDirNotFoundError(KitsuException):
     what: str
 
 
+def as_toml_str(d: dict[str, str | int | dict]) -> str:
+    with io.StringIO() as si:
+        for key, value in d.items():
+            match value:
+                case str() | pathlib.Path():
+                    si.write(f'{key} = "{value}"\n')
+                case int():
+                    si.write(f"{key} = {value}\n")
+                case dict():
+                    si.write(f"[{key}]\n")
+                    si.write(as_toml_str(value))
+                case _:
+                    raise RuntimeError(f"Unknown value type {type(value)}")
+        return si.getvalue()
+
+
 @dataclasses.dataclass
 class KitsuConfig:
     destination: pathlib.Path = "/mnt/archive/japanese/kitsunekko-mirror"
@@ -70,19 +86,7 @@ class KitsuConfig:
             raise DestDirNotFoundError(f"Destination directory does not exist: {self.destination}")
 
     def as_toml_str(self) -> str:
-        with io.StringIO() as si:
-            for key, value in dataclasses.asdict(self).items():
-                match value:
-                    case str() | pathlib.Path():
-                        si.write(f'{key} = "{value}"\n')
-                    case int():
-                        si.write(f"{key} = {value}\n")
-                    case dict():
-                        si.write(f"[{key}]\n")
-                        si.write("\n".join(f'{k} = "{v}"' for k, v in value.items()))
-                    case _:
-                        raise RuntimeError(f"Unknown value type {type(value)}")
-            return si.getvalue()
+        return as_toml_str(dataclasses.asdict(self))
 
     @staticmethod
     def default_location() -> pathlib.Path:
