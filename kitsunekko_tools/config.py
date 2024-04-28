@@ -78,10 +78,10 @@ class KitsuConfig:
     timeout: int = 120
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.destination: pathlib.Path = pathlib.Path(self.destination)
 
-    def raise_for_destination(self):
+    def raise_for_destination(self) -> None:
         if not self.destination.is_dir():
             raise DestDirNotFoundError(f"Destination directory does not exist: {self.destination}")
 
