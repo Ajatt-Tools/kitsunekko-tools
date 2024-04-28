@@ -39,11 +39,15 @@ def sanitize_title(title: str) -> str:
     return urllib.parse.unquote(title).strip()
 
 
+def sanitize_folder_name(name: str) -> str:
+    return sanitize_title(name).replace("_", " ")
+
+
 def find_all_subtitle_dirs(html_text: str) -> typing.Iterable[AnimeDir]:
     for match in re.finditer(RE_SUBTITLE_DIR, html_text):
         yield AnimeDir(
             url=f"{KITSUNEKKO_DOMAIN_URL}/{match.group('abs_path')}",
-            show_name=sanitize_title(match.group("show_name")),
+            show_name=sanitize_folder_name(match.group("show_name")),
             # timestamp input looks like "Jul 15 2012 09:24:15 PM"
             mod_timestamp=datetime_from_str(match.group("mod_timestamp").strip()),
         )
@@ -54,7 +58,7 @@ def find_all_subtitle_files(html_text: str) -> typing.Iterable[SubtitleFile]:
         show_name, file_name = match.group("abs_path").split("/")[-2:]
         yield SubtitleFile(
             url=f"{KITSUNEKKO_DOMAIN_URL}/{urllib.parse.quote(match.group('abs_path'))}",
-            show_name=sanitize_title(show_name),
+            show_name=sanitize_folder_name(show_name),
             file_name=sanitize_title(file_name),
             # timestamp input looks like "Jul 15 2012 09:24:15 PM"
             mod_timestamp=datetime_from_str(match.group("mod_timestamp").strip()),
