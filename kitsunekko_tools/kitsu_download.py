@@ -142,7 +142,7 @@ class AnimeSubtitleFile:
         return is_file_non_empty(self.file_path)
 
 
-def get_http_client(config: KitsuConfig):
+def get_http_client(config: KitsuConfig) -> httpx.AsyncClient:
     return httpx.AsyncClient(
         proxies=config.proxy,
         headers=config.headers,
