@@ -54,6 +54,11 @@ class DestDirNotFoundError(KitsuException):
     what: str
 
 
+@dataclasses.dataclass
+class ConfigFileInvalidError(KitsuException, ValueError):
+    what: str
+
+
 def as_toml_str(d: dict[str, str | int | dict]) -> str:
     with io.StringIO() as si:
         for key, value in d.items():
@@ -79,6 +84,8 @@ class KitsuConfig:
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     def __post_init__(self) -> None:
+        if "dirlist.php?dir=" not in self.download_root:
+            raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
         self.destination: pathlib.Path = pathlib.Path(self.destination)
 
     def raise_for_destination(self) -> None:
