@@ -72,14 +72,14 @@ def as_toml_str(d: dict[str, str | int | dict]) -> str:
 
 @dataclasses.dataclass
 class KitsuConfig:
-    destination: pathlib.Path = "/mnt/archive/japanese/kitsunekko-mirror"
+    destination: str = "/mnt/archive/japanese/kitsunekko-mirror"
     proxy: str = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     def __post_init__(self):
-        self.destination = pathlib.Path(self.destination)
+        self.destination: pathlib.Path = pathlib.Path(self.destination)
 
     def raise_for_destination(self):
         if not self.destination.is_dir():
