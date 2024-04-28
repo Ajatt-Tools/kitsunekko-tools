@@ -104,6 +104,9 @@ class Application:
 
     @staticmethod
     def version() -> None:
+        """
+        Print version and exit.
+        """
         print(f"{PROG_NAME} version: {__version__}")
 
     @staticmethod
