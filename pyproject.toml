@@ -34,6 +34,11 @@ path = "kitsunekko_tools/__version__.py"
 [tool.hatch.build.hooks.vcs]
 version-file = "kitsunekko_tools/__version__.py"
 
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest", # run as `hatch run test:pytest`
+]
+
 [tool.black]
 line-length = 120
 target-version = ['py311']
