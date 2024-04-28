@@ -142,6 +142,15 @@ class AnimeSubtitleFile:
         return is_file_non_empty(self.file_path)
 
 
+def get_http_client(config: KitsuConfig):
+    return httpx.AsyncClient(
+        proxies=config.proxy,
+        headers=config.headers,
+        timeout=config.timeout,
+        follow_redirects=False,
+    )
+
+
 class Sync:
     _config: KitsuConfig
     _ignore: IgnoreList
@@ -208,11 +217,7 @@ class Sync:
         return results
 
     async def sync_all(self) -> None:
-        async with httpx.AsyncClient(
-            proxies=self._config.proxy,
-            headers=self._config.headers,
-            timeout=self._config.timeout,
-        ) as client:
+        async with get_http_client(self._config) as client:
             state = FetchState.new(AnimeDirUrl(self._config.download_root))
             while state.has_unvisited():
                 task: FetchResult = await self.find_subs_all(client, state.to_visit)
