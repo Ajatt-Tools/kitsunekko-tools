@@ -14,7 +14,7 @@ from urllib.parse import unquote
 import httpx
 
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import get_config
+from kitsunekko_tools.config import get_config, KitsuConfig
 from kitsunekko_tools.consts import *
 from kitsunekko_tools.ignore import IgnoreList
 
@@ -126,37 +126,6 @@ def find_all_subtitle_file_urls(html_text: str) -> list[str]:
     return re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', html_text)
 
 
-async def crawl_page(client: httpx.AsyncClient, url: AnimeDirUrl) -> PageCrawlResult:
-    try:
-        r = await client.get(url)
-    except Exception as e:
-        raise DownloadError(url) from e
-
-    return PageCrawlResult(
-        visited_dir=url,
-        found_dirs=[
-            AnimeDirUrl(f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}") for anime_dir in find_all_subtitle_dir_urls(r.text)
-        ],
-        found_files=[
-            AnimeSubtitleUrl(f"{KITSUNEKKO_DOMAIN_URL}/{subtitle}", get_anime_title(r.text))
-            for subtitle in find_all_subtitle_file_urls(r.text)
-        ],
-    )
-
-
-async def find_subs_all(client: httpx.AsyncClient, to_visit: set[AnimeDirUrl]) -> FetchResult:
-    results = FetchResult.new()
-    for fut in asyncio.as_completed([crawl_page(client, page) for page in to_visit]):
-        try:
-            result = await fut
-        except DownloadError as e:
-            print(f"got {e.what} while trying to download {e.url}")
-        else:
-            print(f"visited page {result.visited_dir}, found {len(result.found_files)} files.")
-            results.update(result)
-    return results
-
-
 class AnimeSubtitleFile:
     def __init__(self, remote: AnimeSubtitleUrl, root_dir_path: pathlib.Path):
         self.dir_path = root_dir_path / remote.title
@@ -174,6 +143,10 @@ class AnimeSubtitleFile:
 
 
 class Sync:
+    _config: KitsuConfig
+    _ignore: IgnoreList
+    _now: datetime
+
     def __init__(self):
         self._config = get_config().data
         self._ignore = IgnoreList(self._config)
@@ -205,6 +178,35 @@ class Sync:
             except DownloadError as e:
                 print(f"got {e.what} while trying to download {e.url}")
 
+    async def crawl_page(self, client: httpx.AsyncClient, url: AnimeDirUrl) -> PageCrawlResult:
+        try:
+            r = await client.get(url)
+        except Exception as e:
+            raise DownloadError(url) from e
+
+        return PageCrawlResult(
+            visited_dir=url,
+            found_dirs=[
+                AnimeDirUrl(f"{KITSUNEKKO_DOMAIN_URL}/{anime_dir}") for anime_dir in find_all_subtitle_dir_urls(r.text)
+            ],
+            found_files=[
+                AnimeSubtitleUrl(f"{KITSUNEKKO_DOMAIN_URL}/{subtitle}", get_anime_title(r.text))
+                for subtitle in find_all_subtitle_file_urls(r.text)
+            ],
+        )
+
+    async def find_subs_all(self, client: httpx.AsyncClient, to_visit: set[AnimeDirUrl]) -> FetchResult:
+        results = FetchResult.new()
+        for fut in asyncio.as_completed([self.crawl_page(client, page) for page in to_visit]):
+            try:
+                result = await fut
+            except DownloadError as e:
+                print(f"got {e.what} while trying to download {e.url}")
+            else:
+                print(f"visited page {result.visited_dir}, found {len(result.found_files)} files.")
+                results.update(result)
+        return results
+
     async def sync_all(self) -> None:
         async with httpx.AsyncClient(
             proxies=self._config.proxy,
@@ -213,7 +215,7 @@ class Sync:
         ) as client:
             state = FetchState.new(AnimeDirUrl(self._config.download_root))
             while state.has_unvisited():
-                task: FetchResult = await find_subs_all(client, state.to_visit)
+                task: FetchResult = await self.find_subs_all(client, state.to_visit)
                 print(f"visited {len(task.visited)} pages, found {len(task.to_download)} files.")
                 await self.download_subs(
                     client,
