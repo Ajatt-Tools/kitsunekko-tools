@@ -63,6 +63,7 @@ def find_all_subtitle_files(html_text: str) -> typing.Iterable[SubtitleFile]:
 
 def main():
     from pprint import pprint
+
     data_dir = pathlib.Path(__file__).parent.joinpath("../tests/data")
 
     html_text = data_dir.joinpath("main_dir_page.html").read_text()

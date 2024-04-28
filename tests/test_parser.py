@@ -3,9 +3,12 @@
 
 import datetime
 import pathlib
+from collections.abc import Sequence
+
+import pytest
 
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
-from kitsunekko_tools.kitsunekko import AnimeDir, SubtitleFile, find_all_subtitle_dirs, find_all_subtitle_files
+from kitsunekko_tools.kitsu_parse import AnimeDir, SubtitleFile, find_all_subtitle_dirs, find_all_subtitle_files
 
 DATA_DIR = pathlib.Path(__file__).parent.joinpath("data")
 EXPECTED_DIRS = [
@@ -37,13 +40,29 @@ EXPECTED_FILES = [
 ]
 
 
-def test_root_dir_parser():
+@pytest.fixture
+def found_dirs() -> Sequence[AnimeDir]:
     root_html_text = DATA_DIR.joinpath("main_dir_page.html").read_text()
-    parsed = [*find_all_subtitle_dirs(root_html_text)]
-    assert all(directory in parsed for directory in EXPECTED_DIRS)
+    return [*find_all_subtitle_dirs(root_html_text)]
 
 
-def test_anime_dir_parser():
+@pytest.fixture
+def parsed_sub_files() -> Sequence[SubtitleFile]:
     anime_dir_html_text = DATA_DIR.joinpath("subs_page.html").read_text()
-    parsed = [*find_all_subtitle_files(anime_dir_html_text)]
-    assert all(file in parsed for file in EXPECTED_FILES)
+    return [*find_all_subtitle_files(anime_dir_html_text)]
+
+
+def test_shows_in_root_dir(found_dirs: Sequence[AnimeDir]) -> None:
+    assert all(dir_ in found_dirs for dir_ in EXPECTED_DIRS), "result should include expected dirs"
+
+
+def test_num_of_found_dirs(found_dirs: Sequence[AnimeDir]) -> None:
+    assert len(found_dirs) == 2653, "number of directories should match"
+
+
+def test_files_in_directory(parsed_sub_files: Sequence[SubtitleFile]) -> None:
+    assert all(file in parsed_sub_files for file in EXPECTED_FILES), "result should include expected files"
+
+
+def test_num_of_found_files(parsed_sub_files: Sequence[SubtitleFile]) -> None:
+    assert len(parsed_sub_files) == 67, "number of files should match"
