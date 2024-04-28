@@ -26,11 +26,13 @@ def mega_upload(config: KitsuConfig):
         args=("megamkdir", remote_destination),
         stdout=sys.stdout,
         stderr=sys.stderr,
+        check=False,
     )
 
     out = subprocess.run(
         args=("megacopy", "--local", config.destination, "--remote", remote_destination, "--no-follow"),
         stdout=sys.stdout,
         stderr=sys.stderr,
+        check=False,
     )
     raise_for_status(out)
