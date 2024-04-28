@@ -220,6 +220,3 @@ class Sync:
                     (AnimeSubtitleFile(url, self._config.destination) for url in task.to_download),
                 )
                 state.balance(task)
-
-        with open(os.path.join(self._config.destination, UPDATED_FILENAME), "w") as of:
-            of.write(datetime.utcnow().strftime("%c"))

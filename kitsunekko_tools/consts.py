@@ -6,6 +6,5 @@ PROG_NAME = "kitsunekko-tools"
 SETTINGS_FILE_NAME = f"{PROG_NAME}.toml"
 KITSUNEKKO_DOMAIN_URL = "https://kitsunekko.net"
 IGNORE_FILENAME = ".kitsuignore"
-UPDATED_FILENAME = ".updated"
 
 __all__ = [name for name in globals() if name.isupper()]
