@@ -79,4 +79,4 @@ class IgnoreList:
         """
         if not self._is_dirty:
             return
-        self._ignore_filepath.write_text("\n".join(self._patterns))
+        self._ignore_filepath.write_text("\n".join(self._patterns) + "\n")  # newline at the end of file
