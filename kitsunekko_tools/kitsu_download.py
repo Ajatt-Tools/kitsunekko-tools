@@ -4,7 +4,6 @@
 import asyncio
 import dataclasses
 import enum
-import os.path
 import pathlib
 import re
 import typing
@@ -71,6 +70,22 @@ class DownloadStatus(enum.Enum):
         return self.name.replace("_", " ")
 
 
+class AnimeSubtitleFile:
+    def __init__(self, remote: AnimeSubtitleUrl, root_dir_path: pathlib.Path):
+        self.dir_path = root_dir_path / remote.title
+        self.file_path = self.dir_path / remote.file_name
+        self.remote_url = remote.url
+
+    def ensure_subtitle_dir(self) -> None:
+        """
+        Create directory to store the subtitle file.
+        """
+        return self.dir_path.mkdir(exist_ok=True)
+
+    def is_already_downloaded(self) -> bool:
+        return is_file_non_empty(self.file_path)
+
+
 @dataclasses.dataclass(frozen=True)
 class DownloadResult:
     reason: DownloadStatus
@@ -124,22 +139,6 @@ def find_all_subtitle_dir_urls(html_text: str) -> list[str]:
 
 def find_all_subtitle_file_urls(html_text: str) -> list[str]:
     return re.findall(r'(?<=href=")subtitles/[^"\']+\.(?:zip|rar|ass|srt)(?=")', html_text)
-
-
-class AnimeSubtitleFile:
-    def __init__(self, remote: AnimeSubtitleUrl, root_dir_path: pathlib.Path):
-        self.dir_path = root_dir_path / remote.title
-        self.file_path = self.dir_path / remote.file_name
-        self.remote_url = remote.url
-
-    def ensure_subtitle_dir(self) -> None:
-        """
-        Create directory to store the subtitle file.
-        """
-        return self.dir_path.mkdir(exist_ok=True)
-
-    def is_already_downloaded(self) -> bool:
-        return is_file_non_empty(self.file_path)
 
 
 def get_http_client(config: KitsuConfig) -> httpx.AsyncClient:
