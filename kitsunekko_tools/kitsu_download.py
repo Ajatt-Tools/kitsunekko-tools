@@ -70,7 +70,7 @@ class DownloadStatus(enum.Enum):
         return self.name.replace("_", " ")
 
 
-class AnimeSubtitleFile:
+class LocalSubtitleFile:
     def __init__(self, remote: AnimeSubtitleUrl, root_dir_path: pathlib.Path):
         self.dir_path = root_dir_path / remote.title
         self.file_path = self.dir_path / remote.file_name
@@ -160,7 +160,7 @@ class Sync:
         self._ignore = IgnoreList(self._config)
         self._config.raise_for_destination()
 
-    async def download_sub(self, client: httpx.AsyncClient, subtitle: AnimeSubtitleFile) -> DownloadResult:
+    async def download_sub(self, client: httpx.AsyncClient, subtitle: LocalSubtitleFile) -> DownloadResult:
         subtitle.ensure_subtitle_dir()
 
         if subtitle.is_already_downloaded():
@@ -179,7 +179,7 @@ class Sync:
             f.write(r.content)
         return DownloadResult(DownloadStatus.saved, subtitle.file_path)
 
-    async def download_subs(self, client: httpx.AsyncClient, to_download: typing.Iterable[AnimeSubtitleFile]) -> None:
+    async def download_subs(self, client: httpx.AsyncClient, to_download: typing.Iterable[LocalSubtitleFile]) -> None:
         for fut in asyncio.as_completed(tuple(self.download_sub(client, subtitle) for subtitle in to_download)):
             try:
                 print(await fut)
@@ -223,6 +223,6 @@ class Sync:
                 print(f"visited {len(task.visited)} pages, found {len(task.to_download)} files.")
                 await self.download_subs(
                     client,
-                    (AnimeSubtitleFile(url, self._config.destination) for url in task.to_download),
+                    (LocalSubtitleFile(url, self._config.destination) for url in task.to_download),
                 )
                 state.balance(task)
