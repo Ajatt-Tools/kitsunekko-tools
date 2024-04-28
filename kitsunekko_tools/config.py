@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
+import datetime
 import functools
 import io
 import os.path
@@ -81,12 +82,19 @@ class KitsuConfig:
     proxy: str = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
+    skip_older: str = "30 days"
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     def __post_init__(self) -> None:
         if "dirlist.php?dir=" not in self.download_root:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
         self.destination: pathlib.Path = pathlib.Path(self.destination)
+        self.skip_older: datetime.timedelta = self._convert_time_delta()
+
+    def _convert_time_delta(self) -> datetime.timedelta:
+        assert isinstance(self.skip_older, str), "Parameter 'skip_older' is expected to be a string."
+        period, time_unit = self.skip_older.split()
+        return datetime.timedelta(**{time_unit: int(period)})
 
     def raise_for_destination(self) -> None:
         if not self.destination.is_dir():
