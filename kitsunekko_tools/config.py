@@ -126,3 +126,13 @@ def get_config() -> ReadConfigResult:
         except FileNotFoundError:
             continue
     raise ConfigFileNotFoundError()
+
+
+def main():
+    from pprint import pprint
+
+    pprint(KitsuConfig(), indent=2)
+
+
+if __name__ == "__main__":
+    main()
