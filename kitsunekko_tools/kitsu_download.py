@@ -31,6 +31,13 @@ class PageCrawlResult(typing.NamedTuple):
     found_dirs: list[AnimeDir]
     found_files: list[SubtitleFile]
 
+    def __str__(self) -> str:
+        return str(
+            f"visited page {self.visited_dir.url}. "
+            f"found {len(self.found_files)} files. "
+            f"found {len(self.found_dirs)} directories."
+        )
+
 
 @dataclasses.dataclass
 class LocalSubtitleFile:
@@ -232,7 +239,7 @@ class Sync:
             except DownloadError as ex:
                 print(f"got {ex.what} while trying to download {ex.url}")
             else:
-                print(f"visited page {page_visit.visited_dir.url}. found {len(page_visit.found_files)} files.")
+                print(page_visit)
                 downloads = await self.download_subs(client, page_visit.found_files)
                 results.update(page_visit, downloads)
         return results
