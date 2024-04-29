@@ -28,7 +28,7 @@ Edit the config file.
 
  * `destination` - the local folder where the files should be downloaded.
  * `proxy` - Your proxy settings.
-   Set to `null` if you don't use proxies.
+   Set to `""` (empty string) if you don't use proxies.
    By default, it is set to the default Tor address.
 
 Everything else usually doesn't need to be changed.

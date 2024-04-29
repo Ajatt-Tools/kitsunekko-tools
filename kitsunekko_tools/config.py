@@ -93,6 +93,7 @@ class KitsuConfig:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
         self.destination: pathlib.Path = pathlib.Path(self.destination).expanduser()
         self.skip_older: datetime.timedelta = self._convert_time_delta()
+        self.proxy: str | None = (self.proxy or None)  # coerce proxy to null if it's empty
 
     def _convert_time_delta(self) -> datetime.timedelta:
         assert isinstance(self.skip_older, str), "Parameter 'skip_older' is expected to be a string."
