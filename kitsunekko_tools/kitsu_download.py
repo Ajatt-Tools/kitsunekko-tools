@@ -7,6 +7,7 @@ import datetime
 import enum
 import pathlib
 import re
+import sys
 import typing
 
 import httpx
@@ -142,12 +143,14 @@ class Sync:
     _config: KitsuConfig
     _ignore: IgnoreList
     _now: datetime
+    _full_sync: bool
 
-    def __init__(self):
+    def __init__(self, full_sync: bool = False):
         self._config = get_config().data
         self._ignore = IgnoreList(self._config)
         self._config.raise_for_destination()
         self._now = datetime.datetime.now()
+        self._full_sync = full_sync
 
     async def download_sub(self, client: httpx.AsyncClient, subtitle: LocalSubtitleFile) -> DownloadResult:
         if subtitle.is_already_downloaded():
@@ -185,7 +188,10 @@ class Sync:
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:
         """
         The page is visited if it was modified recently enough.
+        On full sync, visit and download everything.
         """
+        if self._full_sync:
+            return True
         return location.mod_timestamp >= (self._now - self._config.skip_older)
 
     async def crawl_page(self, client: httpx.AsyncClient, anime_dir: AnimeDir) -> PageCrawlResult:

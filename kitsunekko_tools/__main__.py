@@ -9,8 +9,8 @@ from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import ConfigFileNotFoundError, KitsuConfig, get_config
 from kitsunekko_tools.consts import PROG_NAME
-from kitsunekko_tools.kitsu_download import Sync
 from kitsunekko_tools.ignore import IgnoreList, IgnoreListException
+from kitsunekko_tools.kitsu_download import Sync
 from kitsunekko_tools.mega_upload import mega_upload
 
 
@@ -132,12 +132,12 @@ class Application:
             print(ex.what)
 
     @staticmethod
-    async def sync():
+    async def sync(full: bool = False):
         """
         Download everything from Kitsunekko to a local folder.
         """
         try:
-            s = Sync()
+            s = Sync(full_sync=full)
         except KitsuException as ex:
             print(ex.what)
         else:
