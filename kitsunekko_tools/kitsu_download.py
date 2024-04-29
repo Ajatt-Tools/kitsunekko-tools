@@ -95,6 +95,13 @@ class FetchResult:
         self.saved.update(f.subtitle for f in downloads if f.reason == DownloadStatus.saved)
         self.failed.update(f.subtitle for f in downloads if f.reason == DownloadStatus.download_failed)
 
+    def __str__(self) -> str:
+        return str(
+            f"visited {len(self.visited)} pages. "
+            f"saved {len(self.saved)} files. "
+            f"failed {len(self.failed)} files."
+        )
+
 
 @dataclasses.dataclass(frozen=True)
 class FetchState:
@@ -235,10 +242,6 @@ class Sync:
             state = FetchState.new(self._config.download_root)
             while state.has_unvisited():
                 task: FetchResult = await self.find_subs_all(client, state.to_visit)
-                print(
-                    f"visited {len(task.visited)} pages. "
-                    f"saved {len(task.saved)} files. "
-                    f"failed {len(task.failed)} files."
-                )
+                print(task)
                 state.balance(task)
         self._ignore.commit()
