@@ -211,7 +211,7 @@ class Sync:
         results = FetchResult.new()
         for fut in asyncio.as_completed([self.crawl_page(client, page) for page in to_visit]):
             try:
-                result = await fut
+                result: PageCrawlResult = await fut
             except DownloadError as ex:
                 print(f"got {ex.what} while trying to download {ex.url}")
             else:
