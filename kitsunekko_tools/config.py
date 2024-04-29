@@ -68,6 +68,9 @@ def as_toml_str(d: dict[str, str | int | dict]) -> str:
                     si.write(f'{key} = "{value}"\n')
                 case int():
                     si.write(f"{key} = {value}\n")
+                case datetime.timedelta():
+                    value = str(value).split(',')[0]
+                    si.write(f'{key} = "{value}"\n')
                 case dict():
                     si.write(f"[{key}]\n")
                     si.write(as_toml_str(value))
