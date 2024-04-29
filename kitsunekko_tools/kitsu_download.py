@@ -192,7 +192,7 @@ class Sync:
         return DownloadResult(DownloadStatus.saved, subtitle, r.status_code)
 
     async def download_subs(
-            self, client: httpx.AsyncClient, to_download: Sequence[SubtitleFile]
+        self, client: httpx.AsyncClient, to_download: Sequence[SubtitleFile]
     ) -> Sequence[DownloadResult]:
         tasks = tuple(self.download_sub(client, LocalSubtitleFile(sub, self._config)) for sub in to_download)
         results = []
