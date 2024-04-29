@@ -26,8 +26,8 @@ class IgnoreList:
     _dirty_level: int  # counts additions
     _autocommit_threshold: int
 
-    def __init__(self, config: KitsuConfig | None = None, autocommit_threshold: int = 20):
-        self._config = config or get_config().data
+    def __init__(self, config: KitsuConfig, autocommit_threshold: int = 20):
+        self._config = config
         self._ignore_filepath = pathlib.Path(self._config.destination) / IGNORE_FILENAME
         self._patterns = {}
         self._dirty_level = 0

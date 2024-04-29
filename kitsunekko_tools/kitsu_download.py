@@ -145,10 +145,10 @@ class Sync:
     _now: datetime
     _full_sync: bool
 
-    def __init__(self, full_sync: bool = False):
-        self._config = get_config().data
-        self._ignore = IgnoreList(self._config)
+    def __init__(self, config: KitsuConfig, full_sync: bool = False):
+        self._config = config
         self._config.raise_for_destination()
+        self._ignore = IgnoreList(self._config)
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
 

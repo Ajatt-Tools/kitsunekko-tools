@@ -1,13 +1,12 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
 import sys
 
 import fire
 
 from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import ConfigFileNotFoundError, KitsuConfig, get_config
+from kitsunekko_tools.config import ConfigFileNotFoundError, Config
 from kitsunekko_tools.consts import PROG_NAME
 from kitsunekko_tools.ignore import IgnoreList, IgnoreListException
 from kitsunekko_tools.kitsu_download import Sync
@@ -16,43 +15,42 @@ from kitsunekko_tools.mega_upload import mega_upload
 
 class ConfigCli:
     """
-    Manage config file.
+    Manage config.
     """
+    _config: Config
 
-    @staticmethod
-    def create() -> None:
+    def __init__(self, config: Config):
+        self._config = config
+
+    def create(self) -> None:
         """
-        Create an example config file in the default location, if it does not exist.
+        Create an example config file in the default or user-specified location, if it does not exist.
         """
         try:
-            data, location = get_config()
+            location = self._config.file_path()
         except ConfigFileNotFoundError:
-            config_file_path = KitsuConfig.default_location()
-            config_file_path.parent.mkdir(exist_ok=True, parents=True)
-            config_file_path.write_text(KitsuConfig().as_toml_str())
-            print(f"Created config file: {config_file_path}")
+            location = self._config.create_config_file()
+            print(f"Created config file: {location}")
         else:
             print(f"File already exists: {location}")
 
-    @staticmethod
-    def locate() -> None:
+    def locate(self) -> None:
         """
         Print path to the config file, if it exists.
         """
         try:
-            data, location = get_config()
+            location = self._config.file_path()
         except ConfigFileNotFoundError as ex:
             print(ex.what)
         else:
             print(location)
 
-    @staticmethod
-    def show() -> None:
+    def show(self) -> None:
         """
         Show the content of the config file, if it exists.
         """
         try:
-            data, location = get_config()
+            data = self._config.data()
         except ConfigFileNotFoundError as ex:
             print(ex.what)
         else:
@@ -94,10 +92,13 @@ class IgnoreCli:
 class Application:
     """
     A set of scripts for creating a local kitsunekko mirror.
+
+    :param version: Print version and exit.
+    :param config_path: Alternative path to the config file.
     """
 
-    def __init__(self, version: bool = False):
-        self.config = ConfigCli()
+    def __init__(self, version: bool = False, config_path: str | None = None):
+        self._config = Config(config_path)
         if version:
             # handle ktools --version
             sys.exit(self.version())
@@ -109,48 +110,55 @@ class Application:
         """
         print(f"{PROG_NAME} version: {__version__}")
 
-    @staticmethod
-    def destination() -> None:
+    def config(self) -> ConfigCli:
+        """
+        Manage config.
+        """
+        try:
+            return ConfigCli(self._config)
+        except IgnoreListException as ex:
+            print(ex.what)
+
+    def destination(self) -> None:
         """
         Print path to destination directory.
         """
         try:
-            data, location = get_config()
+            data = self._config.data()
         except ConfigFileNotFoundError as ex:
             print(ex.what)
         else:
             print(data.destination)
 
-    @staticmethod
-    def ignore():
+    def ignore(self) -> IgnoreCli:
         """
         Manage the list of ignore patterns.
         """
         try:
-            return IgnoreCli(IgnoreList())
+            return IgnoreCli(IgnoreList(self._config.data()))
         except IgnoreListException as ex:
             print(ex.what)
 
-    @staticmethod
-    async def sync(full: bool = False):
+    async def sync(self, full: bool = False) -> None:
         """
         Download everything from Kitsunekko to a local folder.
+
+        :param full: Do a full sync. Ignore the 'skip_older' setting.
         """
         try:
-            s = Sync(full_sync=full)
+            s = Sync(config=self._config.data(), full_sync=full)
         except KitsuException as ex:
             print(ex.what)
         else:
             await s.sync_all()
 
-    @staticmethod
-    def upload():
+    def upload(self):
         """
         Upload the local folder to mega.nz.
         The ~/.megarc file must exist.
         """
         try:
-            mega_upload(get_config().data)
+            mega_upload(self._config.data())
         except KitsuException as ex:
             print(ex.what)
 
@@ -158,6 +166,8 @@ class Application:
 def main() -> None:
     try:
         fire.Fire(Application)
+    except KitsuException as ex:
+        print(ex.what)
     except KeyboardInterrupt:
         print("\nAborted by the user.")
 

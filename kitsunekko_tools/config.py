@@ -29,7 +29,7 @@ def get_xdg_config_dir() -> pathlib.Path:
 
 
 @functools.cache
-def config_locations():
+def config_locations() -> typing.Sequence[pathlib.Path]:
     return (
         get_xdg_config_dir() / PROG_NAME / SETTINGS_FILE_NAME,
         pathlib.Path.home() / SETTINGS_FILE_NAME,
@@ -91,7 +91,7 @@ class KitsuConfig:
     def __post_init__(self) -> None:
         if "dirlist.php?dir=" not in self.download_root:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
-        self.destination: pathlib.Path = pathlib.Path(self.destination)
+        self.destination: pathlib.Path = pathlib.Path(self.destination).expanduser()
         self.skip_older: datetime.timedelta = self._convert_time_delta()
 
     def _convert_time_delta(self) -> datetime.timedelta:
@@ -106,29 +106,60 @@ class KitsuConfig:
     def as_toml_str(self) -> str:
         return as_toml_str(dataclasses.asdict(self))
 
-    @staticmethod
-    def default_location() -> pathlib.Path:
-        return config_locations()[0]
-
 
 class ReadConfigResult(typing.NamedTuple):
     data: KitsuConfig
     file_path: pathlib.Path
 
 
+@functools.cache
 def read_config_file(config_file_path: pathlib.Path) -> ReadConfigResult:
-    with open(config_file_path, "rb") as f:
-        return ReadConfigResult(KitsuConfig(**tomllib.load(f)), config_file_path)
+    try:
+        with open(config_file_path, "rb") as f:
+            return ReadConfigResult(KitsuConfig(**tomllib.load(f)), pathlib.Path(config_file_path))
+    except FileNotFoundError as ex:
+        raise ConfigFileNotFoundError() from ex
 
 
 @functools.cache
-def get_config() -> ReadConfigResult:
+def get_config(config_file_path: pathlib.Path | str | None = None) -> ReadConfigResult:
+    if config_file_path:
+        return read_config_file(pathlib.Path(config_file_path).expanduser())
     for config_file_path in config_locations():
         try:
             return read_config_file(config_file_path)
-        except FileNotFoundError:
+        except ConfigFileNotFoundError:
             continue
     raise ConfigFileNotFoundError()
+
+
+class Config:
+    """
+    Proxy to get access to the config.
+    """
+
+    def __init__(self, config_path: str | None):
+        self._config_path = config_path
+
+    def load(self) -> ReadConfigResult:
+        return get_config(self._config_path)
+
+    def data(self) -> KitsuConfig:
+        return self.load().data
+
+    def file_path(self) -> pathlib.Path:
+        return self.load().file_path
+
+    def default_file_path(self) -> pathlib.Path:
+        return pathlib.Path(self._config_path or config_locations()[0])
+
+    def create_config_file(self) -> pathlib.Path:
+        config_file_path = self.default_file_path()
+        if config_file_path.is_file():
+            raise RuntimeError(f"File already exists: {config_file_path}")
+        config_file_path.parent.mkdir(exist_ok=True, parents=True)
+        config_file_path.write_text(KitsuConfig().as_toml_str())
+        return config_file_path
 
 
 def main():
