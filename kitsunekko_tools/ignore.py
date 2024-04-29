@@ -17,16 +17,21 @@ class IgnoreListException(KitsuException):
 
 
 class IgnoreList:
+    """
+    Holds a list of files that should not be downloaded even if they're not present in expected locations.
+    """
     _config: KitsuConfig
     _ignore_filepath: pathlib.Path
     _patterns: dict[str, None]
-    _is_dirty: bool
+    _dirty_level: int  # counts additions
+    _autocommit_threshold: int
 
-    def __init__(self, config: KitsuConfig | None = None):
+    def __init__(self, config: KitsuConfig | None = None, autocommit_threshold: int = 20):
         self._config = config or get_config().data
         self._ignore_filepath = pathlib.Path(self._config.destination) / IGNORE_FILENAME
         self._patterns = {}
-        self._is_dirty = False
+        self._dirty_level = 0
+        self._autocommit_threshold = autocommit_threshold
         self._config.raise_for_destination()
         try:
             with open(self._ignore_filepath, encoding="utf8") as f:
@@ -54,12 +59,12 @@ class IgnoreList:
         """
         return self._patterns.keys()
 
-    def add(self, pattern: str):
+    def add(self, pattern: str) -> None:
         """
         Add a new ignore pattern to the list.
         """
         self._patterns[pattern] = None
-        self._is_dirty = True
+        self._dirty_level += 1
 
     def add_file(self, file_path: pathlib.Path) -> None:
         """
@@ -77,6 +82,14 @@ class IgnoreList:
         """
         Save ignore file to disk.
         """
-        if not self._is_dirty:
+        if self._dirty_level == 0:
             return
         self._ignore_filepath.write_text("\n".join(self._patterns) + "\n")  # newline at the end of file
+        self._dirty_level = 0
+
+    def maybe_commit_midway(self) -> None:
+        """
+        Save file to disk if its dirty level exceeds the set limit.
+        """
+        if self._dirty_level >= self._autocommit_threshold:
+            self.commit()

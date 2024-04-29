@@ -184,6 +184,7 @@ class Sync:
                 if result.is_successful():
                     # this file will not be downloaded again even if it is moved later.
                     self._ignore.add_file(result.subtitle.file_path)
+                    self._ignore.maybe_commit_midway()
 
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:
         """
