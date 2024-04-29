@@ -20,6 +20,7 @@ class IgnoreList:
     """
     Holds a list of files that should not be downloaded even if they're not present in expected locations.
     """
+
     _config: KitsuConfig
     _ignore_filepath: pathlib.Path
     _patterns: dict[str, None]

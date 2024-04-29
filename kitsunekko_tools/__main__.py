@@ -17,6 +17,7 @@ class ConfigCli:
     """
     Manage config.
     """
+
     _config: Config
 
     def __init__(self, config: Config):
