@@ -159,7 +159,7 @@ def main() -> None:
     try:
         fire.Fire(Application)
     except KeyboardInterrupt:
-        print("Aborted by the user.")
+        print("\nAborted by the user.")
 
 
 if __name__ == "__main__":
