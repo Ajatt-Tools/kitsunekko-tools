@@ -35,11 +35,22 @@ Everything else usually doesn't need to be changed.
 
 ## Usage
 
+The first time, run full sync.
+It will download everything.
+
+``` bash
+ktools sync --full
+```
+
 Run sync.
+If you already have downloaded everything once,
+this command will skip files that have not been modified recently.
 
 ``` bash
 ktools sync
 ```
+
+The `skip_older` config parameter controls what files should be skipped during regular runs.
 
 ## Upload your mirror to Mega
 
