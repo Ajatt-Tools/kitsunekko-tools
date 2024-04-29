@@ -60,12 +60,12 @@ class DownloadStatus(enum.Enum):
 
 @dataclasses.dataclass
 class LocalSubtitleFile:
-    file_path: pathlib.Path  # path to the file on the hard drive
     remote: SubtitleFile  # remote URL
+    file_path: pathlib.Path  # path to the file on the hard drive
 
     def __init__(self, remote: SubtitleFile, config: KitsuConfig):
-        self.file_path = config.destination / remote.show_name / remote.file_name
         self.remote = remote
+        self.file_path = config.destination / remote.show_name / remote.file_name
 
     def ensure_subtitle_dir(self) -> None:
         """
