@@ -7,13 +7,13 @@ import datetime
 import enum
 import pathlib
 import re
-import sys
 import typing
+from collections.abc import Sequence
 
 import httpx
 
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import KitsuConfig, get_config
+from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.kitsu_parse import find_all_subtitle_dirs, find_all_subtitle_files
 from kitsunekko_tools.kitsu_types import AnimeDir, SubtitleFile
@@ -30,32 +30,6 @@ class PageCrawlResult(typing.NamedTuple):
     visited_dir: AnimeDir
     found_dirs: list[AnimeDir]
     found_files: list[SubtitleFile]
-
-
-@dataclasses.dataclass(frozen=True)
-class FetchResult:
-    to_visit: set[AnimeDir]
-    to_download: set[SubtitleFile]
-    visited: set[AnimeDir]
-
-    @classmethod
-    def new(cls):
-        return cls(to_visit=set(), to_download=set(), visited=set())
-
-    def update(self, dir_result: PageCrawlResult):
-        self.to_visit.update(dir_result.found_dirs)
-        self.to_download.update(dir_result.found_files)
-        self.visited.add(dir_result.visited_dir)
-
-
-class DownloadStatus(enum.Enum):
-    already_exists = enum.auto()
-    explicitly_ignored = enum.auto()
-    download_failed = enum.auto()
-    saved = enum.auto()
-
-    def __str__(self) -> str:
-        return self.name.replace("_", " ")
 
 
 @dataclasses.dataclass
@@ -77,6 +51,16 @@ class LocalSubtitleFile:
         return is_file_non_empty(self.file_path)
 
 
+class DownloadStatus(enum.Enum):
+    already_exists = enum.auto()
+    explicitly_ignored = enum.auto()
+    download_failed = enum.auto()
+    saved = enum.auto()
+
+    def __str__(self) -> str:
+        return self.name.replace("_", " ")
+
+
 @dataclasses.dataclass(frozen=True)
 class DownloadResult:
     reason: DownloadStatus
@@ -90,6 +74,26 @@ class DownloadResult:
 
     def is_successful(self) -> bool:
         return self.reason == DownloadStatus.already_exists or self.reason == DownloadStatus.saved
+
+
+@dataclasses.dataclass(frozen=True)
+class FetchResult:
+    to_visit: set[AnimeDir]
+    to_download: set[SubtitleFile]
+    visited: set[AnimeDir]
+    saved: set[LocalSubtitleFile]
+    failed: set[LocalSubtitleFile]
+
+    @classmethod
+    def new(cls):
+        return cls(to_visit=set(), to_download=set(), visited=set(), saved=set(), failed=set())
+
+    def update(self, dir_result: PageCrawlResult, downloads: Sequence[DownloadResult]):
+        self.to_visit.update(dir_result.found_dirs)
+        self.to_download.update(dir_result.found_files)
+        self.visited.add(dir_result.visited_dir)
+        self.saved.update(f.subtitle for f in downloads if f.reason == DownloadStatus.saved)
+        self.failed.update(f.subtitle for f in downloads if f.reason == DownloadStatus.download_failed)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -173,8 +177,12 @@ class Sync:
             f.write(r.content)
         return DownloadResult(DownloadStatus.saved, subtitle, r.status_code)
 
-    async def download_subs(self, client: httpx.AsyncClient, to_download: typing.Iterable[LocalSubtitleFile]) -> None:
-        for fut in asyncio.as_completed(tuple(self.download_sub(client, subtitle) for subtitle in to_download)):
+    async def download_subs(
+            self, client: httpx.AsyncClient, to_download: Sequence[SubtitleFile]
+    ) -> Sequence[DownloadResult]:
+        tasks = tuple(self.download_sub(client, LocalSubtitleFile(sub, self._config)) for sub in to_download)
+        results = []
+        for fut in asyncio.as_completed(tasks):
             try:
                 result = await fut
             except DownloadError as ex:
@@ -184,7 +192,9 @@ class Sync:
                 if result.is_successful():
                     # this file will not be downloaded again even if it is moved later.
                     self._ignore.add_file(result.subtitle.file_path)
-                    self._ignore.maybe_commit_midway()
+                self._ignore.maybe_commit_midway()
+                results.append(result)
+        return results
 
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:
         """
@@ -211,12 +221,13 @@ class Sync:
         results = FetchResult.new()
         for fut in asyncio.as_completed([self.crawl_page(client, page) for page in to_visit]):
             try:
-                result: PageCrawlResult = await fut
+                page_visit: PageCrawlResult = await fut
             except DownloadError as ex:
                 print(f"got {ex.what} while trying to download {ex.url}")
             else:
-                print(f"visited page {result.visited_dir.url}, found {len(result.found_files)} files.")
-                results.update(result)
+                print(f"visited page {page_visit.visited_dir.url}. found {len(page_visit.found_files)} files.")
+                downloads = await self.download_subs(client, page_visit.found_files)
+                results.update(page_visit, downloads)
         return results
 
     async def sync_all(self) -> None:
@@ -224,10 +235,10 @@ class Sync:
             state = FetchState.new(self._config.download_root)
             while state.has_unvisited():
                 task: FetchResult = await self.find_subs_all(client, state.to_visit)
-                print(f"visited {len(task.visited)} pages, found {len(task.to_download)} files.")
-                await self.download_subs(
-                    client,
-                    (LocalSubtitleFile(url, self._config) for url in task.to_download),
+                print(
+                    f"visited {len(task.visited)} pages. "
+                    f"saved {len(task.saved)} files. "
+                    f"failed {len(task.failed)} files."
                 )
                 state.balance(task)
         self._ignore.commit()
