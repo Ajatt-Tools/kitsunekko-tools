@@ -15,8 +15,8 @@ import httpx
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.ignore import IgnoreList
-from kitsunekko_tools.kitsu_parse import find_all_subtitle_dirs, find_all_subtitle_files
-from kitsunekko_tools.kitsu_types import AnimeDir, SubtitleFile
+from kitsunekko_tools.scrapper.parse import find_all_subtitle_dirs, find_all_subtitle_files
+from kitsunekko_tools.scrapper.types import AnimeDir, SubtitleFile
 
 
 def is_file_non_empty(file_path: pathlib.Path) -> bool:

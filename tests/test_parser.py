@@ -8,7 +8,7 @@ from collections.abc import Sequence
 import pytest
 
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
-from kitsunekko_tools.kitsu_parse import AnimeDir, SubtitleFile, find_all_subtitle_dirs, find_all_subtitle_files
+from kitsunekko_tools.scrapper.parse import AnimeDir, SubtitleFile, find_all_subtitle_dirs, find_all_subtitle_files
 
 DATA_DIR = pathlib.Path(__file__).parent.joinpath("data")
 EXPECTED_DIRS = [
