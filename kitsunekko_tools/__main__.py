@@ -63,29 +63,35 @@ class IgnoreCli:
     Manage the list of ignore patterns.
     """
 
-    def __init__(self, ignore_list: IgnoreList):
-        self._ignore_list = ignore_list
+    _config: Config
+
+    def __init__(self, config: Config):
+        self._config = config
+
+    def _get_list(self) -> IgnoreList:
+        return IgnoreList(self._config.data())
 
     def locate(self) -> None:
         """
         Print path to the ignore file.
         """
-        print(self._ignore_list.ignore_filepath)
+        print(self._get_list().ignore_filepath)
 
     def show(self) -> None:
         """
         Print the list of ignore rules as Unix shell-style wildcards.
         """
-        print("\n".join(self._ignore_list.patterns()))
+        print("\n".join(self._get_list().patterns()))
 
     def add(self, pattern: str) -> None:
         """
         Add a new ignore rule.
         """
         if pattern:
-            self._ignore_list.add(str(pattern))
-            self._ignore_list.commit()
-            print(f"File written: {self._ignore_list.path()}")
+            ignore_list = self._get_list()
+            ignore_list.add(str(pattern))
+            ignore_list.commit()
+            print(f"File written: {ignore_list.path()}")
         else:
             print("Nothing to add.")
 
@@ -100,6 +106,8 @@ class Application:
 
     def __init__(self, version: bool = False, config_path: str | None = None):
         self._config = Config(config_path)
+        self.config = ConfigCli(self._config)
+        self.ignore = IgnoreCli(self._config)
         if version:
             # handle ktools --version
             sys.exit(self.version())
@@ -111,15 +119,6 @@ class Application:
         """
         print(f"{PROG_NAME} version: {__version__}")
 
-    def config(self) -> ConfigCli:
-        """
-        Manage config.
-        """
-        try:
-            return ConfigCli(self._config)
-        except IgnoreListException as ex:
-            print(ex.what)
-
     def destination(self) -> None:
         """
         Print path to destination directory.
@@ -130,15 +129,6 @@ class Application:
             print(ex.what)
         else:
             print(data.destination)
-
-    def ignore(self) -> IgnoreCli:
-        """
-        Manage the list of ignore patterns.
-        """
-        try:
-            return IgnoreCli(IgnoreList(self._config.data()))
-        except IgnoreListException as ex:
-            print(ex.what)
 
     async def sync(self, full: bool = False) -> None:
         """
