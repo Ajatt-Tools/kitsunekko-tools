@@ -86,6 +86,7 @@ class KitsuConfig:
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
     skip_older: str = "30 days"
+    api_key: str = "abcd"
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     def __post_init__(self) -> None:

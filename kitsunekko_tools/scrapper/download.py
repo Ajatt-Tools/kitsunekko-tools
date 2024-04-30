@@ -12,7 +12,7 @@ from collections.abc import Sequence
 
 import httpx
 
-from kitsunekko_tools.common import KitsuException
+from kitsunekko_tools.common import KitsuException, get_http_client
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.scrapper.parse import find_all_subtitle_dirs, find_all_subtitle_files
@@ -151,15 +151,6 @@ def get_anime_title(page_text: str) -> str:
     title = re.search(r"<title>([^<>]+)</title>", page_text, flags=re.IGNORECASE | re.MULTILINE).group(1)
     title = title.replace(" - Japanese subtitles - kitsunekko.net", "").replace("/", " ").replace("\\", " ")
     return title.strip()
-
-
-def get_http_client(config: KitsuConfig):
-    return httpx.AsyncClient(
-        proxies=config.proxy,
-        headers=config.headers,
-        timeout=config.timeout,
-        follow_redirects=False,
-    )
 
 
 class Sync:
