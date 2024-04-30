@@ -39,14 +39,17 @@ class PageCrawlResult(typing.NamedTuple):
         )
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class LocalSubtitleFile:
     remote: SubtitleFile  # remote URL
     file_path: pathlib.Path  # path to the file on the hard drive
 
-    def __init__(self, remote: SubtitleFile, config: KitsuConfig):
-        self.remote = remote
-        self.file_path = config.destination / remote.show_name / remote.file_name
+    @classmethod
+    def new(cls, remote: SubtitleFile, config: KitsuConfig):
+        return cls(
+            remote=remote,
+            file_path=(config.destination / remote.show_name / remote.file_name),
+        )
 
     def ensure_subtitle_dir(self) -> None:
         """
@@ -88,19 +91,19 @@ class FetchResult:
     to_visit: set[AnimeDir]
     to_download: set[SubtitleFile]
     visited: set[AnimeDir]
-    saved: set[LocalSubtitleFile]
-    failed: set[LocalSubtitleFile]
+    saved: list[LocalSubtitleFile]
+    failed: list[LocalSubtitleFile]
 
     @classmethod
     def new(cls):
-        return cls(to_visit=set(), to_download=set(), visited=set(), saved=set(), failed=set())
+        return cls(to_visit=set(), to_download=set(), visited=set(), saved=[], failed=[])
 
     def update(self, dir_result: PageCrawlResult, downloads: Sequence[DownloadResult]):
         self.to_visit.update(dir_result.found_dirs)
         self.to_download.update(dir_result.found_files)
         self.visited.add(dir_result.visited_dir)
-        self.saved.update(f.subtitle for f in downloads if f.reason == DownloadStatus.saved)
-        self.failed.update(f.subtitle for f in downloads if f.reason == DownloadStatus.download_failed)
+        self.saved.extend(f.subtitle for f in downloads if f.reason == DownloadStatus.saved)
+        self.failed.extend(f.subtitle for f in downloads if f.reason == DownloadStatus.download_failed)
 
     def __str__(self) -> str:
         return str(
@@ -194,7 +197,7 @@ class Sync:
     async def download_subs(
         self, client: httpx.AsyncClient, to_download: Sequence[SubtitleFile]
     ) -> Sequence[DownloadResult]:
-        tasks = tuple(self.download_sub(client, LocalSubtitleFile(sub, self._config)) for sub in to_download)
+        tasks = tuple(self.download_sub(client, LocalSubtitleFile.new(sub, self._config)) for sub in to_download)
         results = []
         for fut in asyncio.as_completed(tasks):
             try:
