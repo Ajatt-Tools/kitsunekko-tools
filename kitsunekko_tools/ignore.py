@@ -7,11 +7,11 @@ import pathlib
 import typing
 
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import KitsuConfig, get_config
+from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import *
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class IgnoreListException(KitsuException):
     what: str
 

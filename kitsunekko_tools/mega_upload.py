@@ -8,7 +8,7 @@ from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class MegaError(KitsuException, RuntimeError):
     what: str
 
