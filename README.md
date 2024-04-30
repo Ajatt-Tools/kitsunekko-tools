@@ -35,6 +35,10 @@ Everything else usually doesn't need to be changed.
 
 ## Usage
 
+> [!TIP]
+> Clone [kitsunekko-mirror](https://github.com/Ajatt-Tools/kitsunekko-mirror)
+> before downloading from kitsunekko directly.
+
 The first time, run full sync.
 It will download everything.
 
