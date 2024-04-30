@@ -39,8 +39,7 @@ class PageCrawlResult(typing.NamedTuple):
         )
 
 
-@dataclasses.dataclass(frozen=True)
-class LocalSubtitleFile:
+class LocalSubtitleFile(typing.NamedTuple):
     remote: SubtitleFile  # remote URL
     file_path: pathlib.Path  # path to the file on the hard drive
 
@@ -71,8 +70,7 @@ class DownloadStatus(enum.Enum):
         return self.name.replace("_", " ")
 
 
-@dataclasses.dataclass(frozen=True)
-class DownloadResult:
+class DownloadResult(typing.NamedTuple):
     reason: DownloadStatus
     subtitle: LocalSubtitleFile
     status_code: int = 0
@@ -86,8 +84,7 @@ class DownloadResult:
         return self.reason == DownloadStatus.already_exists or self.reason == DownloadStatus.saved
 
 
-@dataclasses.dataclass(frozen=True)
-class FetchResult:
+class FetchResult(typing.NamedTuple):
     to_visit: set[AnimeDir]
     to_download: set[SubtitleFile]
     visited: set[AnimeDir]
@@ -96,7 +93,13 @@ class FetchResult:
 
     @classmethod
     def new(cls):
-        return cls(to_visit=set(), to_download=set(), visited=set(), saved=[], failed=[])
+        return cls(
+            to_visit=set(),
+            to_download=set(),
+            visited=set(),
+            saved=[],
+            failed=[],
+        )
 
     def update(self, dir_result: PageCrawlResult, downloads: Sequence[DownloadResult]):
         self.to_visit.update(dir_result.found_dirs)
@@ -113,8 +116,7 @@ class FetchResult:
         )
 
 
-@dataclasses.dataclass(frozen=True)
-class FetchState:
+class FetchState(typing.NamedTuple):
     to_visit: set[AnimeDir]
     visited: set[AnimeDir]
 
