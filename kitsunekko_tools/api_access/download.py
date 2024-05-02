@@ -23,6 +23,7 @@ class SearchResponseCode(enum.Enum):
     """
     Status codes that are expected from the API.
     """
+
     successful = 200
     unauthenticated = 401
     rate_limit_exceeded = 429
@@ -42,6 +43,7 @@ class ApiConnectionError(KitsuException):
     """
     Failed to connect. Raised from another exception.
     """
+
     url: str
 
     @property
@@ -66,7 +68,7 @@ class ApiBadStatusError(KitsuException):
 
 @dataclasses.dataclass(frozen=True)
 class ApiRateLimitedError(ApiBadStatusError):
-    pass
+    rate_limit: RateLimit
 
 
 class LocalDirectoryEntry(typing.NamedTuple):
@@ -93,7 +95,7 @@ class LocalDirectoryEntry(typing.NamedTuple):
 class ApiSyncClient:
     _config: KitsuConfig
     _ignore: IgnoreList
-    _now: datetime
+    _now: datetime.datetime
     _full_sync: bool
     _is_anime: bool
     _rate_limit: None | RateLimit
@@ -133,14 +135,14 @@ class ApiSyncClient:
                 await asyncio.sleep(self._rate_limit.reset_after + 0.1)
 
     def _handle_status(self, r: httpx.Response):
-        self._rate_limit = RateLimit.from_headers(r.headers)
+        rate_limit = self._rate_limit = RateLimit.from_headers(r.headers)
         match status := SearchResponseCode(r.status_code):
             case SearchResponseCode.successful:
                 return
             case SearchResponseCode.unauthenticated:
                 raise ApiBadStatusError(status)
             case SearchResponseCode.rate_limit_exceeded:
-                raise ApiRateLimitedError(status)
+                raise ApiRateLimitedError(status, rate_limit)
 
     async def _search_catalog(self, client: httpx.AsyncClient, search_url: str) -> None:
         try:
@@ -163,7 +165,7 @@ class ApiSyncClient:
 
 async def main():
     config = get_config().data
-    client = ApiSyncClient(config, is_anime=False)
+    client = ApiSyncClient(config, is_anime=True, full_sync=True)
     print(client.get_search_url())
     await client.sync()
 

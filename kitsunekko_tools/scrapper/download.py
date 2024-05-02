@@ -165,7 +165,7 @@ def get_http_client(config: KitsuConfig) -> httpx.AsyncClient:
 class Sync:
     _config: KitsuConfig
     _ignore: IgnoreList
-    _now: datetime
+    _now: datetime.datetime
     _full_sync: bool
 
     def __init__(self, config: KitsuConfig, full_sync: bool = False):

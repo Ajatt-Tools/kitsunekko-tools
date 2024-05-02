@@ -4,6 +4,7 @@
 import dataclasses
 import json
 import typing
+from collections.abc import Sequence
 
 
 class ApiDirectoryFlagsDict(typing.TypedDict):
@@ -48,8 +49,8 @@ class ApiDirectoryEntry:
         Construct self from the API json response.
         """
         return cls(
-            entry_id=json_dict["id"],
-            name=json_dict["name"],
+            entry_id=int(json_dict["id"]),
+            name=json_dict["name"].strip(),
             entry_type=describe_entry_type(json_dict["flags"]),
             last_modified=json_dict["last_modified"],
             english_name=json_dict.get("english_name"),
@@ -70,7 +71,7 @@ class ApiDirectoryEntry:
         )
 
 
-def iter_catalog_directories(json_response: list[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
+def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
     for item in json_response:
         yield ApiDirectoryEntry.from_api_json(item)
 
