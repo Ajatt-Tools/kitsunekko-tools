@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import asyncio
+import time
 import typing
 
 from httpx import Headers
@@ -16,6 +17,7 @@ def parse_num(value: str) -> int | float:
 def header_key_to_field_name(header_key: str) -> str:
     return header_key.replace("x-ratelimit-", "").replace("-", "_")
 
+SLEEP_ENSURANCE_DELAY = 0.1
 
 class RateLimit(typing.NamedTuple):
     # The number of requests that can be made.
@@ -29,6 +31,7 @@ class RateLimit(typing.NamedTuple):
     # This can have a fractional component for milliseconds.
     reset_after: float | int = 0
 
+
     @classmethod
     def from_headers(cls, headers: Headers):
         return cls(
@@ -38,6 +41,13 @@ class RateLimit(typing.NamedTuple):
                 if key.startswith("x-ratelimit-")
             }
         )
+
+    def time_left(self) -> int:
+        return int(self.reset - time.time())
+
+    async def sleep(self):
+        if self.time_left() > 0:
+            await asyncio.sleep(self.time_left() + SLEEP_ENSURANCE_DELAY)
 
 
 def main():

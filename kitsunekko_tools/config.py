@@ -90,7 +90,7 @@ class KitsuConfig:
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
     skip_older: str = "30 days"
-    api_url: str = ""  # URL of a subtitle server's API. Normally ends with '/api/entries'
+    api_url: str = ""  # URL of a subtitle server's API. Normally looks like 'https://example.com/api'.
     api_key: str = ""  # API key of the subtitle server
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 

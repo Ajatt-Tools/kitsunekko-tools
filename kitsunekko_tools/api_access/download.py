@@ -11,7 +11,8 @@ from collections.abc import Coroutine
 
 import httpx
 
-from kitsunekko_tools.api_access.directory import iter_catalog_directories, ApiDirectoryEntry
+from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry
+from kitsunekko_tools.api_access.file_entry import iter_directory_files
 from kitsunekko_tools.api_access.rate_limit import RateLimit
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
@@ -21,10 +22,22 @@ from kitsunekko_tools.ignore import IgnoreList
 @enum.unique
 class SearchResponseCode(enum.Enum):
     """
-    Status codes that are expected from the API.
+    Status codes that are expected from the API when searching the catalog.
     """
 
     successful = 200
+    unauthenticated = 401
+    rate_limit_exceeded = 429
+
+
+@enum.unique
+class FilesResponseCode(enum.Enum):
+    """
+    Status codes that are expected from the API when requesting a list of files.
+    """
+    successful = 200
+    invalid_id_given = 400
+    entry_not_found = 404
     unauthenticated = 401
     rate_limit_exceeded = 429
 
@@ -56,7 +69,7 @@ class ApiConnectionError(KitsuException):
 
 @dataclasses.dataclass(frozen=True)
 class ApiBadStatusError(KitsuException):
-    status: SearchResponseCode
+    status: SearchResponseCode | FilesResponseCode
 
     @property
     def what(self) -> str:
@@ -119,6 +132,9 @@ class ApiSyncClient:
     def get_search_url(self) -> str:
         return f"{self._config.api_url}/entries/search?{self._construct_search_args_str()}"
 
+    def get_dir_listing_url(self, directory: ApiDirectoryEntry) -> str:
+        return f"{self._config.api_url}/entries/{directory.entry_id}/files"
+
     async def _run_tasks(self) -> None:
         while self._tasks:
             if not self._rate_limit or self._rate_limit.remaining > 0:
@@ -130,11 +146,11 @@ class ApiSyncClient:
             else:
                 print(
                     f"Rate limited. Rate limit status: {self._rate_limit}. "
-                    f"Sleeping for {self._rate_limit.reset_after} seconds."
+                    f"Sleeping for {self._rate_limit.time_left()} seconds."
                 )
-                await asyncio.sleep(self._rate_limit.reset_after + 0.1)
+                await self._rate_limit.sleep()
 
-    def _handle_status(self, r: httpx.Response):
+    def _handle_search_status(self, r: httpx.Response):
         rate_limit = self._rate_limit = RateLimit.from_headers(r.headers)
         match status := SearchResponseCode(r.status_code):
             case SearchResponseCode.successful:
@@ -144,18 +160,49 @@ class ApiSyncClient:
             case SearchResponseCode.rate_limit_exceeded:
                 raise ApiRateLimitedError(status, rate_limit)
 
+    def _handle_directory_status(self, r):
+        rate_limit = self._rate_limit = RateLimit.from_headers(r.headers)
+        match status := FilesResponseCode(r.status_code):
+            case FilesResponseCode.successful:
+                return
+            case FilesResponseCode.rate_limit_exceeded:
+                raise ApiRateLimitedError(status, rate_limit)
+            case _:
+                raise ApiBadStatusError(status)
+
+    async def _visit_directory(self, client: httpx.AsyncClient, directory: ApiDirectoryEntry) -> None:
+        details_url = self.get_dir_listing_url(directory)
+        try:
+            r = await client.get(details_url)
+        except Exception as e:
+            raise ApiConnectionError(details_url) from e
+        try:
+            self._handle_directory_status(r)
+        except ApiRateLimitedError as e:
+            self._tasks.append(self._visit_directory(client, directory))
+            print(f"Rate limited. Sleeping for {e.rate_limit.time_left()}.")
+            await e.rate_limit.sleep()
+            raise
+        for file in iter_directory_files(r.json()):
+            await self._download_file(client, file)
+
     async def _search_catalog(self, client: httpx.AsyncClient, search_url: str) -> None:
         try:
             r = await client.get(search_url)
         except Exception as e:
             raise ApiConnectionError(search_url) from e
         try:
-            self._handle_status(r)
-        except ApiRateLimitedError:
+            self._handle_search_status(r)
+        except ApiRateLimitedError as e:
             self._tasks.append(self._search_catalog(client, search_url))
+            print(f"Rate limited. Sleeping for {e.rate_limit.time_left()}.")
+            await e.rate_limit.sleep()
             raise
         for directory in iter_catalog_directories(r.json()):
-            print(directory)
+            try:
+                await self._visit_directory(client, directory)
+            except (ApiConnectionError, ApiBadStatusError) as e:
+                print(e)
 
     async def sync(self):
         async with get_http_api_client(self._config) as client:
@@ -165,7 +212,7 @@ class ApiSyncClient:
 
 async def main():
     config = get_config().data
-    client = ApiSyncClient(config, is_anime=True, full_sync=True)
+    client = ApiSyncClient(config, is_anime=True, full_sync=False)
     print(client.get_search_url())
     await client.sync()
 
