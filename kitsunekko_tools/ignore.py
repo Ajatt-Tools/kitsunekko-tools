@@ -8,7 +8,7 @@ import typing
 
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import *
+from kitsunekko_tools.consts import IGNORE_FILENAME
 
 
 @dataclasses.dataclass(frozen=True)

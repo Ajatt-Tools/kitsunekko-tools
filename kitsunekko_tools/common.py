@@ -5,6 +5,7 @@ import abc
 
 
 class KitsuException(Exception, abc.ABC):
+    @property
     @abc.abstractmethod
     def what(self) -> str:
         raise NotImplementedError()

@@ -5,17 +5,22 @@ import collections
 import dataclasses
 import datetime
 import enum
-import pathlib
 import typing
 from collections.abc import Coroutine
 
 import httpx
 
-from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry
-from kitsunekko_tools.api_access.file_entry import iter_directory_files
+from kitsunekko_tools.api_access.file_entry import iter_directory_files, ApiFileEntry
 from kitsunekko_tools.api_access.rate_limit import RateLimit
+from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
+from kitsunekko_tools.file_downloader import (
+    KitsuConnectionError,
+    KitsuSubtitleDownloader,
+    KitsuSubtitleDownload,
+    SubtitleFileUrl,
+)
 from kitsunekko_tools.ignore import IgnoreList
 
 
@@ -46,26 +51,10 @@ class FilesResponseCode(enum.Enum):
 def get_http_api_client(config: KitsuConfig) -> httpx.AsyncClient:
     return httpx.AsyncClient(
         proxies=config.proxy,
-        headers=config.api_headers(),
+        headers=typing.cast(typing.Mapping[str, str], config.api_headers()),
         timeout=config.timeout,
         follow_redirects=False,
     )
-
-
-@dataclasses.dataclass(frozen=True)
-class ApiConnectionError(KitsuException):
-    """
-    Failed to connect. Raised from another exception.
-    """
-
-    url: str
-
-    @property
-    def what(self) -> str:
-        return type(self.__cause__).__name__
-
-    def __str__(self) -> str:
-        return f"got {self.what} while trying to download {self.url}"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -85,25 +74,16 @@ class ApiRateLimitedError(ApiBadStatusError):
     rate_limit: RateLimit
 
 
-class LocalDirectoryEntry(typing.NamedTuple):
-    remote: ApiDirectoryEntry  # remote URL
-    dir_path: pathlib.Path  # path to the directory on the hard drive
-
-    @classmethod
-    def new(cls, remote: ApiDirectoryEntry, config: KitsuConfig):
-        return cls(
-            remote=remote,
-            dir_path=(config.destination / remote.name),
+def make_payload(
+    config: KitsuConfig, directory: ApiDirectoryEntry, found_files: typing.Iterable[ApiFileEntry]
+) -> typing.Sequence[KitsuSubtitleDownload]:
+    return [
+        KitsuSubtitleDownload(
+            url=SubtitleFileUrl(file.url),
+            file_path=(config.destination / directory.name / file.name),
         )
-
-    def ensure_subtitle_dir(self) -> None:
-        """
-        Create directory to store the subtitle files.
-        """
-        return self.dir_path.mkdir(exist_ok=True)
-
-    def is_already_downloaded(self) -> bool:
-        return is_file_non_empty(self.file_path)
+        for file in found_files
+    ]
 
 
 class ApiSyncClient:
@@ -118,6 +98,7 @@ class ApiSyncClient:
         self._config = config
         self._config.raise_for_destination()
         self._ignore = IgnoreList(self._config)
+        self._downloader = KitsuSubtitleDownloader(self._config, self._ignore)
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
         self._is_anime = is_anime
@@ -125,7 +106,7 @@ class ApiSyncClient:
         self._tasks: collections.deque[Coroutine] = collections.deque()
 
     def _construct_search_args_str(self) -> str:
-        args = {"anime": self._is_anime}
+        args: dict[str, object] = {"anime": self._is_anime}
         if not self._full_sync:
             args["after"] = (self._now - self._config.skip_older).strftime("%s")
         return "&".join(f"{key}={str(value).lower()}" for key, value in args.items())
@@ -142,7 +123,7 @@ class ApiSyncClient:
                 print(f"Running task. Rate limit status: {self._rate_limit}")
                 try:
                     await self._tasks.popleft()
-                except (ApiConnectionError, ApiBadStatusError) as e:
+                except (KitsuConnectionError, ApiBadStatusError) as e:
                     print(e)
             else:
                 print(
@@ -161,7 +142,7 @@ class ApiSyncClient:
             case SearchResponseCode.rate_limit_exceeded:
                 raise ApiRateLimitedError(status, rate_limit)
 
-    def _handle_directory_status(self, r):
+    def _handle_directory_status(self, r: httpx.Response):
         rate_limit = self._rate_limit = RateLimit.from_headers(r.headers)
         match status := FilesResponseCode(r.status_code):
             case FilesResponseCode.successful:
@@ -171,27 +152,39 @@ class ApiSyncClient:
             case _:
                 raise ApiBadStatusError(status)
 
-    async def _visit_directory(self, client: httpx.AsyncClient, directory: ApiDirectoryEntry) -> None:
-        details_url = self.get_dir_listing_url(directory)
+    async def _get_directory_files(self, client: httpx.AsyncClient, details_url: str) -> typing.Sequence[ApiFileEntry]:
         try:
             r = await client.get(details_url)
         except Exception as e:
-            raise ApiConnectionError(details_url) from e
-        try:
+            raise KitsuConnectionError(details_url) from e
+        else:
             self._handle_directory_status(r)
+            return [*iter_directory_files(r.json())]
+
+    async def _visit_directory(self, client: httpx.AsyncClient, directory: ApiDirectoryEntry) -> None:
+        try:
+            files = await self._get_directory_files(client, self.get_dir_listing_url(directory))
         except ApiRateLimitedError as e:
             self._tasks.append(self._visit_directory(client, directory))
             print(f"Rate limited. Sleeping for {e.rate_limit.time_left()}.")
             await e.rate_limit.sleep()
             raise
-        for file in iter_directory_files(r.json()):
-            await self._download_file(client, file)
+        print(f"visited directory '{directory.name}'. found {len(files)} files.")
+        results = await self._downloader.download_subs(
+            client=client,
+            to_download=make_payload(self._config, directory, files),
+        )
+        print(
+            f"in directory '{directory.name}': "
+            f"saved {results.num_saved()} files. "
+            f"failed {results.num_failed()} files."
+        )
 
     async def _search_catalog(self, client: httpx.AsyncClient, search_url: str) -> None:
         try:
             r = await client.get(search_url)
         except Exception as e:
-            raise ApiConnectionError(search_url) from e
+            raise KitsuConnectionError(search_url) from e
         try:
             self._handle_search_status(r)
         except ApiRateLimitedError as e:
@@ -202,7 +195,7 @@ class ApiSyncClient:
         for directory in iter_catalog_directories(r.json()):
             try:
                 await self._visit_directory(client, directory)
-            except (ApiConnectionError, ApiBadStatusError) as e:
+            except (KitsuConnectionError, ApiBadStatusError) as e:
                 print(e)
 
     async def sync(self):
