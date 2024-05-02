@@ -17,7 +17,9 @@ def parse_num(value: str) -> int | float:
 def header_key_to_field_name(header_key: str) -> str:
     return header_key.replace("x-ratelimit-", "").replace("-", "_")
 
+
 SLEEP_ENSURANCE_DELAY = 0.1
+
 
 class RateLimit(typing.NamedTuple):
     # The number of requests that can be made.
@@ -30,7 +32,6 @@ class RateLimit(typing.NamedTuple):
     # The total time in seconds to wait for the rate limit to restart.
     # This can have a fractional component for milliseconds.
     reset_after: float | int = 0
-
 
     @classmethod
     def from_headers(cls, headers: Headers):

@@ -83,30 +83,36 @@ class ApiHeaders(typing.TypedDict):
     Authorization: str
 
 
-@dataclasses.dataclass
+def convert_time_delta(skip_older: str | datetime.timedelta) -> datetime.timedelta:
+    if isinstance(skip_older, datetime.timedelta):
+        return skip_older
+    assert isinstance(skip_older, str), "Parameter 'skip_older' is expected to be a string."
+    period, time_unit = skip_older.split()
+    return datetime.timedelta(**{time_unit: int(period)})
+
+
+@dataclasses.dataclass(frozen=True)
 class KitsuConfig:
     destination: pathlib.Path = pathlib.Path.home() / "kitsunekko"
     proxy: str | None = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
-    skip_older: datetime.timedelta = datetime.timedelta(days=30) # 30 days
+    skip_older: datetime.timedelta = datetime.timedelta(days=30)  # 30 days
     api_url: str = ""  # URL of a subtitle server's API. Normally looks like 'https://example.com/api'.
     api_key: str = ""  # API key of the subtitle server
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
-    def __post_init__(self) -> None:
-        if "dirlist.php?dir=" not in self.download_root:
+    @classmethod
+    def from_file(cls, file: typing.BinaryIO) -> typing.Self:
+        instance = cls(**tomllib.load(file))
+        if "dirlist.php?dir=" not in instance.download_root:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
-        self.destination = pathlib.Path(self.destination).expanduser()
-        self.skip_older = self._convert_time_delta()
-        self.proxy = self.proxy or None  # coerce proxy to null if it's empty
-
-    def _convert_time_delta(self) -> datetime.timedelta:
-        if isinstance(self.skip_older, datetime.timedelta):
-            return self.skip_older
-        assert isinstance(self.skip_older, str), "Parameter 'skip_older' is expected to be a string."
-        period, time_unit = self.skip_older.split()
-        return datetime.timedelta(**{time_unit: int(period)})
+        return dataclasses.replace(
+            instance,
+            destination=pathlib.Path(instance.destination).expanduser(),
+            skip_older=convert_time_delta(instance.skip_older),
+            proxy=instance.proxy or None,  # coerce proxy to null if it's empty
+        )
 
     def raise_for_destination(self) -> None:
         if not self.destination.is_dir():
@@ -128,7 +134,7 @@ class ReadConfigResult(typing.NamedTuple):
 def read_config_file(config_file_path: pathlib.Path) -> ReadConfigResult:
     try:
         with open(config_file_path, "rb") as f:
-            return ReadConfigResult(KitsuConfig(**tomllib.load(f)), pathlib.Path(config_file_path))
+            return ReadConfigResult(KitsuConfig.from_file(f), pathlib.Path(config_file_path))
     except FileNotFoundError as ex:
         raise ConfigFileNotFoundError() from ex
 

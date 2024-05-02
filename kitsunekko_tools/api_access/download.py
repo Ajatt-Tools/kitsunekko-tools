@@ -35,6 +35,7 @@ class FilesResponseCode(enum.Enum):
     """
     Status codes that are expected from the API when requesting a list of files.
     """
+
     successful = 200
     invalid_id_given = 400
     entry_not_found = 404

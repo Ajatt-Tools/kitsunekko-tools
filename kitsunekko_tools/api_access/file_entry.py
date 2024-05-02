@@ -34,7 +34,7 @@ def main():
         "url": "https://kitsunekko.net/entry/1049/download/Cherry%20Maho%20-%2008%20(TX%201920x1080%20x264%20AAC).srt",
         "name": "Cherry Maho - 08 (TX 1920x1080 x264 AAC).srt",
         "size": 29464,
-        "last_modified": "2024-03-03T11:53:18Z"
+        "last_modified": "2024-03-03T11:53:18Z",
     }
     print(ApiFileEntry.from_api_json(example))
 
