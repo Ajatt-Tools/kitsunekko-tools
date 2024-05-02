@@ -79,6 +79,10 @@ def as_toml_str(d: dict[str, str | int | dict]) -> str:
         return si.getvalue()
 
 
+class ApiHeaders(typing.TypedDict):
+    Authorization: str
+
+
 @dataclasses.dataclass
 class KitsuConfig:
     destination: str = "/mnt/archive/japanese/kitsunekko-mirror"
@@ -86,7 +90,8 @@ class KitsuConfig:
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
     timeout: int = 120
     skip_older: str = "30 days"
-    api_key: str = "abcd"
+    api_url: str = ""  # URL of a subtitle server's API. Normally ends with '/api/entries'
+    api_key: str = ""  # API key of the subtitle server
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     def __post_init__(self) -> None:
@@ -107,6 +112,9 @@ class KitsuConfig:
 
     def as_toml_str(self) -> str:
         return as_toml_str(dataclasses.asdict(self))
+
+    def api_headers(self) -> ApiHeaders:
+        return {"Authorization": self.api_key}
 
 
 class ReadConfigResult(typing.NamedTuple):

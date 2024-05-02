@@ -31,8 +31,8 @@ def describe_entry_type(flags: ApiDirectoryFlagsDict) -> str:
     return f'{"anime" if flags["anime"] else "drama"}_{"movie" if flags["movie"] else "tv"}'
 
 
-@dataclasses.dataclass
-class ApiDirectory:
+@dataclasses.dataclass(frozen=True)
+class ApiDirectoryEntry:
     entry_id: int  # used to query API for files in the directory
     name: str
     entry_type: str
@@ -70,9 +70,9 @@ class ApiDirectory:
         )
 
 
-def iter_catalog_directories(json_response: list[ApiDirectoryDict]) -> typing.Iterable[ApiDirectory]:
+def iter_catalog_directories(json_response: list[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
     for item in json_response:
-        yield ApiDirectory.from_api_json(item)
+        yield ApiDirectoryEntry.from_api_json(item)
 
 
 def main():
@@ -85,7 +85,7 @@ def main():
         "english_name": "YuruYuri Nachuyachumi!",
         "japanese_name": "ゆるゆり\u3000なちゅやちゅみ！",
     }
-    print(ApiDirectory.from_api_json(example).pack_kitsu_json())
+    print(ApiDirectoryEntry.from_api_json(example).pack_kitsu_json())
     example = {
         "id": 3153,
         "name": "Wild Heroes",
@@ -96,7 +96,7 @@ def main():
         "english_name": "Wild Heroes",
         "japanese_name": "ワイルド・ヒーローズ",
     }
-    print(ApiDirectory.from_api_json(example).pack_kitsu_json())
+    print(ApiDirectoryEntry.from_api_json(example).pack_kitsu_json())
 
 
 if __name__ == "__main__":
