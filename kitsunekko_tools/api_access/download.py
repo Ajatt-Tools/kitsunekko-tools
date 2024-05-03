@@ -75,6 +75,9 @@ class ApiBadStatusError(KitsuException):
 class ApiRateLimitedError(ApiBadStatusError):
     rate_limit: RateLimit
 
+    def __str__(self) -> str:
+        return f"rate limited. remaining time {self.rate_limit.reset_after}."
+
 
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryEntry:
@@ -196,9 +199,9 @@ class ApiSyncClient:
             files = await self._get_directory_files(client, directory.dir_listing_url)
         except ApiRateLimitedError as e:
             self._tasks.append(self._visit_directory(client, directory))
-            print(f"Rate limited. Status: {e.rate_limit}.")
+            print(e)
             await e.rate_limit.sleep()
-            raise
+            return
         print(f"visited directory '{directory.name}'. found {len(files)} files.")
         results = await self._downloader.download_subs(
             client=client,
@@ -227,9 +230,9 @@ class ApiSyncClient:
             directories = await self._get_catalog_dirs(client, search_url)
         except ApiRateLimitedError as e:
             self._tasks.append(self._search_catalog(client, search_url))
-            print(f"Rate limited. Status: {e.rate_limit}.")
+            print(e)
             await e.rate_limit.sleep()
-            raise
+            return
         print(f"visited root catalog. found {len(directories)} directories.")
         for directory in directories:
             try:
