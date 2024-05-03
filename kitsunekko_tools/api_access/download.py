@@ -98,7 +98,7 @@ class KitsuDirectoryEntry:
         return cls(
             remote_dir=remote_dir,
             meta_file_path=pathlib.Path(config.destination / remote_dir.name / ".kitsuinfo.json"),
-            dir_listing_url=f"{config.api_url}/entries/{remote_dir.entry_id}/files",
+            dir_listing_url=f"{config.api_url}/api/entries/{remote_dir.entry_id}/files",
         )
 
     def should_visit_directory(self) -> bool:
@@ -192,7 +192,7 @@ class ApiSyncClient:
         return "&".join(f"{key}={str(value).lower()}" for key, value in args.items())
 
     def get_search_url(self, is_anime: bool) -> str:
-        return f"{self._config.api_url}/entries/search?{self._construct_search_args_str(is_anime)}"
+        return f"{self._config.api_url}/api/entries/search?{self._construct_search_args_str(is_anime)}"
 
     async def _run_tasks(self) -> None:
         while self._tasks:

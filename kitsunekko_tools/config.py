@@ -103,7 +103,7 @@ class KitsuConfig:
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"  # scrap target
     timeout: int = 120
     skip_older: datetime.timedelta = datetime.timedelta(days=30)  # 30 days
-    api_url: str = ""  # URL of a subtitle server's API. Normally looks like 'https://example.com/api'.
+    api_url: str = "https://kitsunekko.net"  # URL of a subtitle server. Normally looks like 'https://example.com'.
     api_key: str = ""  # API key of the subtitle server
     allowed_file_types: frozenset[str] = dataclasses.field(
         default_factory=lambda: frozenset(["ssa", "ass", "srt", "zip", "rar", "7z"])
