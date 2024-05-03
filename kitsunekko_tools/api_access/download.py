@@ -131,9 +131,11 @@ def make_payload(
 class ApiSyncClient:
     _config: KitsuConfig
     _ignore: IgnoreList
+    _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
     _rate_limit: None | RateLimit
+    _tasks: collections.deque[Coroutine]
 
     def __init__(self, config: KitsuConfig, full_sync: bool = False):
         self._config = config
@@ -143,7 +145,7 @@ class ApiSyncClient:
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
         self._rate_limit = None
-        self._tasks: collections.deque[Coroutine] = collections.deque()
+        self._tasks = collections.deque()
 
     def _construct_search_args_str(self, is_anime: bool) -> str:
         args: dict[str, object] = {"anime": is_anime}
