@@ -17,6 +17,7 @@ from kitsunekko_tools.api_access.rate_limit import RateLimit
 from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
+from kitsunekko_tools.consts import INFO_FILENAME
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
     KitsuSubtitleDownloader,
@@ -97,7 +98,7 @@ class KitsuDirectoryEntry:
     def from_remote(cls, remote_dir: ApiDirectoryEntry, config: KitsuConfig):
         return cls(
             remote_dir=remote_dir,
-            meta_file_path=pathlib.Path(config.destination / remote_dir.name / ".kitsuinfo.json"),
+            meta_file_path=pathlib.Path(config.destination / remote_dir.name / INFO_FILENAME),
             dir_listing_url=f"{config.api_url}/api/entries/{remote_dir.entry_id}/files",
         )
 
