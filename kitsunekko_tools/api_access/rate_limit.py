@@ -34,7 +34,7 @@ class RateLimit(typing.NamedTuple):
     reset_after: float | int = 0
 
     @classmethod
-    def from_headers(cls, headers: Headers):
+    def from_headers(cls, headers: Headers) -> typing.Self:
         return cls(
             **{
                 header_key_to_field_name(key): parse_num(value)
