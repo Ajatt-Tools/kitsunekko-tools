@@ -5,11 +5,12 @@ import dataclasses
 import datetime
 import functools
 import io
+import os
 import os.path
 import pathlib
 import tomllib
 import typing
-import os
+
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import *
 
@@ -99,7 +100,7 @@ def convert_time_delta(skip_older: str | datetime.timedelta) -> datetime.timedel
 class KitsuConfig:
     destination: pathlib.Path = pathlib.Path.home() / "kitsunekko"
     proxy: str | None = "socks5://127.0.0.1:9050"
-    download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"
+    download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"  # scrap target
     timeout: int = 120
     skip_older: datetime.timedelta = datetime.timedelta(days=30)  # 30 days
     api_url: str = ""  # URL of a subtitle server's API. Normally looks like 'https://example.com/api'.
