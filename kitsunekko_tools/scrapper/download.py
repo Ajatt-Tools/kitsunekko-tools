@@ -104,7 +104,7 @@ def make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> Se
     ]
 
 
-class Sync:
+class KitsuScrapper:
     _config: KitsuConfig
     _ignore: IgnoreList
     _now: datetime.datetime

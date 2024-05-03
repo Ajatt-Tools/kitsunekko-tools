@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
+import datetime
 import json
 import typing
 from collections.abc import Sequence
@@ -32,12 +33,16 @@ def describe_entry_type(flags: ApiDirectoryFlagsDict) -> str:
     return f'{"anime" if flags["anime"] else "drama"}_{"movie" if flags["movie"] else "tv"}'
 
 
+def parse_api_time(time: str) -> datetime.datetime:
+    return datetime.datetime.fromisoformat(time)
+
+
 @dataclasses.dataclass(frozen=True)
 class ApiDirectoryEntry:
     entry_id: int  # used to query API for files in the directory
     name: str
     entry_type: str
-    last_modified: str  # format RFC3339: '2024-04-27T17:54:01Z'
+    last_modified: datetime.datetime  # format RFC3339: '2024-04-27T17:54:01Z'
     english_name: str | None = None
     japanese_name: str | None = None
     anilist_id: int | None = None
@@ -50,22 +55,28 @@ class ApiDirectoryEntry:
         """
         return cls(
             entry_id=int(json_dict["id"]),
-            name=json_dict["name"].strip(),
+            name=json_dict["name"].replace("/", " ").strip(),
             entry_type=describe_entry_type(json_dict["flags"]),
-            last_modified=json_dict["last_modified"],
-            english_name=json_dict.get("english_name"),
-            japanese_name=json_dict.get("japanese_name"),
+            last_modified=parse_api_time(json_dict["last_modified"]),
+            english_name=json_dict.get("english_name", "").strip(),
+            japanese_name=json_dict.get("japanese_name", "").strip(),
             anilist_id=json_dict.get("anilist_id"),
             tmdb_id=json_dict.get("tmdb_id"),
         )
+
+    @classmethod
+    def from_kitsu_json(cls, json_dict: dict[str, typing.Any]):
+        return cls(**(json_dict | {"last_modified": parse_api_time(json_dict["last_modified"])}))
 
     def pack_kitsu_json(self) -> str:
         """
         Format self for storing on disk.
         The schema differs a bit from what the program receives from the remote server.
         """
+        as_dict = dataclasses.asdict(self)
+        as_dict["last_modified"] = self.last_modified.isoformat("T").replace("+00:00", "Z")
         return json.dumps(
-            {k: v for k, v in dataclasses.asdict(self).items() if v is not None},
+            {k: v for k, v in as_dict.items() if v},
             indent=2,
             ensure_ascii=False,
         )

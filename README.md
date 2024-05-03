@@ -66,11 +66,16 @@ The `skip_older` config parameter controls what files should be skipped during r
 
 To prevent some files from being downloaded (because they are too big, broken, etc.),
 Create a file named `.kitsuignore` in the root of `destination`
-and fill it with Unix shell-style wildcards, one per line.
+and fill it with paths relative to `destination`.
 
 ## Help
 
 Run `ktools --help` to print a help page. 
+
+## Environment variables
+
+* `KITSU_API_KEY` - overwrite api_key in the config.
+* `KITSU_API_URL` - overwrite api_url in the config.
 
 ## Kitsunekko mirror
 

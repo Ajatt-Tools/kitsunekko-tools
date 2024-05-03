@@ -30,7 +30,7 @@ RE_SUBTITLE_DIR = re.compile(
 # <tr><td><a href="subtitles/japanese/Henjin no Salad Bowl/Henjin no Salad Bowl - 01 「麒麟がくる(異世界から)」 (TBS 1920x1080 x264 AAC).srt" class=""><strong>Henjin no Salad Bowl - 01 「麒麟がくる(異世界から)」 (TBS 1920x1080 x264 AAC).srt</strong> </a></td> <td class="tdleft"  title="29823"  > 29&nbsp;KB </td> <td class="tdright" title="Apr 05 2024 05:45:25 AM" > 3&nbsp;weeks </td></tr>
 # <tr><td><a href="subtitles/japanese/Henjin no Salad Bowl/Henjin no Salad Bowl - 02 「ホームレス女騎士／はじめてのおしごと他」 (TBS 1920x1080 x264 AAC).srt" class=""><strong>Henjin no Salad Bowl - 02 「ホームレス女騎士／はじめてのおしごと他」 (TBS 1920x1080 x264 AAC).srt</strong> </a></td> <td class="tdleft"  title="31494"  > 31&nbsp;KB </td> <td class="tdright" title="Apr 12 2024 01:28:54 PM" > 2&nbsp;weeks </td></tr>
 RE_SUBTITLE_FILE = re.compile(
-    r'<a href="/?(?P<abs_path>subtitles/[^"\']+\.(?:zip|rar|7z|ass|srt))"[^<>]*>.*<td class="tdright" title="(?P<mod_timestamp>[^<>"]+)"\s*>',
+    r'<a href="/?(?P<abs_path>subtitles/[^"\']+\.(?:zip|rar|7z|ass|srt|ssa))"[^<>]*>.*<td class="tdright" title="(?P<mod_timestamp>[^<>"]+)"\s*>',
     flags=RE_FLAGS,
 )
 

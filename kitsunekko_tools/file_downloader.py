@@ -54,9 +54,11 @@ class KitsuSubtitleDownload(typing.NamedTuple):
         return is_file_non_empty(self.file_path)
 
 
+@enum.unique
 class DownloadStatus(enum.Enum):
     already_exists = enum.auto()
     explicitly_ignored = enum.auto()
+    blocked_file_type = enum.auto()
     download_failed = enum.auto()
     saved = enum.auto()
 
@@ -122,6 +124,9 @@ class KitsuSubtitleDownloader:
 
         if self._ignore.is_matching(subtitle.file_path):
             return DownloadResult(DownloadStatus.explicitly_ignored, subtitle)
+
+        if not self._config.is_allowed_file_type(subtitle.file_path):
+            return DownloadResult(DownloadStatus.blocked_file_type, subtitle)
 
         print(f"downloading file: {subtitle.url}")
 

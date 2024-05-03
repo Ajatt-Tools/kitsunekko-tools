@@ -21,7 +21,7 @@ class ApiFileEntry:
 
     @classmethod
     def from_api_json(cls, json_dict: ApiFileDict):
-        return cls(**(json_dict | {"name": json_dict["name"].strip()}))
+        return cls(**(json_dict | {"name": json_dict["name"].replace("/", " ").strip()}))
 
 
 def iter_directory_files(json_response: typing.Sequence[ApiFileDict]) -> typing.Iterable[ApiFileEntry]:

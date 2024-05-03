@@ -9,7 +9,7 @@ import os.path
 import pathlib
 import tomllib
 import typing
-
+import os
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import *
 
@@ -64,6 +64,10 @@ def as_toml_str(d: dict[str, str | int | dict]) -> str:
     with io.StringIO() as si:
         for key, value in d.items():
             match value:
+                case None:
+                    si.write(f'{key} = ""\n')
+                case frozenset():
+                    si.write(f"{key} = {list(value)}\n")
                 case str() | pathlib.Path():
                     si.write(f'{key} = "{value}"\n')
                 case int():
@@ -100,6 +104,9 @@ class KitsuConfig:
     skip_older: datetime.timedelta = datetime.timedelta(days=30)  # 30 days
     api_url: str = ""  # URL of a subtitle server's API. Normally looks like 'https://example.com/api'.
     api_key: str = ""  # API key of the subtitle server
+    allowed_file_types: frozenset[str] = dataclasses.field(
+        default_factory=lambda: frozenset(["ssa", "ass", "srt", "zip", "rar", "7z"])
+    )
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     @classmethod
@@ -112,6 +119,9 @@ class KitsuConfig:
             destination=pathlib.Path(instance.destination).expanduser(),
             skip_older=convert_time_delta(instance.skip_older),
             proxy=instance.proxy or None,  # coerce proxy to null if it's empty
+            allowed_file_types=frozenset(instance.allowed_file_types),
+            api_key=os.getenv("KITSU_API_KEY", instance.api_key),
+            api_url=os.getenv("KITSU_API_URL", instance.api_url),
         )
 
     def raise_for_destination(self) -> None:
@@ -123,6 +133,9 @@ class KitsuConfig:
 
     def api_headers(self) -> ApiHeaders:
         return {"Authorization": self.api_key}
+
+    def is_allowed_file_type(self, file_path: pathlib.Path) -> bool:
+        return any(file_path.name.endswith(f".{ext}") for ext in self.allowed_file_types)
 
 
 class ReadConfigResult(typing.NamedTuple):

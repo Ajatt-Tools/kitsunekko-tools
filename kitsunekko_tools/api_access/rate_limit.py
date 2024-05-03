@@ -43,12 +43,8 @@ class RateLimit(typing.NamedTuple):
             }
         )
 
-    def time_left(self) -> int:
-        return int(self.reset - time.time())
-
     async def sleep(self):
-        if self.time_left() > 0:
-            await asyncio.sleep(self.time_left() + SLEEP_ENSURANCE_DELAY)
+        await asyncio.sleep(max(0, self.reset_after) + SLEEP_ENSURANCE_DELAY)
 
 
 def main():

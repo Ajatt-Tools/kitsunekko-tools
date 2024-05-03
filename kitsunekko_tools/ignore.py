@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
-import fnmatch
 import pathlib
 import typing
 
@@ -48,11 +47,7 @@ class IgnoreList:
         return str(file_path.relative_to(self._config.destination))
 
     def is_matching(self, file_path: pathlib.Path) -> bool:
-        path_dest_stripped = self._pattern_from_path(file_path)
-        if path_dest_stripped in self._patterns:
-            # try without wildcards first.
-            return True
-        return any(fnmatch.fnmatch(path_dest_stripped, pattern) for pattern in self._patterns)
+        return self._pattern_from_path(file_path) in self._patterns
 
     def patterns(self) -> typing.Iterable[str]:
         """
