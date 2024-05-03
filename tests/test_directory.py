@@ -22,4 +22,4 @@ def test_shows_in_root_dir(search_response_json: Sequence[ApiDirectoryDict]) -> 
     assert all(dir_.entry_id > 0 for dir_ in dirs)
     assert all(dir_.name for dir_ in dirs)
     date_threshold = datetime.datetime.fromisoformat("2012-07-15 20:21:54+00:00")
-    assert all(datetime.datetime.fromisoformat(dir_.last_modified) > date_threshold for dir_ in dirs)
+    assert all(dir_.last_modified > date_threshold for dir_ in dirs)
