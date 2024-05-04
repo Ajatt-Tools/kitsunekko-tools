@@ -28,26 +28,15 @@ from kitsunekko_tools.ignore import IgnoreList
 
 
 @enum.unique
-class SearchResponseCode(enum.Enum):
+class ApiResponseCode(enum.Enum):
     """
-    Status codes that are expected from the API when searching the catalog.
-    """
-
-    successful = 200
-    unauthenticated = 401
-    rate_limit_exceeded = 429
-
-
-@enum.unique
-class FilesResponseCode(enum.Enum):
-    """
-    Status codes that are expected from the API when requesting a list of files.
+    Status codes that are expected from the API.
     """
 
     successful = 200
     invalid_id_given = 400
-    entry_not_found = 404
     unauthenticated = 401
+    entry_not_found = 404
     rate_limit_exceeded = 429
 
 
@@ -62,7 +51,7 @@ def get_http_api_client(config: KitsuConfig) -> httpx.AsyncClient:
 
 @dataclasses.dataclass(frozen=True)
 class ApiBadStatusError(KitsuException):
-    status: SearchResponseCode | FilesResponseCode
+    status: ApiResponseCode
 
     @property
     def what(self) -> str:
@@ -129,21 +118,11 @@ def make_payload(
     ]
 
 
-def handle_search_status(response: httpx.Response):
-    match status := SearchResponseCode(response.status_code):
-        case SearchResponseCode.successful:
+def handle_response_status(response: httpx.Response):
+    match status := ApiResponseCode(response.status_code):
+        case ApiResponseCode.successful:
             return
-        case SearchResponseCode.rate_limit_exceeded:
-            raise ApiRateLimitedError(status, RateLimit.from_headers(response.headers))
-        case _:
-            raise ApiBadStatusError(status)
-
-
-def handle_directory_status(response: httpx.Response):
-    match status := FilesResponseCode(response.status_code):
-        case FilesResponseCode.successful:
-            return
-        case FilesResponseCode.rate_limit_exceeded:
+        case ApiResponseCode.rate_limit_exceeded:
             raise ApiRateLimitedError(status, RateLimit.from_headers(response.headers))
         case _:
             raise ApiBadStatusError(status)
@@ -155,7 +134,7 @@ async def get_directory_files(client: httpx.AsyncClient, details_url: str) -> ty
     except Exception as e:
         raise KitsuConnectionError(details_url) from e
     else:
-        handle_directory_status(r)
+        handle_response_status(r)
         return [*iter_directory_files(r.json())]
 
 
@@ -165,7 +144,7 @@ async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing
     except Exception as e:
         raise KitsuConnectionError(search_url) from e
     else:
-        handle_search_status(r)
+        handle_response_status(r)
         return [*iter_catalog_directories(r.json())]
 
 
