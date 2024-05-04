@@ -69,6 +69,10 @@ class ApiRateLimitedError(ApiBadStatusError):
         return f"rate limited. remaining time {self.rate_limit.reset_after}."
 
 
+def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
+    return pathlib.Path(config.destination / remote_dir.name / INFO_FILENAME)
+
+
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryEntry:
     remote_dir: ApiDirectoryEntry
@@ -85,9 +89,11 @@ class KitsuDirectoryEntry:
 
     @classmethod
     def from_remote(cls, remote_dir: ApiDirectoryEntry, config: KitsuConfig):
+        meta_file_path = get_meta_file_path(remote_dir, config)
+
         return cls(
             remote_dir=remote_dir,
-            meta_file_path=pathlib.Path(config.destination / remote_dir.name / INFO_FILENAME),
+            meta_file_path=meta_file_path,
             dir_listing_url=f"{config.api_url}/api/entries/{remote_dir.entry_id}/files",
         )
 
