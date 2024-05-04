@@ -80,7 +80,8 @@ class IgnoreList:
         """
         if self._dirty_level == 0:
             return
-        self._ignore_filepath.write_text("\n".join(self._patterns) + "\n")  # newline at the end of file
+        data = "\n".join(self._patterns) + "\n"
+        self._ignore_filepath.write_text(data, encoding="utf-8")  # newline at the end of file
         self._dirty_level = 0
 
     def maybe_commit_midway(self) -> None:
