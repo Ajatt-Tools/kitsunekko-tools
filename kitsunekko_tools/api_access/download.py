@@ -5,7 +5,6 @@ import collections
 import dataclasses
 import datetime
 import enum
-import json
 import pathlib
 import typing
 from collections.abc import Coroutine
@@ -14,7 +13,7 @@ import httpx
 
 from kitsunekko_tools.api_access.file_entry import iter_directory_files, ApiFileEntry
 from kitsunekko_tools.api_access.rate_limit import RateLimit
-from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry
+from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry, KitsuDirectoryMeta
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
 from kitsunekko_tools.consts import INFO_FILENAME
@@ -73,11 +72,20 @@ def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pa
     return pathlib.Path(config.destination / remote_dir.name / INFO_FILENAME)
 
 
+def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:
+    try:
+        with open(meta_file_path, encoding="utf-8") as f:
+            return KitsuDirectoryMeta.from_local_file(f)
+    except FileNotFoundError:
+        return None
+
+
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryEntry:
     remote_dir: ApiDirectoryEntry
     meta_file_path: pathlib.Path
     dir_listing_url: str
+    local_state: KitsuDirectoryMeta | None
 
     @property
     def dir_path(self) -> pathlib.Path:
@@ -95,18 +103,20 @@ class KitsuDirectoryEntry:
             remote_dir=remote_dir,
             meta_file_path=meta_file_path,
             dir_listing_url=f"{config.api_url}/api/entries/{remote_dir.entry_id}/files",
+            local_state=read_meta_file(meta_file_path),
         )
 
     def should_visit_directory(self) -> bool:
-        return not self.meta_file_path.is_file() or self.is_remote_newer()
-
-    def is_remote_newer(self) -> bool:
-        with open(self.meta_file_path) as f:
-            data = ApiDirectoryEntry.from_kitsu_json(json.load(f))
-        return self.remote_dir.last_modified > data.last_modified
+        """
+        Visit the directory if the remote is more recent.
+        """
+        if not self.local_state:
+            return True
+        return self.remote_dir.last_modified > self.local_state.last_modified
 
     def write_meta(self) -> None:
-        self.meta_file_path.write_text(self.remote_dir.pack_kitsu_json(), encoding="utf-8")
+        with open(self.meta_file_path, "w", encoding="utf-8") as of:
+            self.remote_dir.write_to_file(of)
 
     def ensure_exists(self) -> None:
         self.meta_file_path.parent.mkdir(exist_ok=True)
