@@ -37,6 +37,10 @@ def parse_api_time(time: str) -> datetime.datetime:
     return datetime.datetime.fromisoformat(time)
 
 
+def format_api_time(time: datetime.datetime):
+    return time.isoformat("T").replace("+00:00", "Z")
+
+
 @dataclasses.dataclass(frozen=True)
 class ApiDirectoryEntry:
     entry_id: int  # used to query API for files in the directory
@@ -74,7 +78,7 @@ class ApiDirectoryEntry:
         The schema differs a bit from what the program receives from the remote server.
         """
         as_dict = dataclasses.asdict(self)
-        as_dict["last_modified"] = self.last_modified.isoformat("T").replace("+00:00", "Z")
+        as_dict["last_modified"] = format_api_time(self.last_modified)
         return json.dumps(
             {k: v for k, v in as_dict.items() if v},
             indent=2,
