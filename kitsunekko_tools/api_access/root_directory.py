@@ -69,22 +69,28 @@ class ApiDirectoryEntry:
             tmdb_id=json_dict.get("tmdb_id"),
         )
 
-    @classmethod
-    def from_kitsu_json(cls, json_dict: dict[str, typing.Any]):
-        return cls(**(json_dict | {"last_modified": parse_api_time(json_dict["last_modified"])}))
-
-    def pack_kitsu_json(self) -> str:
+    def write_to_file(self, fp: typing.TextIO) -> None:
         """
-        Format self for storing on disk.
+        Format self and store on disk.
         The schema differs a bit from what the program receives from the remote server.
         """
         as_dict = dataclasses.asdict(self)
         as_dict["last_modified"] = format_api_time(self.last_modified)
-        return json.dumps(
+        json.dump(
             {k: v for k, v in as_dict.items() if v},
+            fp,
             indent=2,
             ensure_ascii=False,
         )
+
+
+@dataclasses.dataclass(frozen=True)
+class KitsuDirectoryMeta(ApiDirectoryEntry):
+    @classmethod
+    def from_local_file(cls, f: typing.TextIO) -> typing.Self:
+        data = json.load(f)
+        data["last_modified"] = parse_api_time(data["last_modified"])
+        return cls(**data)
 
 
 def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
