@@ -6,6 +6,7 @@ import datetime
 import json
 import typing
 from collections.abc import Sequence
+from pprint import pprint
 
 
 class ApiDirectoryFlagsDict(typing.TypedDict):
@@ -101,7 +102,7 @@ def main():
         "english_name": "YuruYuri Nachuyachumi!",
         "japanese_name": "ゆるゆり\u3000なちゅやちゅみ！",
     }
-    print(ApiDirectoryEntry.from_api_json(example).pack_kitsu_json())
+    pprint(ApiDirectoryEntry.from_api_json(example), indent=2)
     example = {
         "id": 3153,
         "name": "Wild Heroes",
@@ -112,7 +113,7 @@ def main():
         "english_name": "Wild Heroes",
         "japanese_name": "ワイルド・ヒーローズ",
     }
-    print(ApiDirectoryEntry.from_api_json(example).pack_kitsu_json())
+    pprint(ApiDirectoryEntry.from_api_json(example), indent=2)
 
 
 if __name__ == "__main__":
