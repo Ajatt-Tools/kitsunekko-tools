@@ -190,7 +190,7 @@ class Config:
         if config_file_path.is_file():
             raise RuntimeError(f"File already exists: {config_file_path}")
         config_file_path.parent.mkdir(exist_ok=True, parents=True)
-        config_file_path.write_text(KitsuConfig().as_toml_str())
+        config_file_path.write_text(KitsuConfig().as_toml_str(), encoding="utf-8")
         return config_file_path
 
 

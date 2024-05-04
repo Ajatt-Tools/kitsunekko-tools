@@ -12,7 +12,7 @@ from tests.test_parser import DATA_DIR
 
 @pytest.fixture(params=["entries_search_anime_response.json", "entries_search_dramas_response.json"])
 def search_response_json(request) -> Sequence[ApiDirectoryDict]:
-    with open(DATA_DIR.joinpath(request.param)) as f:
+    with open(DATA_DIR.joinpath(request.param), encoding="utf-8") as f:
         return json.load(f)
 
 
