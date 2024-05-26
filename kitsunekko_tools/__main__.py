@@ -162,6 +162,9 @@ class Application:
             print(ex.what)
 
     def sanitize(self) -> None:
+        """
+        Rename directories if they have prohibited names.
+        """
         try:
             data = self._config.data()
         except ConfigFileNotFoundError as ex:
