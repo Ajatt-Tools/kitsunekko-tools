@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 import sys
 
 import fire
@@ -149,7 +150,7 @@ class Application:
         else:
             await s.sync_all()
 
-    def upload(self):
+    def upload(self) -> None:
         """
         Upload the local folder to mega.nz.
         The ~/.megarc file must exist.
@@ -158,6 +159,14 @@ class Application:
             mega_upload(self._config.data())
         except KitsuException as ex:
             print(ex.what)
+
+    def sanitize(self) -> None:
+        try:
+            data = self._config.data()
+        except ConfigFileNotFoundError as ex:
+            print(ex.what)
+        else:
+            sanitize_directories(data)
 
 
 def main() -> None:
