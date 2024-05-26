@@ -8,6 +8,8 @@ import typing
 from collections.abc import Sequence
 from pprint import pprint
 
+from kitsunekko_tools.common import fs_name_strip
+
 
 class ApiDirectoryFlagsDict(typing.TypedDict):
     adult: bool
@@ -45,7 +47,7 @@ def format_api_time(time: datetime.datetime):
 @dataclasses.dataclass(frozen=True)
 class ApiDirectoryEntry:
     entry_id: int  # used to query API for files in the directory
-    name: str
+    name: str  # name of the anime and the directory on the disk.
     entry_type: str
     last_modified: datetime.datetime  # format RFC3339: '2024-04-27T17:54:01Z'
     english_name: str | None = None
@@ -60,7 +62,7 @@ class ApiDirectoryEntry:
         """
         return cls(
             entry_id=int(json_dict["id"]),
-            name=json_dict["name"].replace("/", " ").strip(),
+            name=fs_name_strip(json_dict["name"]),
             entry_type=describe_entry_type(json_dict["flags"]),
             last_modified=parse_api_time(json_dict["last_modified"]),
             english_name=json_dict.get("english_name", "").strip(),

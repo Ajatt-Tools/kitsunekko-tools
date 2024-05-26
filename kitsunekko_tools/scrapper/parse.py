@@ -8,6 +8,7 @@ import re
 import typing
 import urllib.parse
 
+from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
 from kitsunekko_tools.scrapper.types import AnimeDir, SubtitleFile
 
@@ -40,7 +41,7 @@ def sanitize_title(title: str) -> str:
 
 
 def sanitize_folder_name(name: str) -> str:
-    return sanitize_title(name).replace("_", " ")
+    return fs_name_strip(sanitize_title(name))
 
 
 def find_all_subtitle_dirs(html_text: str) -> typing.Iterable[AnimeDir]:
