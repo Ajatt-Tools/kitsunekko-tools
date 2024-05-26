@@ -4,6 +4,7 @@
 import dataclasses
 import datetime
 import json
+import pathlib
 import typing
 from collections.abc import Sequence
 from pprint import pprint
@@ -44,9 +45,19 @@ def format_api_time(time: datetime.datetime):
     return time.isoformat("T").replace("+00:00", "Z")
 
 
+def nuke_key(d: dict, key: str) -> None:
+    try:
+        del d[key]
+    except KeyError:
+        pass
+
+
+EntryId = typing.NewType("EntryId", int)
+
+
 @dataclasses.dataclass(frozen=True)
 class ApiDirectoryEntry:
-    entry_id: int  # used to query API for files in the directory
+    entry_id: EntryId  # used to query API for files in the directory
     name: str  # name of the anime and the directory on the disk.
     entry_type: str
     last_modified: datetime.datetime  # format RFC3339: '2024-04-27T17:54:01Z'
@@ -61,7 +72,7 @@ class ApiDirectoryEntry:
         Construct self from the API json response.
         """
         return cls(
-            entry_id=int(json_dict["id"]),
+            entry_id=EntryId(json_dict["id"]),
             name=fs_name_strip(json_dict["name"]),
             entry_type=describe_entry_type(json_dict["flags"]),
             last_modified=parse_api_time(json_dict["last_modified"]),
@@ -78,6 +89,7 @@ class ApiDirectoryEntry:
         """
         as_dict = dataclasses.asdict(self)
         as_dict["last_modified"] = format_api_time(self.last_modified)
+        nuke_key(as_dict, "dir_path")  # no need to store this on disk
         json.dump(
             {k: v for k, v in as_dict.items() if v},
             fp,
@@ -88,11 +100,17 @@ class ApiDirectoryEntry:
 
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryMeta(ApiDirectoryEntry):
+    dir_path: pathlib.Path = pathlib.Path()
+
     @classmethod
-    def from_local_file(cls, f: typing.TextIO) -> typing.Self:
+    def from_local_file(cls, f: typing.TextIO, dir_path: pathlib.Path) -> typing.Self:
+        return cls(**cls._load_json(f), dir_path=dir_path)
+
+    @staticmethod
+    def _load_json(f: typing.TextIO) -> dict:
         data = json.load(f)
         data["last_modified"] = parse_api_time(data["last_modified"])
-        return cls(**data)
+        return data
 
 
 def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:

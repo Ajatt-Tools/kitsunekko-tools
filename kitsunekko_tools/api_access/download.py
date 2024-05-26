@@ -75,7 +75,8 @@ def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pa
 def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:
     try:
         with open(meta_file_path, encoding="utf-8") as f:
-            return KitsuDirectoryMeta.from_local_file(f)
+            assert meta_file_path.parent.is_dir(), "parent directory must exist."
+            return KitsuDirectoryMeta.from_local_file(f, dir_path=meta_file_path.parent)
     except FileNotFoundError:
         return None
 
