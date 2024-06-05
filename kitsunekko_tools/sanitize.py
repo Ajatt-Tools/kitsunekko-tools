@@ -84,6 +84,19 @@ def merge_directories(config: KitsuConfig) -> None:
             nuke_dir(directory)
 
 
+def delete_empty_directories(config: KitsuConfig) -> None:
+    for directory in config.destination.iterdir():
+        entries = [entry for entry in directory.iterdir() if entry.name not in SKIP_FILES]
+        try:
+            extra_files = [*directory.joinpath(TRASH_DIR_NAME).iterdir()]
+        except FileNotFoundError:
+            extra_files = []
+        if not entries and not extra_files:
+            print(f"deleting empty dir: {directory}")
+            nuke_dir(directory)
+
+
 def sanitize_directories(config: KitsuConfig) -> None:
     rename_badly_named_directories(config)
     merge_directories(config)
+    delete_empty_directories(config)
