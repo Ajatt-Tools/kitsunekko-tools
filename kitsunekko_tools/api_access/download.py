@@ -24,6 +24,7 @@ from kitsunekko_tools.file_downloader import (
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.sanitize import SKIP_FILES
 
 
 @enum.unique
@@ -165,6 +166,20 @@ async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing
         return [*iter_catalog_directories(r.json())]
 
 
+def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: typing.Sequence[ApiFileEntry]) -> None:
+    all_names = {
+        entry.name for entry in directory.dir_path.iterdir() if entry.is_file() and entry.name not in SKIP_FILES
+    }
+    keep_names = {file.name for file in remote_files}
+    move_names = all_names - keep_names
+    print(f"in dir {directory.remote_dir.name}: moving {len(move_names)} to '{TRASH_DIR_NAME}'")
+    for file_name in move_names:
+        old_path = directory.dir_path / file_name
+        new_path = directory.dir_path / TRASH_DIR_NAME / file_name
+        new_path.parent.mkdir(exist_ok=True)
+        old_path.rename(new_path)
+
+
 class ApiSyncClient:
     _config: KitsuConfig
     _ignore: IgnoreList
@@ -223,6 +238,7 @@ class ApiSyncClient:
         if results.num_failed() == 0:
             directory.ensure_exists()
             directory.write_meta()
+            trash_files_missing_on_remote(directory, files)
 
     async def _search_catalog(self, client: httpx.AsyncClient, search_url: str) -> None:
         try:
