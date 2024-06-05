@@ -14,13 +14,22 @@ class KitsuException(Exception, abc.ABC):
 
 RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#{}<>^*/:`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
 RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
+WINDOWS_SUBSTITUTE_CHARS = {
+    "??": "2",
+    "||": "2",
+    "'": "’",
+    "\\": "⧵",
+    "/": "∕",
+    ":": ".",
+    "?": "？",
+    "|": "⏐",
+}
+assert all(k != v for k, v in WINDOWS_SUBSTITUTE_CHARS.items())
 
 
 def fs_name_strip(name: str) -> str:
-    name = name.replace("'", "")
-    name = name.replace(":", ".")
-    name = name.replace("??", "2")
-    name = name.replace("||", "2")
+    for from_, to in WINDOWS_SUBSTITUTE_CHARS.items():
+        name = name.replace(from_, to)
     name = re.sub(RE_FILENAME_PROHIBITED, " ", name)
     name = re.sub(RE_MULTI_SPACE, " ", name)
     return name.strip()
