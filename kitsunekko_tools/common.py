@@ -17,6 +17,7 @@ RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
 
 
 def fs_name_strip(name: str) -> str:
+    name = name.replace("'", "")
     name = name.replace(":", ".")
     name = name.replace("??", "2")
     name = name.replace("||", "2")
