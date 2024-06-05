@@ -16,7 +16,7 @@ from kitsunekko_tools.api_access.rate_limit import RateLimit
 from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry, KitsuDirectoryMeta
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import get_config, KitsuConfig
-from kitsunekko_tools.consts import INFO_FILENAME
+from kitsunekko_tools.consts import INFO_FILENAME, TRASH_DIR_NAME
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
     KitsuSubtitleDownloader,

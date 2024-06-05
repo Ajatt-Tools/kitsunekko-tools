@@ -5,9 +5,9 @@ import pathlib
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, EntryId
 from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import INFO_FILENAME, IGNORE_FILENAME
+from kitsunekko_tools.consts import INFO_FILENAME, IGNORE_FILENAME, TRASH_DIR_NAME
 
-SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME)
+SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
 
 
 def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:

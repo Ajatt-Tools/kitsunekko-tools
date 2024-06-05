@@ -7,5 +7,6 @@ SETTINGS_FILE_NAME = f"{PROG_NAME}.toml"
 KITSUNEKKO_DOMAIN_URL = "https://kitsunekko.net"
 IGNORE_FILENAME = ".kitsuignore"
 INFO_FILENAME = ".kitsuinfo.json"
+TRASH_DIR_NAME = "extra"
 
 __all__ = [name for name in globals() if name.isupper()]
