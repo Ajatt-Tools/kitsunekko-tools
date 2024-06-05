@@ -14,7 +14,12 @@ def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
     for entry in old_dir.iterdir():
         if entry.name in SKIP_FILES:
             continue
+        if entry.is_dir():
+            move_files(entry, new_dir / entry.name)
+            continue
+        assert entry.is_file(), "entry must be a file."
         new_path = new_dir / entry.relative_to(old_dir)
+        new_path.parent.mkdir(exist_ok=True)
         if new_path.exists():
             entry.unlink()
         else:
