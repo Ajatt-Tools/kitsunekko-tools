@@ -12,7 +12,7 @@ class KitsuException(Exception, abc.ABC):
         raise NotImplementedError()
 
 
-RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#\[\]{}<>^*/:`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
+RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#{}<>^*/:`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
 RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
 
 
