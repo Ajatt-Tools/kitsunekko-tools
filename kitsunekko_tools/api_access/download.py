@@ -172,7 +172,9 @@ def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: 
     }
     keep_names = {file.name for file in remote_files}
     move_names = all_names - keep_names
-    print(f"in dir {directory.remote_dir.name}: moving {len(move_names)} to '{TRASH_DIR_NAME}'")
+    if not move_names:
+        return
+    print(f"in dir {directory.remote_dir.name}: moving {len(move_names)} files to '{TRASH_DIR_NAME}'")
     for file_name in move_names:
         old_path = directory.dir_path / file_name
         new_path = directory.dir_path / TRASH_DIR_NAME / file_name
