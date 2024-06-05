@@ -4,6 +4,8 @@
 import dataclasses
 import typing
 
+from kitsunekko_tools.common import fs_name_strip
+
 
 class ApiFileDict(typing.TypedDict):
     url: str
@@ -21,7 +23,7 @@ class ApiFileEntry:
 
     @classmethod
     def from_api_json(cls, json_dict: ApiFileDict):
-        return cls(**(json_dict | {"name": json_dict["name"].replace("/", " ").strip()}))
+        return cls(**(json_dict | {"name": fs_name_strip(json_dict["name"])}))
 
 
 def iter_directory_files(json_response: typing.Sequence[ApiFileDict]) -> typing.Iterable[ApiFileEntry]:
