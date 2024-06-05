@@ -34,11 +34,22 @@ path = "kitsunekko_tools/__version__.py"
 [tool.hatch.build.hooks.vcs]
 version-file = "kitsunekko_tools/__version__.py"
 
-[tool.hatch.envs.test]
-dependencies = [
-  "pytest", # run as `hatch run test:pytest`
-]
-
 [tool.black]
 line-length = 120
 target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+
+[tool.hatch.envs.dev]
+dependencies = [
+  "mypy>=1.0.0",
+  "isort",
+  "pytest",
+  "black",
+]
+[tool.hatch.envs.dev.scripts]
+# run as `hatch run dev:scriptname`
+check = "mypy --install-types --non-interactive {args:kitsunekko_tools tests}"
+format = "black kitsunekko_tools tests; isort kitsunekko_tools tests;"
+test = "pytest;"
