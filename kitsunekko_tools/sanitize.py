@@ -12,10 +12,10 @@ SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
 
 def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
     for entry in old_dir.iterdir():
-        if entry.name in SKIP_FILES:
-            continue
         if entry.is_dir():
             move_files(entry, new_dir / entry.name)
+            continue
+        if entry.name in SKIP_FILES:
             continue
         assert entry.is_file(), "entry must be a file."
         new_path = new_dir / entry.relative_to(old_dir)
@@ -24,6 +24,7 @@ def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
             entry.unlink()
         else:
             entry.rename(new_path)
+    nuke_dir(old_dir)
 
 
 def nuke_dir(directory: pathlib.Path) -> None:
@@ -42,7 +43,6 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
         print(f"moving '{directory}' to '{new_dir}'")
         if new_dir.exists():
             move_files(directory, new_dir)
-            nuke_dir(directory)
         else:
             directory.rename(new_dir)
 
@@ -72,6 +72,8 @@ def merge_directories(config: KitsuConfig) -> None:
             name2id[meta.japanese_name.lower()] = meta.entry_id
 
     for directory in config.destination.iterdir():
+        if directory.name in SKIP_FILES:
+            continue
         try:
             master_entry = id2master[name2id[directory.name.lower()]]
         except KeyError:
@@ -81,11 +83,12 @@ def merge_directories(config: KitsuConfig) -> None:
         else:
             print(f"moving '{directory}' to '{master_entry.dir_path}'")
             move_files(directory, master_entry.dir_path)
-            nuke_dir(directory)
 
 
 def delete_empty_directories(config: KitsuConfig) -> None:
     for directory in config.destination.iterdir():
+        if directory.name in SKIP_FILES:
+            continue
         entries = [entry for entry in directory.iterdir() if entry.name not in SKIP_FILES]
         try:
             extra_files = [*directory.joinpath(TRASH_DIR_NAME).iterdir()]
