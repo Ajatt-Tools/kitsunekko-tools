@@ -2,10 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import pathlib
 
-from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, EntryId
+from kitsunekko_tools.api_access.root_directory import EntryId, KitsuDirectoryMeta
 from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import INFO_FILENAME, IGNORE_FILENAME, TRASH_DIR_NAME
+from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
 
 SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
 

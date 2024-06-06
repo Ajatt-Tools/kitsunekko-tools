@@ -8,7 +8,7 @@ import fire
 from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.api_access.download import ApiSyncClient
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import ConfigFileNotFoundError, Config, KitsuConfig
+from kitsunekko_tools.config import Config, ConfigFileNotFoundError, KitsuConfig
 from kitsunekko_tools.consts import PROG_NAME
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.mega_upload import mega_upload

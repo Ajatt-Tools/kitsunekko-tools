@@ -11,13 +11,16 @@ import httpx
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
+    KitsuDownloadResults,
     KitsuSubtitleDownload,
     KitsuSubtitleDownloader,
     SubtitleFileUrl,
-    KitsuDownloadResults,
 )
 from kitsunekko_tools.ignore import IgnoreList
-from kitsunekko_tools.scrapper.parse import find_all_subtitle_dirs, find_all_subtitle_files
+from kitsunekko_tools.scrapper.parse import (
+    find_all_subtitle_dirs,
+    find_all_subtitle_files,
+)
 from kitsunekko_tools.scrapper.types import AnimeDir, SubtitleFile
 
 

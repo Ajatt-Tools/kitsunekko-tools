@@ -11,16 +11,20 @@ from collections.abc import Coroutine
 
 import httpx
 
-from kitsunekko_tools.api_access.file_entry import iter_directory_files, ApiFileEntry
+from kitsunekko_tools.api_access.file_entry import ApiFileEntry, iter_directory_files
 from kitsunekko_tools.api_access.rate_limit import RateLimit
-from kitsunekko_tools.api_access.root_directory import iter_catalog_directories, ApiDirectoryEntry, KitsuDirectoryMeta
+from kitsunekko_tools.api_access.root_directory import (
+    ApiDirectoryEntry,
+    KitsuDirectoryMeta,
+    iter_catalog_directories,
+)
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import get_config, KitsuConfig
+from kitsunekko_tools.config import KitsuConfig, get_config
 from kitsunekko_tools.consts import INFO_FILENAME, TRASH_DIR_NAME
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
-    KitsuSubtitleDownloader,
     KitsuSubtitleDownload,
+    KitsuSubtitleDownloader,
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreList

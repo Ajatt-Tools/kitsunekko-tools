@@ -51,5 +51,5 @@ dependencies = [
 [tool.hatch.envs.dev.scripts]
 # run as `hatch run dev:scriptname`
 check = "mypy --install-types --non-interactive {args:kitsunekko_tools tests}"
-format = "black kitsunekko_tools tests; isort kitsunekko_tools tests;"
+format = "bash \"$(git rev-parse --show-toplevel)/format.sh\""
 test = "pytest;"

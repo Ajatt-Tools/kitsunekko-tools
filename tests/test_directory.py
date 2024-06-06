@@ -6,7 +6,11 @@ from collections.abc import Sequence
 
 import pytest
 
-from kitsunekko_tools.api_access.root_directory import ApiDirectoryDict, iter_catalog_directories, ApiDirectoryEntry
+from kitsunekko_tools.api_access.root_directory import (
+    ApiDirectoryDict,
+    ApiDirectoryEntry,
+    iter_catalog_directories,
+)
 from tests.test_parser import DATA_DIR
 
 
