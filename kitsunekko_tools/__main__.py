@@ -10,6 +10,7 @@ from kitsunekko_tools.api_access.download import ApiSyncClient
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError, KitsuConfig
 from kitsunekko_tools.consts import PROG_NAME
+from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.mega_upload import mega_upload
 from kitsunekko_tools.sanitize import sanitize_directories
@@ -99,10 +100,6 @@ class IgnoreCli:
             print("Nothing to add.")
 
 
-def get_client(api: bool, config: KitsuConfig, full_sync: bool) -> ApiSyncClient | KitsuScrapper:
-    return (ApiSyncClient if api else KitsuScrapper)(config=config, full_sync=full_sync)
-
-
 class Application:
     """
     A set of scripts for creating a local kitsunekko mirror.
@@ -144,8 +141,12 @@ class Application:
         :param full: Do a full sync. Ignore the 'skip_older' setting.
         :param api: Use the API to access the contents.
         """
+        if api:
+            client_type = ClientType.api
+        else:
+            client_type = ClientType.kitsu_scrapper
         try:
-            s = get_client(api=api, config=self._config.data(), full_sync=full)
+            s = ClientBase(client_type=client_type, config=self._config.data(), full_sync=full)
         except KitsuException as ex:
             print(ex.what)
         else:

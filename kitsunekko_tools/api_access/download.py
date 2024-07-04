@@ -21,6 +21,7 @@ from kitsunekko_tools.api_access.root_directory import (
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig, get_config
 from kitsunekko_tools.consts import INFO_FILENAME, TRASH_DIR_NAME
+from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
     KitsuSubtitleDownload,
@@ -186,7 +187,7 @@ def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: 
         old_path.rename(new_path)
 
 
-class ApiSyncClient:
+class ApiSyncClient(ClientBase, client_type=ClientType.api):
     _config: KitsuConfig
     _ignore: IgnoreList
     _downloader: KitsuSubtitleDownloader
@@ -194,7 +195,8 @@ class ApiSyncClient:
     _full_sync: bool
     _tasks: collections.deque[Coroutine]
 
-    def __init__(self, config: KitsuConfig, full_sync: bool = False):
+    def __init__(self, client_type: ClientType, config: KitsuConfig, full_sync: bool = False) -> None:
+        super().__init__(client_type, config, full_sync)
         self._config = config
         self._config.raise_for_destination()
         self._ignore = IgnoreList(self._config)

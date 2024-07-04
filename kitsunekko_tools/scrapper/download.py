@@ -9,6 +9,7 @@ from collections.abc import Sequence
 import httpx
 
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.file_downloader import (
     KitsuConnectionError,
     KitsuDownloadResults,
@@ -107,13 +108,15 @@ def make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> Se
     ]
 
 
-class KitsuScrapper:
+class KitsuScrapper(ClientBase, client_type=ClientType.kitsu_scrapper):
     _config: KitsuConfig
     _ignore: IgnoreList
+    _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
 
-    def __init__(self, config: KitsuConfig, full_sync: bool = False):
+    def __init__(self, client_type: ClientType, config: KitsuConfig, full_sync: bool = False) -> None:
+        super().__init__(client_type, config, full_sync)
         self._config = config
         self._config.raise_for_destination()
         self._ignore = IgnoreList(self._config)
