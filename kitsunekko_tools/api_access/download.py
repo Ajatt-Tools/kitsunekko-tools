@@ -47,7 +47,7 @@ class ApiResponseCode(enum.Enum):
 
 def get_http_api_client(config: KitsuConfig) -> httpx.AsyncClient:
     return httpx.AsyncClient(
-        proxies=config.proxy,
+        proxy=config.proxy,
         headers=typing.cast(typing.Mapping[str, str], config.api_headers()),
         timeout=config.timeout,
         follow_redirects=False,

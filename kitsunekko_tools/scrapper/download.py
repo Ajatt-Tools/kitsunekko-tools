@@ -91,7 +91,7 @@ class FetchState(typing.NamedTuple):
 
 def get_http_client(config: KitsuConfig) -> httpx.AsyncClient:
     return httpx.AsyncClient(
-        proxies=config.proxy,
+        proxy=config.proxy,
         headers=config.headers,
         timeout=config.timeout,
         follow_redirects=False,
