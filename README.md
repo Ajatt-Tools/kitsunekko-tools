@@ -1,5 +1,8 @@
 # kitsunekko-tools
 
+[![Chat](https://img.shields.io/badge/chat-join-green?style=for-the-badge&logo=Telegram&logoColor=green)](https://tatsumoto.neocities.org/blog/join-our-community)
+[![Support](https://img.shields.io/badge/support-developer-orange?style=for-the-badge&logo=Patreon&logoColor=orange)](https://tatsumoto.neocities.org/blog/donating-to-tatsumoto)
+
 A set of scripts for creating a
 local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc)
 mirror.
@@ -70,7 +73,7 @@ and fill it with paths relative to `destination`.
 
 ## Help
 
-Run `ktools --help` to print a help page. 
+Run `ktools --help` to print a help page.
 
 ## Environment variables
 
