@@ -33,4 +33,4 @@ def fs_name_strip(name: str) -> str:
     name = re.sub(RE_FILENAME_PROHIBITED, " ", name)
     name = re.sub(RE_MULTI_SPACE, " ", name)
     # Note: Windows-like OSes don't allow dots at the end.
-    return name.strip().rstrip('.')
+    return name.strip().rstrip(".")
