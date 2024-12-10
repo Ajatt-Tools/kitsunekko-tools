@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import os
+import subprocess
 import sys
 
 import fire
@@ -170,6 +171,25 @@ class Application:
             print(ex.what)
         else:
             sanitize_directories(data)
+
+    def git(self, *args) -> None:
+        """
+        Run git commands in the destination directory.
+        This doesn't make sense if the destination is not in a git repository.
+        """
+        try:
+            data = self._config.data()
+        except ConfigFileNotFoundError as ex:
+            print(ex.what)
+        else:
+            ret = subprocess.run(
+                args=("git", *args),
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+                check=False,
+                cwd=data.destination,
+            )
+            sys.exit(ret.returncode)
 
 
 def main() -> None:
