@@ -6,15 +6,13 @@ import sys
 import fire
 
 from kitsunekko_tools.__version__ import __version__
-from kitsunekko_tools.api_access.download import ApiSyncClient
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.config import Config, ConfigFileNotFoundError, KitsuConfig
+from kitsunekko_tools.config import Config, ConfigFileNotFoundError
 from kitsunekko_tools.consts import PROG_NAME
 from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.mega_upload import mega_upload
 from kitsunekko_tools.sanitize import sanitize_directories
-from kitsunekko_tools.scrapper.download import KitsuScrapper
 
 
 class ConfigCli:
