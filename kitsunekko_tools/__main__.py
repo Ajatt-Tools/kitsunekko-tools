@@ -6,6 +6,7 @@ import sys
 
 import fire
 
+from kitsunekko_tools import KitsuScrapper, ApiSyncClient
 from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError
@@ -140,12 +141,12 @@ class Application:
         :param full: Do a full sync. Ignore the 'skip_older' setting.
         :param api: Use the API to access the contents.
         """
-        if api:
-            client_type = ClientType.api
-        else:
-            client_type = ClientType.kitsu_scrapper
+
         try:
-            s = ClientBase(client_type=client_type, config=self._config.data(), full_sync=full)
+            if api:
+                s = ApiSyncClient(config=self._config.data(), full_sync=full)
+            else:
+                s = KitsuScrapper(config=self._config.data(), full_sync=full)
         except KitsuException as ex:
             print(ex.what)
         else:

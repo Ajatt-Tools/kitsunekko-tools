@@ -187,7 +187,7 @@ def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: 
         old_path.rename(new_path)
 
 
-class ApiSyncClient(ClientBase, client_type=ClientType.api):
+class ApiSyncClient(ClientBase):
     _config: KitsuConfig
     _ignore: IgnoreList
     _downloader: KitsuSubtitleDownloader
