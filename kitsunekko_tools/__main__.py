@@ -134,17 +134,19 @@ class Application:
         else:
             print(data.destination)
 
-    async def sync(self, full: bool = False, api: bool = False) -> None:
+    async def sync(self, full: bool = False, api: bool = False, ignore_dir_mod_times: bool = False) -> None:
         """
         Download everything from Kitsunekko to a local folder.
 
-        :param full: Do a full sync. Ignore the 'skip_older' setting.
-        :param api: Use the API to access the contents.
+        Args:
+            full: Do a full sync. Ignore the 'skip_older' setting.
+            api: Use the API to access the contents.
+            ignore_dir_mod_times: Ignore modification times of directories when using the API.
         """
 
         try:
             if api:
-                s = ApiSyncClient(config=self._config.data(), full_sync=full)
+                s = ApiSyncClient(config=self._config.data(), full_sync=full, ignore_dir_mod_times=ignore_dir_mod_times)
             else:
                 s = KitsuScrapper(config=self._config.data(), full_sync=full)
         except KitsuException as ex:

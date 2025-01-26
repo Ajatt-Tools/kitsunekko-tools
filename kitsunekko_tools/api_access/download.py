@@ -193,16 +193,18 @@ class ApiSyncClient(ClientBase):
     _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
+    _ignore_dir_mod_times: bool
     _tasks: collections.deque[Coroutine]
 
-    def __init__(self, client_type: ClientType, config: KitsuConfig, full_sync: bool = False) -> None:
-        super().__init__(client_type, config, full_sync)
+    def __init__(self, config: KitsuConfig, full_sync: bool = False, ignore_dir_mod_times: bool = False) -> None:
+        super().__init__()
         self._config = config
         self._config.raise_for_destination()
         self._ignore = IgnoreList(self._config)
         self._downloader = KitsuSubtitleDownloader(self._config, self._ignore)
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
+        self._ignore_dir_mod_times = ignore_dir_mod_times
         self._tasks = collections.deque()
 
     def _construct_search_args_str(self, is_anime: bool) -> str:
@@ -223,7 +225,7 @@ class ApiSyncClient(ClientBase):
                 print(e)
 
     async def _visit_directory(self, client: httpx.AsyncClient, directory: KitsuDirectoryEntry) -> None:
-        if not directory.should_visit_directory():
+        if not self._ignore_dir_mod_times and not directory.should_visit_directory():
             print(f"skipped directory that has been visited recently: '{directory.name}'")
             return
         try:
