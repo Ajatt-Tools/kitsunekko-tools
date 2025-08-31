@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import pathlib
+from typing import Iterable
 
 from kitsunekko_tools.api_access.root_directory import EntryId, KitsuDirectoryMeta
 from kitsunekko_tools.common import fs_name_strip
@@ -47,42 +48,120 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
             directory.rename(new_dir)
 
 
-def merge_directories(config: KitsuConfig) -> None:
-    id2master: dict[EntryId, KitsuDirectoryMeta] = {}
-    name2id: dict[str, EntryId] = {}
+def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
+    with open(directory / INFO_FILENAME, encoding="utf-8") as f:
+        return KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
 
-    for directory in config.destination.iterdir():
-        if directory.name in SKIP_FILES:
-            continue
+
+def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> None:
+    """
+    Merge two directories. Move all files from directory to the main entry's directory.
+    """
+    if main_entry.dir_path != directory:
+        print(f"moving '{directory}' to '{main_entry.dir_path}'")
+        move_files(directory, main_entry.dir_path)
+
+
+def iter_lookup_keys(meta: KitsuDirectoryMeta) -> Iterable[str]:
+    assert meta.entry_type, "entry type shouldn't be empty."
+    assert meta.entry_id >= 0, "entry id shouldn't be empty."
+    assert meta.dir_path.is_dir(), "entry directory should exist."
+    assert meta.name, "entry name should exist."
+
+    # Using IDs (high priority)
+    yield f"kitsunekko_{meta.entry_id}"
+    if meta.anilist_id:
+        yield f"anilist_{meta.anilist_id}"
+    if meta.tmdb_id:
+        yield f"tmdb_{meta.tmdb_id}"
+
+    # Using type + name
+    yield f"{meta.entry_type}_{meta.name.lower()}"
+    if meta.english_name:
+        yield f"{meta.entry_type}_{meta.english_name.lower()}"
+    if meta.japanese_name:
+        yield f"{meta.entry_type}_{meta.japanese_name.lower()}"
+
+    # Using just name
+    yield meta.name.lower()
+    if meta.english_name:
+        yield meta.english_name.lower()
+    if meta.japanese_name:
+        yield meta.japanese_name.lower()
+    yield meta.dir_path.name.lower()
+
+
+class MergeDirectories:
+    _config: KitsuConfig
+    _id_to_main_entry: dict[EntryId, KitsuDirectoryMeta]
+    _lookup_key_to_id: dict[str, EntryId]
+
+    def __init__(self, config: KitsuConfig) -> None:
+        self._config = config
+        self._id_to_main_entry = {}
+        self._lookup_key_to_id = {}
+
+    def _build_lookup_dicts(self) -> None:
+        for directory in self._config.destination.iterdir():
+            if directory.name in SKIP_FILES:
+                continue
+            try:
+                meta = read_directory_meta(directory)
+            except FileNotFoundError:
+                continue
+
+            # Main entry is the most recently modified directory with this ID.
+            if meta.entry_id not in self._id_to_main_entry:
+                self._id_to_main_entry[meta.entry_id] = meta
+            else:
+                self._id_to_main_entry[meta.entry_id] = meta = max(
+                    meta,
+                    self._id_to_main_entry[meta.entry_id],
+                    key=lambda d: d.last_modified,
+                )
+            for lookup_key in iter_lookup_keys(meta):
+                self._lookup_key_to_id[lookup_key] = meta.entry_id
+
+    def _find_main_entry(self, meta: KitsuDirectoryMeta) -> KitsuDirectoryMeta:
+        # Try to find the main entry by different names and IDs.
+        for try_key in iter_lookup_keys(meta):
+            try:
+                return self._id_to_main_entry[self._lookup_key_to_id[try_key]]
+            except KeyError:
+                pass
+        raise KeyError("Tried all possible lookup keys and found nothing.")
+
+    def _try_match_by_directory_name(self, directory: pathlib.Path) -> None:
+        """
+        Try to find the main entry by directory name.
+        """
         try:
-            with open(directory / INFO_FILENAME, encoding="utf-8") as f:
-                meta = KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
-        except FileNotFoundError:
-            continue
-
-        if meta.entry_id not in id2master:
-            id2master[meta.entry_id] = meta
-        else:
-            id2master[meta.entry_id] = meta = max(meta, id2master[meta.entry_id], key=lambda d: d.last_modified)
-
-        name2id[directory.name.lower()] = meta.entry_id
-        if meta.english_name:
-            name2id[meta.english_name.lower()] = meta.entry_id
-        if meta.japanese_name:
-            name2id[meta.japanese_name.lower()] = meta.entry_id
-
-    for directory in config.destination.iterdir():
-        if directory.name in SKIP_FILES:
-            continue
-        try:
-            master_entry = id2master[name2id[directory.name.lower()]]
+            main_entry = self._id_to_main_entry[self._lookup_key_to_id[directory.name.lower()]]
         except KeyError:
-            continue
-        if master_entry.dir_path == directory:
-            continue
-        else:
-            print(f"moving '{directory}' to '{master_entry.dir_path}'")
-            move_files(directory, master_entry.dir_path)
+            return
+        move_directory(directory, main_entry)
+
+    def _find_matches_and_merge(self) -> None:
+        for directory in self._config.destination.iterdir():
+            if directory.name in SKIP_FILES:
+                continue
+            try:
+                meta = read_directory_meta(directory)
+            except FileNotFoundError:
+                self._try_match_by_directory_name(directory)
+                continue
+
+            try:
+                main_entry = self._find_main_entry(meta)
+            except (KeyError, FileNotFoundError):
+                self._try_match_by_directory_name(directory)
+                continue
+
+            move_directory(directory, main_entry)
+
+    def merge_directories(self) -> None:
+        self._build_lookup_dicts()
+        self._find_matches_and_merge()
 
 
 def delete_empty_directories(config: KitsuConfig) -> None:
@@ -101,5 +180,5 @@ def delete_empty_directories(config: KitsuConfig) -> None:
 
 def sanitize_directories(config: KitsuConfig) -> None:
     rename_badly_named_directories(config)
-    merge_directories(config)
+    MergeDirectories(config).merge_directories()
     delete_empty_directories(config)
