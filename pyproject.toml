@@ -16,6 +16,7 @@ authors = [
 dependencies = [
   "httpx[socks]>=0.28",
   "fire>=0.6.0",
+  "beartype>=0.10.0",
 ]
 license = {file = "LICENSE"}
 requires-python = ">=3.11"

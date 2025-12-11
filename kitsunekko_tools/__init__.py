@@ -1,5 +1,10 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+# https://github.com/beartype/beartype
+from beartype.claw import beartype_this_package  # <-- hype comes
+
+beartype_this_package()  # <-- hype goes
+
 from kitsunekko_tools.scrapper.download import KitsuScrapper
 from kitsunekko_tools.api_access.download import ApiSyncClient

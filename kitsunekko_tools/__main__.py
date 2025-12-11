@@ -24,7 +24,7 @@ class ConfigCli:
 
     _config: Config
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         self._config = config
 
     def create(self) -> None:
@@ -69,7 +69,7 @@ class IgnoreCli:
 
     _config: Config
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         self._config = config
 
     def _get_list(self) -> IgnoreList:
@@ -108,7 +108,7 @@ class Application:
     :param config_path: Alternative path to the config file.
     """
 
-    def __init__(self, version: bool = False, config_path: str | None = None):
+    def __init__(self, version: bool = False, config_path: str | None = None) -> None:
         self._config = Config(config_path)
         self.config = ConfigCli(self._config)
         self.ignore = IgnoreCli(self._config)

@@ -11,6 +11,8 @@ import pathlib
 import tomllib
 import typing
 
+from beartype.door import die_if_unbearable
+
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import PROG_NAME, SETTINGS_FILE_NAME
 
@@ -60,8 +62,7 @@ class DestDirNotFoundError(KitsuException):
 class ConfigFileInvalidError(KitsuException, ValueError):
     what: str
 
-
-def as_toml_str(d: dict[str, str | int | dict]) -> str:
+def as_toml_str(d: dict[str, pathlib.Path | str | int | dict]) -> str:
     with io.StringIO() as si:
         for key, value in d.items():
             match value:
@@ -91,36 +92,54 @@ class ApiHeaders(typing.TypedDict):
 def convert_time_delta(skip_older: str | datetime.timedelta) -> datetime.timedelta:
     if isinstance(skip_older, datetime.timedelta):
         return skip_older
-    assert isinstance(skip_older, str), "Parameter 'skip_older' is expected to be a string."
+    die_if_unbearable(skip_older, str, exception_prefix="Parameter 'skip_older' is expected to be a string.")
     period, time_unit = skip_older.split()
     return datetime.timedelta(**{time_unit: int(period)})
 
 
 @dataclasses.dataclass(frozen=True)
 class KitsuConfig:
-    destination: pathlib.Path = pathlib.Path.home() / "kitsunekko"
+    destination: pathlib.Path # E.g. "/mnt/archive/japanese/kitsunekko-mirror/subtitles"
+    skip_older: datetime.timedelta # E.g. 30 days
+    allowed_file_types: frozenset[str] # E.g. ['ssa', 'ass', 'srt']
     proxy: str | None = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"  # scrap target
     timeout: int = 120
-    skip_older: datetime.timedelta = datetime.timedelta(days=30)  # 30 days
     api_url: str = "https://kitsunekko.net"  # URL of a subtitle server. Normally looks like 'https://example.com'.
     api_key: str = ""  # API key of the subtitle server
-    allowed_file_types: frozenset[str] = dataclasses.field(
-        default_factory=lambda: frozenset(["ssa", "ass", "srt", "zip", "rar", "7z"])
-    )
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
 
     @classmethod
+    def default(cls) -> typing.Self:
+        return cls(
+            allowed_file_types=frozenset(["ssa", "ass", "srt", "zip", "rar", "7z"]),
+            skip_older=datetime.timedelta(days=30),
+            destination=pathlib.Path.home().joinpath("kitsunekko").resolve(),
+        )
+
+    @classmethod
     def from_file(cls, file: typing.BinaryIO) -> typing.Self:
-        instance = cls(**tomllib.load(file))
+        instance = cls.default()
+        data = tomllib.load(file)
+        try:
+            data["destination"] = pathlib.Path(data["destination"]).expanduser().resolve()
+        except KeyError:
+            data["destination"] = instance.destination
+        try:
+            data["skip_older"] = convert_time_delta(data["skip_older"])
+        except KeyError:
+            data["skip_older"] = instance.skip_older
+        try:
+            data["allowed_file_types"] = frozenset(data["allowed_file_types"])
+        except KeyError:
+            data["allowed_file_types"] = instance.allowed_file_types
+
+        instance = cls(**data)
         if "dirlist.php?dir=" not in instance.download_root:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
         return dataclasses.replace(
             instance,
-            destination=pathlib.Path(instance.destination).expanduser(),
-            skip_older=convert_time_delta(instance.skip_older),
             proxy=instance.proxy or None,  # coerce proxy to null if it's empty
-            allowed_file_types=frozenset(instance.allowed_file_types),
             api_key=os.getenv("KITSU_API_KEY", instance.api_key),
             api_url=os.getenv("KITSU_API_URL", instance.api_url),
         )
@@ -170,7 +189,7 @@ class Config:
     Proxy to get access to the config.
     """
 
-    def __init__(self, config_path: str | None):
+    def __init__(self, config_path: str | None) -> None:
         self._config_path = config_path
 
     def load(self) -> ReadConfigResult:
@@ -190,14 +209,13 @@ class Config:
         if config_file_path.is_file():
             raise RuntimeError(f"File already exists: {config_file_path}")
         config_file_path.parent.mkdir(exist_ok=True, parents=True)
-        config_file_path.write_text(KitsuConfig().as_toml_str(), encoding="utf-8")
+        config_file_path.write_text(KitsuConfig.default().as_toml_str(), encoding="utf-8")
         return config_file_path
 
-
-def main():
+def main() -> None:
     from pprint import pprint
 
-    pprint(KitsuConfig(), indent=2)
+    pprint(KitsuConfig.default(), indent=2)
 
 
 if __name__ == "__main__":

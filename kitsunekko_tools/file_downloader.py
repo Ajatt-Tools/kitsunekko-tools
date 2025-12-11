@@ -120,13 +120,13 @@ class KitsuSubtitleDownloader:
 
     async def download_sub(self, client: httpx.AsyncClient, subtitle: KitsuSubtitleDownload) -> DownloadResult:
         if subtitle.is_already_downloaded():
-            return DownloadResult(DownloadStatus.already_exists, subtitle)
+            return DownloadResult(reason=DownloadStatus.already_exists, subtitle=subtitle)
 
         if self._ignore.is_matching(subtitle.file_path):
-            return DownloadResult(DownloadStatus.explicitly_ignored, subtitle)
+            return DownloadResult(reason=DownloadStatus.explicitly_ignored, subtitle=subtitle)
 
         if not self._config.is_allowed_file_type(subtitle.file_path):
-            return DownloadResult(DownloadStatus.blocked_file_type, subtitle)
+            return DownloadResult(reason=DownloadStatus.blocked_file_type, subtitle=subtitle)
 
         print(f"downloading file: {subtitle.url}")
 
