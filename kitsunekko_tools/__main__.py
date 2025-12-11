@@ -6,7 +6,7 @@ import sys
 
 import fire
 
-from kitsunekko_tools import KitsuScrapper, ApiSyncClient
+from kitsunekko_tools import ApiSyncClient, KitsuScrapper
 from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError

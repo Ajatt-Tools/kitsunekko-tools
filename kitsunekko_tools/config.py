@@ -62,6 +62,7 @@ class DestDirNotFoundError(KitsuException):
 class ConfigFileInvalidError(KitsuException, ValueError):
     what: str
 
+
 def as_toml_str(d: dict[str, pathlib.Path | str | int | dict]) -> str:
     with io.StringIO() as si:
         for key, value in d.items():
@@ -99,9 +100,9 @@ def convert_time_delta(skip_older: str | datetime.timedelta) -> datetime.timedel
 
 @dataclasses.dataclass(frozen=True)
 class KitsuConfig:
-    destination: pathlib.Path # E.g. "/mnt/archive/japanese/kitsunekko-mirror/subtitles"
-    skip_older: datetime.timedelta # E.g. 30 days
-    allowed_file_types: frozenset[str] # E.g. ['ssa', 'ass', 'srt']
+    destination: pathlib.Path  # E.g. "/mnt/archive/japanese/kitsunekko-mirror/subtitles"
+    skip_older: datetime.timedelta  # E.g. 30 days
+    allowed_file_types: frozenset[str]  # E.g. ['ssa', 'ass', 'srt']
     proxy: str | None = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"  # scrap target
     timeout: int = 120
@@ -211,6 +212,7 @@ class Config:
         config_file_path.parent.mkdir(exist_ok=True, parents=True)
         config_file_path.write_text(KitsuConfig.default().as_toml_str(), encoding="utf-8")
         return config_file_path
+
 
 def main() -> None:
     from pprint import pprint

@@ -44,6 +44,7 @@ profile = "black"
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "pip",
   "mypy>=1.0.0",
   "isort",
   "pytest",

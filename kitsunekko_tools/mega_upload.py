@@ -7,13 +7,16 @@ import sys
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
 
+
 @dataclasses.dataclass(frozen=True)
 class MegaError(KitsuException, RuntimeError):
     what: str
 
+
 def raise_for_status(out: subprocess.CompletedProcess) -> None:
     if out.returncode != 0:
         raise MegaError(f"Command failed with code {out.returncode}")
+
 
 def mega_upload(config: KitsuConfig) -> None:
     remote_destination = f"/Root/{config.destination.name}"

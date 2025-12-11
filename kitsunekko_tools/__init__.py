@@ -6,5 +6,5 @@ from beartype.claw import beartype_this_package  # <-- hype comes
 
 beartype_this_package()  # <-- hype goes
 
-from kitsunekko_tools.scrapper.download import KitsuScrapper
 from kitsunekko_tools.api_access.download import ApiSyncClient
+from kitsunekko_tools.scrapper.download import KitsuScrapper
