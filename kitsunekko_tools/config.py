@@ -109,6 +109,11 @@ class KitsuConfig:
     api_url: str = "https://kitsunekko.net"  # URL of a subtitle server. Normally looks like 'https://example.com'.
     api_key: str = ""  # API key of the subtitle server
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
+    site_url: str = "https://subtitles.ajatt.top/"  # for building the catalog.
+    raw_subtitles_dir_url: str = (
+        "https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/"
+    )
+    git_subtitles_dir_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/"
 
     @classmethod
     def default(cls) -> typing.Self:
