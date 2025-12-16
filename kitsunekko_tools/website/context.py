@@ -39,6 +39,7 @@ def mk_context(config: KitsuConfig, site_dir_path: pathlib.Path, output_file_pat
             index_path=site_dir_path / INDEX_TEMPLATE_NAME,
             # Return the URL by joining the global URL with the relative path
             request_path=full_site_url_to_resource(config.site_url, site_dir_path, output_file_path),
+            site_blog_url=config.site_blog_url.rstrip("/"),
             site_description="Japanese subtitles for Japanese anime, dramas, TV shows, and movies",
             site_title="Japanese subtitles - AJATT",
             site_author="Tatsumoto Ren",
