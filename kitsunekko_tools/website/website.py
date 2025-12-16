@@ -41,6 +41,7 @@ class WebSiteBuilder:
 
     def __init__(self, config: KitsuConfig) -> None:
         self._cfg = config
+        self._cfg.raise_for_destination()
         self._work_root = config.destination.resolve().parent
         self._site_dir_path = self._work_root.joinpath(SITE_BUILD_LOCATION_NAME)
         self._templates_dir_path = self._work_root.joinpath(TEMPLATES_DIR_NAME)
