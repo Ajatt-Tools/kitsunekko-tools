@@ -56,26 +56,25 @@ class WebSiteBuilder:
         self._entries_dir_path.mkdir(parents=True, exist_ok=True)
 
         shutil.copytree(self._resources_dir_path, self._site_dir_path / RESOURCES_DIR_NAME, dirs_exist_ok=True)
-        entries = list(self._walk_dirs())
-        print("Rebuilding the index.")
+        entries = sorted(self._walk_dirs(), key=lambda entry: entry.path_to_dir)
         self.generate_index_page(entries)
-        print("Rebuilding the entries", end="")
-        for entry in entries:
-            self.generate_entry_page(entry)
-        print("")
+        self.generate_entry_pages(entries)
 
     def generate_index_page(
         self,
         entries: list[LocalDirectoryEntry],
     ) -> None:
         """Generate the index page with all entries."""
+        print("Rebuilding the index.")
         context = mk_context(self._cfg, self._site_dir_path, self._index_file_path)
         context.ctx.entries = entries
         html_content = render_template(INDEX_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
         self._index_file_path.write_text(html_content, encoding="utf-8")
 
     def _walk_dirs(self) -> Iterable[LocalDirectoryEntry]:
+        print("Collecting entries", end="")
         for dir_path in self._cfg.destination.resolve().iterdir():
+            print(".", end="")
             if dir_path.name in SKIP_FILES:
                 continue
             try:
@@ -88,20 +87,23 @@ class WebSiteBuilder:
                 files_in_dir=collect_files(dir_path),
                 site_path_to_html_file=self._entries_dir_path / f"{name_to_addr(dir_path.name)}.html",
             )
+        print("")
 
-    def generate_entry_page(self, entry: LocalDirectoryEntry) -> None:
+    def generate_entry_pages(self, entries: list[LocalDirectoryEntry]) -> None:
         """Generate the index page with all entries."""
-        print(".", end="")
-        context = mk_context(self._cfg, self._site_dir_path, entry.site_path_to_html_file)
-        context.ctx.entry = entry
-        if entry.meta:
-            context.ctx.entry_name = entry.meta.name
-        else:
-            context.ctx.entry_name = entry.path_to_dir.name
+        print("Rebuilding the entries", end="")
+        for entry in entries:
+            print(".", end="")
+            context = mk_context(self._cfg, self._site_dir_path, entry.site_path_to_html_file)
+            context.ctx.entry = entry
+            if entry.meta:
+                context.ctx.entry_name = entry.meta.name
+            else:
+                context.ctx.entry_name = entry.path_to_dir.name
 
-        html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
-        entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
-
+            html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
+            entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
+        print("")
 
 def build_website(config: KitsuConfig) -> None:
     b = WebSiteBuilder(config)
