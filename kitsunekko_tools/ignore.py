@@ -41,6 +41,9 @@ class IgnoreList:
 
     @property
     def ignore_filepath(self) -> pathlib.Path:
+        """
+        Return path to ignore file.
+        """
         return self._ignore_filepath
 
     def _pattern_from_path(self, file_path: pathlib.Path) -> str:
@@ -67,12 +70,6 @@ class IgnoreList:
         Add file to the list, as relative path.
         """
         return self.add(self._pattern_from_path(file_path))
-
-    def path(self) -> pathlib.Path:
-        """
-        Return path to ignore file.
-        """
-        return self._ignore_filepath
 
     def commit(self) -> None:
         """

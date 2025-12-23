@@ -96,7 +96,7 @@ class IgnoreCli:
             ignore_list = self._get_list()
             ignore_list.add(str(pattern))
             ignore_list.commit()
-            print(f"File written: {ignore_list.path()}")
+            print(f"File written: {ignore_list.ignore_filepath}")
         else:
             print("Nothing to add.")
 
