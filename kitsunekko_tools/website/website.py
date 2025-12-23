@@ -7,7 +7,7 @@ from typing import Iterable
 
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.sanitize import SKIP_FILES, read_directory_meta
+from kitsunekko_tools.sanitize import SKIP_FILES, read_directory_meta, iter_subtitle_directories
 from kitsunekko_tools.website.context import (
     mk_context,
     INDEX_TEMPLATE_NAME,
@@ -74,10 +74,8 @@ class WebSiteBuilder:
 
     def _walk_dirs(self) -> Iterable[LocalDirectoryEntry]:
         print("Collecting entries", end="")
-        for dir_path in self._cfg.destination.resolve().iterdir():
+        for dir_path in iter_subtitle_directories(self._cfg):
             print(".", end="")
-            if dir_path.name in SKIP_FILES:
-                continue
             try:
                 meta = read_directory_meta(dir_path)
             except FileNotFoundError:

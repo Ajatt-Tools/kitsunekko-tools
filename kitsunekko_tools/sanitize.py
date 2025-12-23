@@ -33,10 +33,17 @@ def nuke_dir(directory: pathlib.Path) -> None:
     directory.rmdir()
 
 
-def rename_badly_named_directories(config: KitsuConfig) -> None:
-    for directory in config.destination.iterdir():
-        if directory.name in SKIP_FILES:
+def iter_subtitle_directories(config: KitsuConfig) -> Iterable[pathlib.Path]:
+    for entry in config.destination.resolve().iterdir():
+        if not entry.is_dir():
             continue
+        if entry.name in SKIP_FILES:
+            continue
+        yield entry
+
+
+def rename_badly_named_directories(config: KitsuConfig) -> None:
+    for directory in iter_subtitle_directories(config):
         sanitized_name = fs_name_strip(directory.name)
         if sanitized_name == directory.name:
             continue
@@ -102,9 +109,7 @@ class MergeDirectories:
         self._lookup_key_to_id = {}
 
     def _build_lookup_dicts(self) -> None:
-        for directory in self._config.destination.iterdir():
-            if directory.name in SKIP_FILES:
-                continue
+        for directory in iter_subtitle_directories(self._config):
             try:
                 meta = read_directory_meta(directory)
             except FileNotFoundError:
@@ -142,9 +147,7 @@ class MergeDirectories:
         move_directory(directory, main_entry)
 
     def _find_matches_and_merge(self) -> None:
-        for directory in self._config.destination.iterdir():
-            if directory.name in SKIP_FILES:
-                continue
+        for directory in iter_subtitle_directories(self._config):
             try:
                 meta = read_directory_meta(directory)
             except FileNotFoundError:
@@ -165,9 +168,7 @@ class MergeDirectories:
 
 
 def delete_empty_directories(config: KitsuConfig) -> None:
-    for directory in config.destination.iterdir():
-        if directory.name in SKIP_FILES:
-            continue
+    for directory in iter_subtitle_directories(config):
         entries = [entry for entry in directory.iterdir() if entry.name not in SKIP_FILES]
         try:
             extra_files = [*directory.joinpath(TRASH_DIR_NAME).iterdir()]
