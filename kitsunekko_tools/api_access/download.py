@@ -18,7 +18,7 @@ from kitsunekko_tools.api_access.root_directory import (
     KitsuDirectoryMeta,
     iter_catalog_directories,
 )
-from kitsunekko_tools.common import KitsuException
+from kitsunekko_tools.common import SKIP_FILES, KitsuException
 from kitsunekko_tools.config import KitsuConfig, get_config
 from kitsunekko_tools.consts import INFO_FILENAME, TRASH_DIR_NAME
 from kitsunekko_tools.download import ClientBase, ClientType
@@ -29,7 +29,6 @@ from kitsunekko_tools.file_downloader import (
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreList
-from kitsunekko_tools.sanitize import SKIP_FILES
 
 
 @enum.unique
@@ -74,8 +73,15 @@ class ApiRateLimitedError(ApiBadStatusError):
         return f"rate limited. remaining time {self.rate_limit.reset_after}."
 
 
+def get_meta_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
+    """
+    Return path to .kitsuinfo.json in this directory.
+    """
+    return parent_dir.joinpath(INFO_FILENAME)
+
+
 def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
-    return pathlib.Path(config.destination / remote_dir.name / INFO_FILENAME)
+    return get_meta_file_path_on_disk(parent_dir=config.destination.joinpath(remote_dir.name))
 
 
 def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:

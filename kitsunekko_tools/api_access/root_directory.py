@@ -52,34 +52,36 @@ def nuke_key(d: dict, key: str) -> None:
         pass
 
 
-EntryId = typing.NewType("EntryId", int)
+KitsunekkoId = typing.NewType("KitsunekkoId", int)
+AnilistId = typing.NewType("AnilistId", int)
+TMDBId = typing.NewType("TMDBId", str)  # example: "tv:153496"
 
 
 @dataclasses.dataclass(frozen=True)
 class ApiDirectoryEntry:
-    entry_id: EntryId  # used to query API for files in the directory
+    entry_id: KitsunekkoId  # used to query API for files in the directory
     name: str  # name of the anime and the directory on the disk.
     entry_type: str
     last_modified: datetime.datetime  # format RFC3339: '2024-04-27T17:54:01Z'
     english_name: str | None = None
     japanese_name: str | None = None
-    anilist_id: int | None = None
-    tmdb_id: str | None = None
+    anilist_id: AnilistId | None = None
+    tmdb_id: TMDBId | None = None
 
     @classmethod
     def from_api_json(cls, json_dict: ApiDirectoryDict) -> typing.Self:
         """
-        Construct self from the API json response.
+        Construct self from the API JSON response.
         """
         return cls(
-            entry_id=EntryId(json_dict["id"]),
+            entry_id=KitsunekkoId(json_dict["id"]),
             name=fs_name_strip(json_dict["name"]),
             entry_type=describe_entry_type(json_dict["flags"]),
             last_modified=parse_api_time(json_dict["last_modified"]),
             english_name=json_dict.get("english_name", "").strip(),
             japanese_name=json_dict.get("japanese_name", "").strip(),
-            anilist_id=json_dict.get("anilist_id"),
-            tmdb_id=json_dict.get("tmdb_id"),
+            anilist_id=AnilistId(json_dict["anilist_id"]) if "anilist_id" in json_dict else None,
+            tmdb_id=TMDBId(json_dict["tmdb_id"]) if "tmdb_id" in json_dict else None,
         )
 
     def write_to_file(self, fp: typing.TextIO) -> None:

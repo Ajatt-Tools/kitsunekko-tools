@@ -2,7 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import abc
+import dataclasses
 import re
+
+from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
 
 
 class KitsuException(Exception, abc.ABC):
@@ -12,6 +15,12 @@ class KitsuException(Exception, abc.ABC):
         raise NotImplementedError()
 
 
+@dataclasses.dataclass(frozen=True)
+class KitsuError(KitsuException):
+    what: str
+
+
+SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
 RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#{}<>^*/:\"`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
 RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
 WINDOWS_SUBSTITUTE_CHARS = {

@@ -25,7 +25,7 @@ class SiteContext:
 
 def mk_context(config: KitsuConfig, site_dir_path: pathlib.Path, output_file_path: pathlib.Path) -> SiteContext:
     # Get current time for build date
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
 
     return SiteContext(
         cfg=config,

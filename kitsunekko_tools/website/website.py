@@ -3,19 +3,20 @@
 import dataclasses
 import pathlib
 import shutil
-from typing import Iterable
+from collections.abc import Iterable
 
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
+from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.sanitize import SKIP_FILES, read_directory_meta, iter_subtitle_directories
+from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_meta
 from kitsunekko_tools.website.context import (
-    mk_context,
+    CSS_FILE_NAME,
+    ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
     RESOURCES_DIR_NAME,
-    CSS_FILE_NAME,
-    TEMPLATES_DIR_NAME,
     SITE_BUILD_LOCATION_NAME,
-    ENTRY_TEMPLATE_NAME,
+    TEMPLATES_DIR_NAME,
+    mk_context,
 )
 from kitsunekko_tools.website.templates import JinjaEnvHolder, render_template
 
@@ -103,6 +104,7 @@ class WebSiteBuilder:
             html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
             entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
         print("")
+
 
 def build_website(config: KitsuConfig) -> None:
     b = WebSiteBuilder(config)

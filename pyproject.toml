@@ -50,6 +50,7 @@ dependencies = [
   "isort",
   "pytest",
   "black",
+  "pyupgrade",
 ]
 [tool.hatch.envs.dev.scripts]
 # run as `hatch run dev:scriptname`

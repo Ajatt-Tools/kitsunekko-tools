@@ -159,6 +159,7 @@ class KitsuScrapper(ClientBase):
                     to_download=make_payload(self._config, page_visit.found_files),
                 )
                 results.update(page_visit, downloads)
+                # TODO write .kitsuinfo.json
         return results
 
     async def sync_all(self) -> None:

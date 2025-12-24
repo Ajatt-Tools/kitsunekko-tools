@@ -1,14 +1,22 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import collections
+import datetime
 import pathlib
-from typing import Iterable
+import re
+import typing
+from collections.abc import Iterable
 
-from kitsunekko_tools.api_access.root_directory import EntryId, KitsuDirectoryMeta
-from kitsunekko_tools.common import fs_name_strip
+from kitsunekko_tools.api_access.download import get_meta_file_path_on_disk
+from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
+from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
+from kitsunekko_tools.consts import TRASH_DIR_NAME
 
-SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
+RE_INSIGNIFICANT_CHARS = re.compile(
+    r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽]+",
+    flags=re.MULTILINE | re.IGNORECASE,
+)
 
 
 def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
@@ -29,7 +37,7 @@ def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
 
 
 def nuke_dir(directory: pathlib.Path) -> None:
-    (directory / INFO_FILENAME).unlink(missing_ok=True)
+    get_meta_file_path_on_disk(directory).unlink(missing_ok=True)
     directory.rmdir()
 
 
@@ -56,7 +64,7 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
 
 
 def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
-    with open(directory / INFO_FILENAME, encoding="utf-8") as f:
+    with open(get_meta_file_path_on_disk(directory), encoding="utf-8") as f:
         return KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
 
 
@@ -69,98 +77,62 @@ def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> N
         move_files(directory, main_entry.dir_path)
 
 
+def name_strip_insignificant_chars(name: str) -> str:
+    return re.sub(RE_INSIGNIFICANT_CHARS, "", name).lower()
+
+
 def iter_lookup_keys(meta: KitsuDirectoryMeta) -> Iterable[str]:
-    assert meta.entry_type, "entry type shouldn't be empty."
-    assert meta.entry_id >= 0, "entry id shouldn't be empty."
-    assert meta.dir_path.is_dir(), "entry directory should exist."
-    assert meta.name, "entry name should exist."
-
-    # Using IDs (high priority)
-    yield f"kitsunekko_{meta.entry_id}"
-    if meta.anilist_id:
-        yield f"anilist_{meta.anilist_id}"
-    if meta.tmdb_id:
-        yield f"tmdb_{meta.tmdb_id}"
-
-    # Using type + name
-    yield f"{meta.entry_type}_{meta.name.lower()}"
+    if meta.name:
+        yield name_strip_insignificant_chars(meta.name)
     if meta.english_name:
-        yield f"{meta.entry_type}_{meta.english_name.lower()}"
+        yield name_strip_insignificant_chars(meta.english_name)
     if meta.japanese_name:
-        yield f"{meta.entry_type}_{meta.japanese_name.lower()}"
-
-    # Using just name
-    yield meta.name.lower()
-    if meta.english_name:
-        yield meta.english_name.lower()
-    if meta.japanese_name:
-        yield meta.japanese_name.lower()
+        yield name_strip_insignificant_chars(meta.japanese_name)
     yield meta.dir_path.name.lower()
+    yield name_strip_insignificant_chars(meta.dir_path.name)
 
 
-class MergeDirectories:
+class FixOrphans:
+    """
+    Try to find metadata for directories without .kitsuinfo.json files.
+    """
+
     _config: KitsuConfig
-    _id_to_main_entry: dict[EntryId, KitsuDirectoryMeta]
-    _lookup_key_to_id: dict[str, EntryId]
+    _lookup_key_to_meta: dict[str, KitsuDirectoryMeta]
 
     def __init__(self, config: KitsuConfig) -> None:
         self._config = config
-        self._id_to_main_entry = {}
-        self._lookup_key_to_id = {}
+        self._lookup_key_to_meta = {}
 
     def _build_lookup_dicts(self) -> None:
+        print("building lookup dict to match orphans...")
         for directory in iter_subtitle_directories(self._config):
             try:
                 meta = read_directory_meta(directory)
             except FileNotFoundError:
                 continue
-
-            # Main entry is the most recently modified directory with this ID.
-            if meta.entry_id not in self._id_to_main_entry:
-                self._id_to_main_entry[meta.entry_id] = meta
-            else:
-                self._id_to_main_entry[meta.entry_id] = meta = max(
-                    meta,
-                    self._id_to_main_entry[meta.entry_id],
-                    key=lambda d: d.last_modified,
-                )
             for lookup_key in iter_lookup_keys(meta):
-                self._lookup_key_to_id[lookup_key] = meta.entry_id
+                self._lookup_key_to_meta[lookup_key] = meta
 
-    def _find_main_entry(self, meta: KitsuDirectoryMeta) -> KitsuDirectoryMeta:
-        # Try to find the main entry by different names and IDs.
-        for try_key in iter_lookup_keys(meta):
-            try:
-                return self._id_to_main_entry[self._lookup_key_to_id[try_key]]
-            except KeyError:
-                pass
-        raise KeyError("Tried all possible lookup keys and found nothing.")
-
-    def _try_match_by_directory_name(self, directory: pathlib.Path) -> None:
+    def _try_match_by_directory_name(self, dir_path: pathlib.Path) -> None:
         """
         Try to find the main entry by directory name.
         """
-        try:
-            main_entry = self._id_to_main_entry[self._lookup_key_to_id[directory.name.lower()]]
-        except KeyError:
-            return
-        move_directory(directory, main_entry)
+        for try_key in (dir_path.name.lower(), name_strip_insignificant_chars(dir_path.name)):
+            try:
+                main_entry = self._lookup_key_to_meta[try_key]
+            except KeyError:
+                continue
+            move_directory(dir_path, main_entry)
+            break
 
     def _find_matches_and_merge(self) -> None:
+        print("matching orphans...")
         for directory in iter_subtitle_directories(self._config):
-            try:
-                meta = read_directory_meta(directory)
-            except FileNotFoundError:
-                self._try_match_by_directory_name(directory)
+            if get_meta_file_path_on_disk(directory).is_file():
+                # already has metadata
                 continue
-
-            try:
-                main_entry = self._find_main_entry(meta)
-            except (KeyError, FileNotFoundError):
-                self._try_match_by_directory_name(directory)
-                continue
-
-            move_directory(directory, main_entry)
+            self._try_match_by_directory_name(directory)
 
     def merge_directories(self) -> None:
         self._build_lookup_dicts()
@@ -179,7 +151,52 @@ def delete_empty_directories(config: KitsuConfig) -> None:
             nuke_dir(directory)
 
 
+def dir_sort_key_by_last_modified(dir_meta: KitsuDirectoryMeta) -> datetime.datetime:
+    return dir_meta.last_modified
+
+
+class DuplicatesGroup(typing.NamedTuple):
+    original: KitsuDirectoryMeta
+    copies: list[KitsuDirectoryMeta]
+
+    @classmethod
+    def from_list(cls, entries: list[KitsuDirectoryMeta]) -> typing.Self:
+        if len(entries) < 2:
+            raise KitsuError("a group of duplicates should contain at least two files")
+        entries = sorted(entries, key=dir_sort_key_by_last_modified, reverse=True)
+        # Assign the most recently modified entry as the original.
+        return cls(original=entries[0], copies=entries[1:])
+
+
+class MergeSameId:
+    def __init__(self, config: KitsuConfig) -> None:
+        self._cfg = config
+
+    def _collect_directories_with_same_id(self) -> typing.Sequence[DuplicatesGroup]:
+        """
+        Find directories that have a .kitsuinfo.json file and matching entry_id.
+        Returns a list of groups.
+        """
+        id_to_entries: dict[KitsunekkoId, list[KitsuDirectoryMeta]] = collections.defaultdict(list)
+        print("searching directories with matching entry_id...")
+        for directory in iter_subtitle_directories(self._cfg):
+            try:
+                meta = read_directory_meta(directory)
+            except FileNotFoundError:
+                continue
+            id_to_entries[meta.entry_id].append(meta)
+        return [DuplicatesGroup.from_list(entries) for entries in id_to_entries.values() if len(entries) > 1]
+
+    def merge_directories_with_same_id(self) -> None:
+        groups = self._collect_directories_with_same_id()
+        print(f"found {len(groups)} directories with matching entry_id.")
+        for group in groups:
+            for copy in group.copies:
+                move_directory(copy.dir_path, group.original)
+
+
 def sanitize_directories(config: KitsuConfig) -> None:
     rename_badly_named_directories(config)
-    MergeDirectories(config).merge_directories()
+    MergeSameId(config).merge_directories_with_same_id()
+    FixOrphans(config).merge_directories()
     delete_empty_directories(config)

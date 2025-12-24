@@ -11,7 +11,10 @@ from beartype import beartype
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from kitsunekko_tools.website.context import SiteContext
-from kitsunekko_tools.website.filesystem import as_relative_to, full_site_url_to_resource
+from kitsunekko_tools.website.filesystem import (
+    as_relative_to,
+    full_site_url_to_resource,
+)
 
 DATE_FORMAT_FULL = "%a, %d %b %Y %H:%M:%S %z"
 DATE_FORMAT_UNIX = "%s"
