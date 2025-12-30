@@ -7,7 +7,7 @@ import re
 import typing
 from collections.abc import Iterable
 
-from kitsunekko_tools.api_access.download import get_meta_file_path_on_disk
+from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_disk
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig

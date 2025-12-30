@@ -10,6 +10,7 @@ import typing
 
 import httpx
 
+from kitsunekko_tools.api_access.directory_entry import KitsuDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.ignore import IgnoreList
@@ -43,6 +44,7 @@ def is_file_non_empty(file_path: pathlib.Path) -> bool:
 class KitsuSubtitleDownload(typing.NamedTuple):
     url: SubtitleFileUrl
     file_path: pathlib.Path
+    entry: KitsuDirectoryEntry | None = None
 
     def ensure_subtitle_dir(self) -> None:
         """
