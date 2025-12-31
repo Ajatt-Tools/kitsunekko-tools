@@ -1,0 +1,120 @@
+@charset "utf-8";
+
+/* Labels for ASS and SRT */
+
+main a[href$=".ass"]::before,
+main a[href$=".srt"]::before {
+    display: inline-grid;
+    content: "ass";
+    background-color: rgb(207, 93, 0);
+    color: rgb(236, 236, 236);
+    border-radius: 4px;
+    padding: 0 4px;
+    place-items: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8em;
+    margin-inline-end: 1ch;
+}
+
+main a[href$=".srt"]::before {
+    content: "srt";
+    background-color: rgb(0, 177, 15);
+}
+
+/* Subtitle catalog - main */
+
+.subtitle_catalog_main_wrap {
+    --article-page-width: min(1800px, 90vw);
+
+    flex: 1 0 auto;
+    overflow-wrap: break-word;
+    margin: var(--gap-large) 0 var(--gap-large);
+}
+
+.subtitle_catalog_main {
+    background-color: var(--article-background, white);
+    margin: 0 auto;
+    width: 100%;
+    max-width: var(--article-page-width);
+    box-shadow: 0 1px 4px 0 var(--elem-shadow-color);
+    padding: 0;
+}
+
+/* Subtitle entries */
+
+.entries_table {
+    --border-color: hsl(0, 0%, 85%);
+
+    border: 1px solid var(--border-color);
+    margin-block: 0;
+	width: 100%;
+    border-collapse: collapse;
+}
+.entries_table * {
+    margin-block: 0;
+}
+
+.entries_table :is(th, td) {
+    padding-inline: 0.25rem;
+    padding-block: 0.5rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.entries_table tr:nth-of-type(2n) {
+	background-color: hsl(0 0% 0% / 0.05);
+}
+
+/* Header row */
+
+.entries_table thead th {
+    font-weight: 600;
+    background-color: var(--table-header-color, rgba(0, 0, 0, 0.1));
+}
+
+.entries_table td.last_modified {
+    font-family: var(--monospace-font-families, monospace);
+}
+
+/* Column placement */
+
+.subtitle_catalog_end td {
+    text-align: center;
+}
+
+/* Small screens */
+
+@media screen and (max-width: 1000px) {
+    .entries_table {
+        display: flex;
+		flex-flow: column nowrap;
+		justify-content: center;
+    }
+	.entries_table tbody,
+	.entries_table tr {
+		display: contents;
+	}
+    .entries_table thead {
+        display: none;
+    }
+    .entry_name {
+        background-color: var(--table-header-color, rgba(0, 0, 0, 0.1));
+    }
+    td.entry_name ~ td {
+        padding-inline-start: 2ch;
+    }
+    .entries_table td:not(.subtitle_catalog_end td)::before {
+        display: inline-block;
+        margin-inline-end: 1ch;
+        font-weight: bold;
+        content: attr(data-cell) ":";
+        text-transform: capitalize;
+    }
+    .last_modified::before {
+        font-family: var(--sans-font-families, sans);
+    }
+	.entry_number {
+		display: none;
+	}
+}

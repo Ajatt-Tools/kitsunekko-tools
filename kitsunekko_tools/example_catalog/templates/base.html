@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ ctx.site_description }}">
+    <meta name="author" content="{{ ctx.site_author }}">
+    <meta name="keywords" content="{{ ctx.site_keywords }}">
+    <link rel="stylesheet" href="{{ ctx.site_blog_url }}/res/blog.css" type="text/css">
+    <link rel="stylesheet" href="{{ ctx.css_file_path | as_relative_to(ctx.output_file_path) }}" type="text/css">
+    <link rel="icon" type="image/webp" href="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
+    <title>{% block title %}{{ ctx.site_title }}{% endblock %}</title>
+    <meta property="og:title" content="{% block og_title %}{{ ctx.site_title }}{% endblock %}">
+    <meta property="og:site_name" content="{{ ctx.site_title }}">
+    <meta property="og:url" content="{{ ctx.request_path }}">
+    <meta property="og:description" content="{{ ctx.site_description }}">
+    <meta property="og:image" content="{{ ctx.favicon_path | as_full_url }}">
+    <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
+</head>
+<body>
+    {% block header %}
+    <input type="checkbox" id="menu-btn">
+    <header>
+        <a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}" class="logo">
+            <img alt="達元" src="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
+            <span>subtitles</span>
+        </a>
+        <nav>
+            <a href="{{ ctx.site_blog_url }}/table-of-contents.html" class="guide_link">Guide</a>
+
+            <a href="{{ ctx.site_blog_url }}/our-immersion-learning-toolset.html">Tools</a>
+            <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>
+            <a href="{{ ctx.site_blog_url }}/ankidrone-decks.html">Decks</a>
+            <a href="{{ ctx.site_blog_url }}/tag_dictionaries.html">Dictionaries</a>
+            <a href="{{ ctx.site_blog_url }}/tag_faq.html">FAQ</a>
+
+            <a href="{{ ctx.site_blog_url }}/donating-to-tatsumoto.html">Donate</a>
+            <a href="{{ ctx.site_blog_url }}/join-our-community.html" class="important">Join chat</a>
+        </nav>
+        <label class="menu-btn" for="menu-btn"><span class="menu-icon hamburger"></span></label>
+    </header>
+    <div id="sidebar">
+        <form action="" name="sidebar_header" class="sidebar_header">
+            <a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}" title="Go home">Home</a>
+            <input title="Light theme" type="radio" name="blog-theme" id="light" checked>
+            <input title="Pink theme" type="radio" name="blog-theme" id="pink">
+            <input title="Dark theme" type="radio" name="blog-theme" id="dark">
+            <a class="menu-btn" href="#" onclick="close_sidebar()" title="Go to top"><span class="menu-icon up-arrow">Up</span></a>
+            <label class="menu-btn" for="menu-btn" title="Close"><span class="menu-icon close-btn">Close</span></label>
+        </form>
+        <div class="important-links on-mobile">
+            <a href="{{ ctx.site_blog_url }}/table-of-contents.html">Guide</a>
+            <a href="{{ ctx.site_blog_url }}/our-immersion-learning-toolset.html">Tools</a>
+            <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>
+            <a href="{{ ctx.site_blog_url }}/ankidrone-decks.html">Decks</a>
+            <a href="{{ ctx.site_blog_url }}/tag_dictionaries.html">Dictionaries</a>
+            <a href="{{ ctx.site_blog_url }}/tag_faq.html">FAQ</a>
+        </div>
+        <hr>
+
+        <div class="important-links">
+            <a href="{{ ctx.site_blog_url }}/donating-to-tatsumoto.html">Donate</a>
+            <a href="{{ ctx.site_blog_url }}/join-our-community.html">Join chat</a>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    {% block content %}
+    <div id="divbodyholder">
+        <div id="divbody">
+            <main>
+            Content.
+            </main>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block footer %}
+    <footer>
+        <div class="footer-bottom">
+            <p>Copyright © {{ ctx.site_author }} 2025-{{ ctx.current_year }}</p>
+            <p>Generated with <a href="https://github.com/Ajatt-Tools/kitsunekko-tools">kitsunekko-tools</a>,
+                a subtitle catalog generator.</p>
+        </div>
+    </footer>
+    {% endblock %}
+</body>
+</html>
