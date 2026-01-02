@@ -15,7 +15,7 @@ from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.ignore import IgnoreList
 from kitsunekko_tools.mega_upload import mega_upload
 from kitsunekko_tools.sanitize import sanitize_directories
-from kitsunekko_tools.website.website import build_website
+from kitsunekko_tools.website.website import WebSiteBuilder, build_website
 
 
 class ConfigCli:
@@ -186,6 +186,15 @@ class Application:
             print(ex.what)
         else:
             build_website(data)
+
+    def copy_site_resources(self) -> None:
+        try:
+            data = self._config.data()
+        except ConfigFileNotFoundError as ex:
+            print(ex.what)
+        else:
+            b = WebSiteBuilder(data)
+            b.copy_site_resources()
 
     def git(self, *args) -> None:
         """

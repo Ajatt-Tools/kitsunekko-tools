@@ -4,9 +4,11 @@
 import dataclasses
 import pathlib
 
-from kitsunekko_tools.api_access.root_directory import ApiDirectoryEntry, KitsuDirectoryMeta
+from kitsunekko_tools.api_access.root_directory import (
+    ApiDirectoryEntry,
+    KitsuDirectoryMeta,
+)
 from kitsunekko_tools.config import KitsuConfig
-
 from kitsunekko_tools.consts import INFO_FILENAME
 
 

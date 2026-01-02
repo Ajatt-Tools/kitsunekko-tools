@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
 from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
 from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_meta
 from kitsunekko_tools.website.context import (
     CSS_FILE_NAME,
@@ -104,6 +105,15 @@ class WebSiteBuilder:
             html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
             entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
         print("")
+
+    def copy_site_resources(self) -> None:
+        print("Removing old resources and templates.")
+        shutil.rmtree(self._resources_dir_path, ignore_errors=True)
+        shutil.rmtree(self._templates_dir_path, ignore_errors=True)
+        print("Copying resources.")
+        shutil.copytree(BUNDLED_RESOURCES_DIR, self._resources_dir_path)
+        print("Copying templates.")
+        shutil.copytree(BUNDLED_TEMPLATES_DIR, self._templates_dir_path)
 
 
 def build_website(config: KitsuConfig) -> None:
