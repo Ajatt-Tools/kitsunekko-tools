@@ -87,14 +87,8 @@ main a[href$=".srt"]::before {
 .entry_number {
     min-width: 3ch;
 }
-.entry_name {
-}
 .entry_type {
-    min-width: 10ch;
-}
-.english_name {
-}
-.japanese_name {
+    min-width: 12ch;
 }
 .last_modified {
     min-width: 21ch;
