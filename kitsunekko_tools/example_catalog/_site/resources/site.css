@@ -61,7 +61,7 @@ main a[href$=".srt"]::before {
         padding-block: 0.5rem;
         border: 1px solid var(--border-color);
         text-align: left;
-        word-wrap: break-word;
+        word-break: break-all;
         overflow-wrap: break-word;
     }
 
@@ -87,17 +87,14 @@ main a[href$=".srt"]::before {
 .entry_number {
     min-width: 3ch;
 }
-.entry_name {
-}
 .entry_type {
-    min-width: 10ch;
-}
-.english_name {
-}
-.japanese_name {
+    min-width: 12ch;
 }
 .last_modified {
     min-width: 21ch;
+}
+.japanese_name {
+    overflow-wrap: anywhere;
 }
 
 .entries_table tr:nth-of-type(2n) {
