@@ -43,14 +43,29 @@ main a[href$=".srt"]::before {
 
 /* Subtitle entries */
 
+table,
+thead,
+tbody,
+tr {
+    max-width: 100%;
+}
+thead,
+tbody,
+tr,
+th,
+td {
+    max-height: 25vh;
+}
+
 .entries_table {
     --border-color: hsl(0, 0%, 85%);
 
     border: 1px solid var(--border-color);
     margin-block: 0;
-	width: 100%;
+    width: 100%;
     border-collapse: collapse;
 }
+
 .entries_table * {
     margin-block: 0;
 }
@@ -60,10 +75,11 @@ main a[href$=".srt"]::before {
     padding-block: 0.5rem;
     border: 1px solid var(--border-color);
     text-align: left;
+    word-wrap: break-word;
 }
 
 .entries_table tr:nth-of-type(2n) {
-	background-color: hsl(0 0% 0% / 0.05);
+    background-color: hsl(0 0% 0% / 0.05);
 }
 
 /* Header row */
@@ -88,13 +104,13 @@ main a[href$=".srt"]::before {
 @media screen and (max-width: 1000px) {
     .entries_table {
         display: flex;
-		flex-flow: column nowrap;
-		justify-content: center;
+        flex-flow: column nowrap;
+        justify-content: center;
     }
-	.entries_table tbody,
-	.entries_table tr {
-		display: contents;
-	}
+    .entries_table tbody,
+    .entries_table tr {
+        display: contents;
+    }
     .entries_table thead {
         display: none;
     }
@@ -114,7 +130,7 @@ main a[href$=".srt"]::before {
     .last_modified::before {
         font-family: var(--sans-font-families, sans);
     }
-	.entry_number {
-		display: none;
-	}
+    .entry_number {
+        display: none;
+    }
 }
