@@ -51,6 +51,20 @@ main a[href$=".srt"]::before {
     width: 100%;
     border-collapse: collapse;
 
+    * {
+        margin-block: 0;
+    }
+
+    th,
+    td {
+        padding-inline: 0.25rem;
+        padding-block: 0.5rem;
+        border: 1px solid var(--border-color);
+        text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
     &,
     table,
     thead,
@@ -70,17 +84,20 @@ main a[href$=".srt"]::before {
     }
 }
 
-.entries_table * {
-    margin-block: 0;
+.entry_number {
+    min-width: 3ch;
 }
-
-.entries_table :is(th, td) {
-    padding-inline: 0.25rem;
-    padding-block: 0.5rem;
-    border: 1px solid var(--border-color);
-    text-align: left;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
+.entry_name {
+}
+.entry_type {
+    min-width: 10ch;
+}
+.english_name {
+}
+.japanese_name {
+}
+.last_modified {
+    min-width: 21ch;
 }
 
 .entries_table tr:nth-of-type(2n) {
