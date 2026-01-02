@@ -43,20 +43,6 @@ main a[href$=".srt"]::before {
 
 /* Subtitle entries */
 
-table,
-thead,
-tbody,
-tr {
-    max-width: 100%;
-}
-thead,
-tbody,
-tr,
-th,
-td {
-    max-height: 25vh;
-}
-
 .entries_table {
     --border-color: hsl(0, 0%, 85%);
 
@@ -64,6 +50,24 @@ td {
     margin-block: 0;
     width: 100%;
     border-collapse: collapse;
+
+    &,
+    table,
+    thead,
+    tbody,
+    tr {
+        max-width: 100%;
+        content-visibility: auto;
+        contain-intrinsic-size: auto;
+    }
+
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+        max-height: 25vh;
+    }
 }
 
 .entries_table * {
@@ -76,6 +80,7 @@ td {
     border: 1px solid var(--border-color);
     text-align: left;
     word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .entries_table tr:nth-of-type(2n) {
@@ -106,26 +111,27 @@ td {
         display: flex;
         flex-flow: column nowrap;
         justify-content: center;
-    }
-    .entries_table tbody,
-    .entries_table tr {
-        display: contents;
-    }
-    .entries_table thead {
-        display: none;
+
+        tbody,
+        tr {
+            display: contents;
+        }
+        thead {
+            display: none;
+        }
+        td:not(.subtitle_catalog_end td)::before {
+            display: inline-block;
+            margin-inline-end: 1ch;
+            font-weight: bold;
+            content: attr(data-cell) ":";
+            text-transform: capitalize;
+        }
     }
     .entry_name {
         background-color: var(--table-header-color, rgba(0, 0, 0, 0.1));
     }
     td.entry_name ~ td {
         padding-inline-start: 2ch;
-    }
-    .entries_table td:not(.subtitle_catalog_end td)::before {
-        display: inline-block;
-        margin-inline-end: 1ch;
-        font-weight: bold;
-        content: attr(data-cell) ":";
-        text-transform: capitalize;
     }
     .last_modified::before {
         font-family: var(--sans-font-families, sans);
