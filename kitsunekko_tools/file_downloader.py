@@ -4,6 +4,7 @@
 import asyncio
 import collections
 import dataclasses
+import datetime
 import enum
 import pathlib
 import typing
@@ -45,6 +46,7 @@ def is_file_non_empty(file_path: pathlib.Path) -> bool:
 class KitsuSubtitleDownload:
     url: SubtitleFileUrl
     file_path: pathlib.Path
+    last_modified_on_remote: datetime.datetime
     entry: KitsuDirectoryEntry | None = None
 
     def ensure_subtitle_dir(self) -> None:

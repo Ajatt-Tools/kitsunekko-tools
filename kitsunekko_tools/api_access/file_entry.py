@@ -2,8 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
+import datetime
 import typing
 
+from kitsunekko_tools.api_access.root_directory import parse_api_time
 from kitsunekko_tools.common import fs_name_strip
 
 
@@ -19,11 +21,19 @@ class ApiFileEntry:
     url: str
     name: str
     size: int  # The file's size in bytes.
-    last_modified: str  # Modification time in UTC, e.g. "2024-04-01T07:57:39.541025942Z"
+    last_modified: datetime.datetime  # Modification time in UTC, e.g. "2024-04-01T07:57:39.541025942Z"
 
     @classmethod
     def from_api_json(cls, json_dict: ApiFileDict):
-        return cls(**(json_dict | {"name": fs_name_strip(json_dict["name"])}))
+        return cls(
+            **(
+                json_dict
+                | {
+                    "name": fs_name_strip(json_dict["name"]),
+                    "last_modified": parse_api_time(json_dict["last_modified"]),
+                }
+            )
+        )
 
 
 def iter_directory_files(json_response: typing.Sequence[ApiFileDict]) -> typing.Iterable[ApiFileEntry]:

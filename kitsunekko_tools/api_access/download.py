@@ -82,6 +82,7 @@ def api_make_payload(
                 url=SubtitleFileUrl(file.url),
                 file_path=(directory.dir_path / file.name),
                 entry=directory,
+                last_modified_on_remote=file.last_modified,
             )
             for file in found_files
         ],

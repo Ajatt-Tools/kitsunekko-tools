@@ -116,6 +116,7 @@ def scrapper_make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFil
             KitsuSubtitleDownload(
                 url=SubtitleFileUrl(file.url),
                 file_path=(config.destination / show_name / file.file_name),
+                last_modified_on_remote=file.mod_timestamp,
             )
             for file in found_files
         ],
