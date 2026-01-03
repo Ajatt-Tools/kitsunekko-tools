@@ -14,7 +14,7 @@ from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import TRASH_DIR_NAME
 
 RE_INSIGNIFICANT_CHARS = re.compile(
-    r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽]+",
+    r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾△＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽☆∀∕]+",
     flags=re.MULTILINE | re.IGNORECASE,
 )
 
