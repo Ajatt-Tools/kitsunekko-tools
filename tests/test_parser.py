@@ -7,6 +7,7 @@ from collections.abc import Sequence
 
 import pytest
 
+from kitsunekko_tools.api_access.root_directory import parse_api_time
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
 from kitsunekko_tools.scrapper.parse import (
     AnimeDir,
@@ -71,3 +72,7 @@ def test_files_in_directory(parsed_sub_files: Sequence[SubtitleFile]) -> None:
 
 def test_num_of_found_files(parsed_sub_files: Sequence[SubtitleFile]) -> None:
     assert len(parsed_sub_files) == 67, "number of files should match"
+
+
+def test_parse_time() -> None:
+    assert parse_api_time("2024-04-01T07:57:39.541025942Z").year == 2024
