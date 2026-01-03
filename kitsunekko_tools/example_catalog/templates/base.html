@@ -12,7 +12,7 @@
     <title>{% block title %}{{ ctx.site_title }}{% endblock %}</title>
     <meta property="og:title" content="{% block og_title %}{{ ctx.site_title }}{% endblock %}">
     <meta property="og:site_name" content="{{ ctx.site_title }}">
-    <meta property="og:url" content="{{ ctx.request_path }}">
+    <meta property="og:url" content="{{ ctx.request_url }}">
     <meta property="og:description" content="{{ ctx.site_description }}">
     <meta property="og:image" content="{{ ctx.favicon_path | as_full_url }}">
     <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
@@ -21,19 +21,20 @@
     {% block header %}
     <input type="checkbox" id="menu-btn">
     <header>
-        <a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}" class="logo">
+        <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" class="logo">
             <img alt="達元" src="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
             <span>subtitles</span>
         </a>
         <nav>
-            <a href="{{ ctx.site_blog_url }}/table-of-contents.html" class="guide_link">Guide</a>
+            <!-- Subtitles catalog -->
+            <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" title="Anime">Anime</a>
+            <a href="{{ paths.drama_index_file_path | as_relative_to(ctx.output_file_path) }}" title="Drama">Drama</a>
 
+            <!-- Other site links -->
+            <a href="{{ ctx.site_blog_url }}/table-of-contents.html" class="guide_link">Guide</a>
             <a href="{{ ctx.site_blog_url }}/our-immersion-learning-toolset.html">Tools</a>
             <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>
-            <a href="{{ ctx.site_blog_url }}/ankidrone-decks.html">Decks</a>
-            <a href="{{ ctx.site_blog_url }}/tag_dictionaries.html">Dictionaries</a>
             <a href="{{ ctx.site_blog_url }}/tag_faq.html">FAQ</a>
-
             <a href="{{ ctx.site_blog_url }}/donating-to-tatsumoto.html">Donate</a>
             <a href="{{ ctx.site_blog_url }}/join-our-community.html" class="important">Join chat</a>
         </nav>
@@ -41,7 +42,7 @@
     </header>
     <div id="sidebar">
         <form action="" name="sidebar_header" class="sidebar_header">
-            <a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}" title="Go home">Home</a>
+            <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" title="Go home">Home</a>
             <input title="Light theme" type="radio" name="blog-theme" id="light" checked>
             <input title="Pink theme" type="radio" name="blog-theme" id="pink">
             <input title="Dark theme" type="radio" name="blog-theme" id="dark">
@@ -49,6 +50,10 @@
             <label class="menu-btn" for="menu-btn" title="Close"><span class="menu-icon close-btn">Close</span></label>
         </form>
         <div class="important-links on-mobile">
+            <!-- Subtitles catalog -->
+            <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" title="Anime subtitles">Anime subs</a>
+            <a href="{{ paths.drama_index_file_path | as_relative_to(ctx.output_file_path) }}" title="Drama subtitles">Drama subs</a>
+            <!-- Other site links -->
             <a href="{{ ctx.site_blog_url }}/table-of-contents.html">Guide</a>
             <a href="{{ ctx.site_blog_url }}/our-immersion-learning-toolset.html">Tools</a>
             <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>

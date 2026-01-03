@@ -37,7 +37,7 @@
             {% endif %}
         {% endfor %}
             <tr class="subtitle_catalog_end">
-                <td colspan="6"><a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}#" class="logo">Back to Index</a></td>
+                <td colspan="6"><a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}#" class="logo">Back to Index</a></td>
             </tr>
         </tbody>
     </table>

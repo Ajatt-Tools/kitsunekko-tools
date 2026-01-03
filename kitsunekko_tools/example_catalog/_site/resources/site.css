@@ -61,7 +61,7 @@ main a[href$=".srt"]::before {
         padding-block: 0.5rem;
         border: 1px solid var(--border-color);
         text-align: left;
-        word-break: break-all;
+        word-break: normal;
         overflow-wrap: break-word;
     }
 
@@ -82,19 +82,24 @@ main a[href$=".srt"]::before {
     td {
         max-height: 25vh;
     }
-}
 
-.entry_number {
-    min-width: 3ch;
-}
-.entry_type {
-    min-width: 12ch;
-}
-.last_modified {
-    min-width: 21ch;
-}
-.japanese_name {
-    overflow-wrap: anywhere;
+    .entry_number {
+        min-width: 3ch;
+        word-break: keep-all;
+    }
+    .entry_type {
+        min-width: 12ch;
+        word-break: keep-all;
+    }
+    .last_modified {
+        min-width: 21ch;
+        word-break: keep-all;
+    }
+    .entry_name,
+    .english_name,
+    .japanese_name {
+        word-break: break-word;
+    }
 }
 
 .entries_table tr:nth-of-type(2n) {
