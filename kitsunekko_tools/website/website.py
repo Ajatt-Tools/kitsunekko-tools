@@ -88,8 +88,10 @@ class WebSiteBuilder:
         print(f"Rebuilding the index: {index_file_path.name}")
         context = mk_context(self._cfg, self._paths, index_file_path)
         context.ctx.entries = entries
-        html_content = render_template(INDEX_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
-        index_file_path.write_text(html_content, encoding="utf-8")
+        index_file_path.write_text(
+            render_template(INDEX_TEMPLATE_NAME, context=context, template_env=self._tmpl_holder.template_env),
+            encoding="utf-8",
+        )
 
     def generate_not_found_page(self) -> None:
         """Generate the index page with all entries."""
