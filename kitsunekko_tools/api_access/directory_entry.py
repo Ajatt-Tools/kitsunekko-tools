@@ -32,6 +32,18 @@ def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:
         return None
 
 
+def keep_removed_values(remote_dir: ApiDirectoryEntry, local_state: KitsuDirectoryMeta | None) -> ApiDirectoryEntry:
+    if not local_state:
+        return remote_dir
+    return dataclasses.replace(
+        remote_dir,
+        english_name=(remote_dir.english_name or local_state.english_name),
+        japanese_name=(remote_dir.japanese_name or local_state.japanese_name),
+        anilist_id=(remote_dir.anilist_id or local_state.anilist_id),
+        tmdb_id=(remote_dir.tmdb_id or local_state.tmdb_id),
+    )
+
+
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryEntry:
     remote_dir: ApiDirectoryEntry
@@ -68,7 +80,7 @@ class KitsuDirectoryEntry:
 
     def write_meta(self) -> None:
         with open(self.meta_file_path, "w", encoding="utf-8") as of:
-            self.remote_dir.write_to_file(of)
+            keep_removed_values(self.remote_dir, self.local_state).write_to_file(of)
 
     def ensure_exists(self) -> None:
         self.meta_file_path.parent.mkdir(exist_ok=True)
