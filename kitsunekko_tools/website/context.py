@@ -26,7 +26,7 @@ class WebSiteBuilderPaths:
     resources_dir_path: pathlib.Path
     index_file_path: pathlib.Path
     drama_index_file_path: pathlib.Path
-    entries_dir_path: pathlib.Path
+    anime_entries_dir_path: pathlib.Path
     drama_entries_dir_path: pathlib.Path
 
     @classmethod
@@ -40,7 +40,7 @@ class WebSiteBuilderPaths:
             resources_dir_path=work_root.joinpath(RESOURCES_DIR_NAME),
             index_file_path=site_dir_path / INDEX_TEMPLATE_NAME,
             drama_index_file_path=site_dir_path / DRAMA_INDEX_TEMPLATE_NAME,
-            entries_dir_path=site_dir_path / "entries",
+            anime_entries_dir_path=site_dir_path / "anime",
             drama_entries_dir_path=site_dir_path / "drama",
         )
 

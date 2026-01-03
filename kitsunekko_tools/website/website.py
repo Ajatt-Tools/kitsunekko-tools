@@ -65,7 +65,7 @@ class WebSiteBuilder:
 
     def build(self) -> None:
         self._paths.site_dir_path.mkdir(parents=True, exist_ok=True)
-        self._paths.entries_dir_path.mkdir(parents=True, exist_ok=True)
+        self._paths.anime_entries_dir_path.mkdir(parents=True, exist_ok=True)
         self._paths.drama_entries_dir_path.mkdir(parents=True, exist_ok=True)
         shutil.copytree(
             self._paths.resources_dir_path,
@@ -138,7 +138,7 @@ class WebSiteBuilder:
         file_name = f"{name_to_addr(dir_path.name)}.html"
         if is_drama:
             return self._paths.drama_entries_dir_path / file_name
-        return self._paths.entries_dir_path / file_name
+        return self._paths.anime_entries_dir_path / file_name
 
 
 def build_website(config: KitsuConfig) -> None:
