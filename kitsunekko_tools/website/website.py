@@ -13,6 +13,7 @@ from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_
 from kitsunekko_tools.website.context import (
     ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
+    NOT_FOUND_TEMPLATE_NAME,
     RESOURCES_DIR_NAME,
     WebSiteBuilderPaths,
     mk_context,
@@ -76,6 +77,7 @@ class WebSiteBuilder:
         self.generate_index_page(self._paths.index_file_path, [entry for entry in entries if not entry.is_drama])
         self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
+        self.generate_not_found_page()
 
     def generate_index_page(
         self,
@@ -88,6 +90,18 @@ class WebSiteBuilder:
         context.ctx.entries = entries
         html_content = render_template(INDEX_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
         index_file_path.write_text(html_content, encoding="utf-8")
+
+    def generate_not_found_page(self) -> None:
+        """Generate the index page with all entries."""
+        print(f"Rebuilding: {self._paths.not_found_file_path.name}")
+        self._paths.not_found_file_path.write_text(
+            render_template(
+                NOT_FOUND_TEMPLATE_NAME,
+                context=mk_context(self._cfg, self._paths, self._paths.not_found_file_path),
+                template_env=self._tmpl_holder.template_env,
+            ),
+            encoding="utf-8",
+        )
 
     def _walk_dirs(self) -> Iterable[LocalDirectoryEntry]:
         print("Collecting entries", end="")

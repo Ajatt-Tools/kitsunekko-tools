@@ -9,6 +9,7 @@ from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 
 INDEX_TEMPLATE_NAME = "index.html"
+NOT_FOUND_TEMPLATE_NAME = "not_found.html"
 DRAMA_INDEX_TEMPLATE_NAME = "drama.html"
 ENTRY_TEMPLATE_NAME = "entry.html"
 SITE_BUILD_LOCATION_NAME = "_site"
@@ -25,6 +26,7 @@ class WebSiteBuilderPaths:
     templates_dir_path: pathlib.Path
     resources_dir_path: pathlib.Path
     index_file_path: pathlib.Path
+    not_found_file_path: pathlib.Path
     drama_index_file_path: pathlib.Path
     anime_entries_dir_path: pathlib.Path
     drama_entries_dir_path: pathlib.Path
@@ -39,6 +41,7 @@ class WebSiteBuilderPaths:
             templates_dir_path=work_root.joinpath(TEMPLATES_DIR_NAME),
             resources_dir_path=work_root.joinpath(RESOURCES_DIR_NAME),
             index_file_path=site_dir_path / INDEX_TEMPLATE_NAME,
+            not_found_file_path=site_dir_path / NOT_FOUND_TEMPLATE_NAME,
             drama_index_file_path=site_dir_path / DRAMA_INDEX_TEMPLATE_NAME,
             anime_entries_dir_path=site_dir_path / "anime",
             drama_entries_dir_path=site_dir_path / "drama",

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Not Found - {{ ctx.site_title }}{% endblock %}
+{% block og_title %}Not Found - {{ ctx.site_title }}{% endblock %}
+
+{% block content %}
+<div id="divbodyholder">
+<div id="divbody">
+<main>
+<!-- content begin -->
+    <article>
+        <h1 class="title">Page Not Found</h1>
+        <!-- text begin -->
+        <p>The requested page was not found.</p>
+        <!-- text end -->
+    </article>
+    <div id="all_posts">
+        <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" class="logo">Back to Index</a>
+    </div>
+<!-- content end -->
+</main>
+</div>
+</div>
+{% endblock %}
