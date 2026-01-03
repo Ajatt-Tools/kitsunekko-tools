@@ -56,11 +56,12 @@ class FetchResult(typing.NamedTuple):
             results=KitsuDownloadResults(),
         )
 
-    def update(self, dir_result: PageCrawlResult, downloads: KitsuDownloadResults):
+    def update(self, dir_result: PageCrawlResult, downloads: KitsuDownloadResults | None):
         self.to_visit.update(dir_result.found_dirs)
         self.to_download.update(dir_result.found_files)
         self.visited.add(dir_result.visited_dir)
-        self.results.update(downloads)
+        if downloads:
+            self.results.update(downloads)
 
     def __str__(self) -> str:
         return str(
@@ -166,10 +167,13 @@ class KitsuScrapper(ClientBase):
                 print(ex)
             else:
                 print(page_visit)
-                downloads = await self._downloader.download_subs(
-                    client=client,
-                    entry=scrapper_make_payload(self._config, page_visit.found_files),
-                )
+                if page_visit.found_files:
+                    downloads = await self._downloader.download_subs(
+                        client=client,
+                        entry=scrapper_make_payload(self._config, page_visit.found_files),
+                    )
+                else:
+                    downloads = None
                 results.update(page_visit, downloads)
                 # TODO write .kitsuinfo.json
         return results
