@@ -13,7 +13,7 @@ import httpx
 from kitsunekko_tools.api_access.directory_entry import KitsuDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.ignore import IgnoreListForDir
 
 SubtitleFileUrl = typing.NewType("SubtitleFileUrl", str)
 
@@ -41,7 +41,8 @@ def is_file_non_empty(file_path: pathlib.Path) -> bool:
     return file_path.is_file() and file_path.stat().st_size > 0
 
 
-class KitsuSubtitleDownload(typing.NamedTuple):
+@dataclasses.dataclass(frozen=True)
+class KitsuSubtitleDownload:
     url: SubtitleFileUrl
     file_path: pathlib.Path
     entry: KitsuDirectoryEntry | None = None
@@ -54,6 +55,12 @@ class KitsuSubtitleDownload(typing.NamedTuple):
 
     def is_already_downloaded(self) -> bool:
         return is_file_non_empty(self.file_path)
+
+
+@dataclasses.dataclass(frozen=True)
+class DownloadSubtitlesList:
+    to_download: list[KitsuSubtitleDownload]
+    ignore_list: IgnoreListForDir
 
 
 @enum.unique
@@ -94,16 +101,15 @@ class KitsuDownloadResults(collections.Counter):
 
 
 class KitsuSubtitleDownloader:
-    def __init__(self, config: KitsuConfig, ignore_list: IgnoreList):
+    def __init__(self, config: KitsuConfig):
         self._config = config
-        self._ignore = ignore_list
 
     async def download_subs(
         self,
         client: httpx.AsyncClient,
-        to_download: typing.Sequence[KitsuSubtitleDownload],
+        entry: DownloadSubtitlesList,
     ) -> KitsuDownloadResults:
-        tasks = tuple(self.download_sub(client, sub) for sub in to_download)
+        tasks = tuple(self.download_sub(client, sub, entry.ignore_list) for sub in entry.to_download)
         results = KitsuDownloadResults()
         for fut in asyncio.as_completed(tasks):
             try:
@@ -113,18 +119,19 @@ class KitsuSubtitleDownloader:
             else:
                 print(result)
                 if result.is_successful():
-                    # this file will not be downloaded again even if it is moved later.
-                    self._ignore.add_file(result.subtitle.file_path)
-                self._ignore.maybe_commit_midway()
+                    # this file will not be downloaded again even if it is moved(renamed) later.
+                    entry.ignore_list.add_file(result.subtitle.file_path)
                 results.add_result(result)
-        self._ignore.commit()
+        entry.ignore_list.commit()
         return results
 
-    async def download_sub(self, client: httpx.AsyncClient, subtitle: KitsuSubtitleDownload) -> DownloadResult:
+    async def download_sub(
+        self, client: httpx.AsyncClient, subtitle: KitsuSubtitleDownload, ignore_list: IgnoreListForDir
+    ) -> DownloadResult:
         if subtitle.is_already_downloaded():
             return DownloadResult(reason=DownloadStatus.already_exists, subtitle=subtitle)
 
-        if self._ignore.is_matching(subtitle.file_path):
+        if ignore_list.is_matching(subtitle.file_path):
             return DownloadResult(reason=DownloadStatus.explicitly_ignored, subtitle=subtitle)
 
         if not self._config.is_allowed_file_type(subtitle.file_path):

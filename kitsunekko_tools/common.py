@@ -9,10 +9,7 @@ from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NA
 
 
 class KitsuException(Exception, abc.ABC):
-    @property
-    @abc.abstractmethod
-    def what(self) -> str:
-        raise NotImplementedError()
+    what: str
 
 
 @dataclasses.dataclass(frozen=True)

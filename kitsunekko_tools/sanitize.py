@@ -11,7 +11,8 @@ from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_di
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import TRASH_DIR_NAME
+from kitsunekko_tools.consts import IGNORE_FILENAME, TRASH_DIR_NAME
+from kitsunekko_tools.ignore import IgnoreListForDir, get_ignore_file_path_on_disk
 
 RE_INSIGNIFICANT_CHARS = re.compile(
     r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾△＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽☆∀∕]+",
@@ -26,7 +27,8 @@ def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
             continue
         if entry.name in SKIP_FILES:
             continue
-        assert entry.is_file(), "entry must be a file."
+        if not entry.is_file():
+            raise KitsuError("entry must be a file.")
         new_path = new_dir / entry.relative_to(old_dir)
         new_path.parent.mkdir(exist_ok=True)
         if new_path.exists():
@@ -38,6 +40,7 @@ def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
 
 def nuke_dir(directory: pathlib.Path) -> None:
     get_meta_file_path_on_disk(directory).unlink(missing_ok=True)
+    get_ignore_file_path_on_disk(directory).unlink(missing_ok=True)
     directory.rmdir()
 
 
@@ -50,6 +53,14 @@ def iter_subtitle_directories(config: KitsuConfig) -> Iterable[pathlib.Path]:
         yield entry
 
 
+def merge_ignore_lists(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
+    old = IgnoreListForDir(old_dir / IGNORE_FILENAME)
+    new = IgnoreListForDir(new_dir / IGNORE_FILENAME)
+    for pattern in old.patterns():
+        new.add_pattern(pattern)
+    new.commit()
+
+
 def rename_badly_named_directories(config: KitsuConfig) -> None:
     for directory in iter_subtitle_directories(config):
         sanitized_name = fs_name_strip(directory.name)
@@ -58,6 +69,7 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
         new_dir = directory.parent / sanitized_name
         print(f"moving '{directory}' to '{new_dir}'")
         if new_dir.exists():
+            merge_ignore_lists(directory, new_dir)
             move_files(directory, new_dir)
         else:
             directory.rename(new_dir)
@@ -74,6 +86,7 @@ def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> N
     """
     if main_entry.dir_path != directory:
         print(f"moving '{directory}' to '{main_entry.dir_path}'")
+        merge_ignore_lists(directory, main_entry.dir_path)
         move_files(directory, main_entry.dir_path)
 
 
@@ -141,12 +154,8 @@ class FixOrphans:
 
 def delete_empty_directories(config: KitsuConfig) -> None:
     for directory in iter_subtitle_directories(config):
-        entries = [entry for entry in directory.iterdir() if entry.name not in SKIP_FILES]
-        try:
-            extra_files = [*directory.joinpath(TRASH_DIR_NAME).iterdir()]
-        except FileNotFoundError:
-            extra_files = []
-        if not entries and not extra_files:
+        entries = [entry for entry in directory.rglob("*") if entry.is_file() and entry.name not in SKIP_FILES]
+        if not entries:
             print(f"deleting empty dir: {directory}")
             nuke_dir(directory)
 

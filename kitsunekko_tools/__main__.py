@@ -1,6 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-import os
+import pathlib
 import subprocess
 import sys
 
@@ -8,11 +8,10 @@ import fire
 
 from kitsunekko_tools import ApiSyncClient, KitsuScrapper
 from kitsunekko_tools.__version__ import __version__
-from kitsunekko_tools.common import KitsuException
+from kitsunekko_tools.common import KitsuError, KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError
 from kitsunekko_tools.consts import PROG_NAME
-from kitsunekko_tools.download import ClientBase, ClientType
-from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.ignore import add_file_to_ignore_list
 from kitsunekko_tools.mega_upload import mega_upload
 from kitsunekko_tools.sanitize import sanitize_directories
 from kitsunekko_tools.website.website import WebSiteBuilder, build_website
@@ -73,32 +72,18 @@ class IgnoreCli:
     def __init__(self, config: Config) -> None:
         self._config = config
 
-    def _get_list(self) -> IgnoreList:
-        return IgnoreList(self._config.data())
-
-    def locate(self) -> None:
-        """
-        Print path to the ignore file.
-        """
-        print(self._get_list().ignore_filepath)
-
-    def show(self) -> None:
-        """
-        Print the list of ignore rules as Unix shell-style wildcards.
-        """
-        print("\n".join(self._get_list().patterns()))
-
-    def add(self, pattern: str) -> None:
+    def add(self, path_to_file: str) -> None:
         """
         Add a new ignore rule.
         """
-        if pattern:
-            ignore_list = self._get_list()
-            ignore_list.add(str(pattern))
-            ignore_list.commit()
-            print(f"File written: {ignore_list.ignore_filepath}")
+        if not path_to_file:
+            raise KitsuError("Nothing to add.")
+        try:
+            cfg = self._config.data()
+        except ConfigFileNotFoundError as ex:
+            print(ex.what)
         else:
-            print("Nothing to add.")
+            add_file_to_ignore_list(cfg=cfg, path_to_file=pathlib.Path(path_to_file).resolve())
 
 
 class Application:

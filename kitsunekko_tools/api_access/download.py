@@ -22,12 +22,13 @@ from kitsunekko_tools.config import KitsuConfig, get_config
 from kitsunekko_tools.consts import TRASH_DIR_NAME
 from kitsunekko_tools.download import ClientBase
 from kitsunekko_tools.file_downloader import (
+    DownloadSubtitlesList,
     KitsuConnectionError,
     KitsuSubtitleDownload,
     KitsuSubtitleDownloader,
     SubtitleFileUrl,
 )
-from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.ignore import IgnoreListForDir, get_ignore_file_path_on_disk
 
 
 @enum.unique
@@ -72,17 +73,20 @@ class ApiRateLimitedError(ApiBadStatusError):
         return f"rate limited. remaining time {self.rate_limit.reset_after}."
 
 
-def make_payload(
+def api_make_payload(
     directory: KitsuDirectoryEntry, found_files: typing.Iterable[ApiFileEntry]
-) -> typing.Sequence[KitsuSubtitleDownload]:
-    return [
-        KitsuSubtitleDownload(
-            url=SubtitleFileUrl(file.url),
-            file_path=(directory.dir_path / file.name),
-            entry=directory,
-        )
-        for file in found_files
-    ]
+) -> DownloadSubtitlesList:
+    return DownloadSubtitlesList(
+        to_download=[
+            KitsuSubtitleDownload(
+                url=SubtitleFileUrl(file.url),
+                file_path=(directory.dir_path / file.name),
+                entry=directory,
+            )
+            for file in found_files
+        ],
+        ignore_list=IgnoreListForDir(ignore_filepath=get_ignore_file_path_on_disk(directory.dir_path)),
+    )
 
 
 def handle_response_status(response: httpx.Response):
@@ -133,7 +137,6 @@ def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: 
 
 class ApiSyncClient(ClientBase):
     _config: KitsuConfig
-    _ignore: IgnoreList
     _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
@@ -144,8 +147,7 @@ class ApiSyncClient(ClientBase):
         super().__init__()
         self._config = config
         self._config.raise_for_destination()
-        self._ignore = IgnoreList(self._config)
-        self._downloader = KitsuSubtitleDownloader(self._config, self._ignore)
+        self._downloader = KitsuSubtitleDownloader(self._config)
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
         self._ignore_dir_mod_times = ignore_dir_mod_times
@@ -182,7 +184,7 @@ class ApiSyncClient(ClientBase):
         print(f"visited directory '{directory.name}'. found {len(files)} files.")
         results = await self._downloader.download_subs(
             client=client,
-            to_download=make_payload(directory, files),
+            entry=api_make_payload(directory, files),
         )
         print(
             f"in directory '{directory.name}': "

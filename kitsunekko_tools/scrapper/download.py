@@ -8,16 +8,19 @@ from collections.abc import Sequence
 
 import httpx
 
+from kitsunekko_tools.common import KitsuError
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import IGNORE_FILENAME
 from kitsunekko_tools.download import ClientBase, ClientType
 from kitsunekko_tools.file_downloader import (
+    DownloadSubtitlesList,
     KitsuConnectionError,
     KitsuDownloadResults,
     KitsuSubtitleDownload,
     KitsuSubtitleDownloader,
     SubtitleFileUrl,
 )
-from kitsunekko_tools.ignore import IgnoreList
+from kitsunekko_tools.ignore import IgnoreListForDir
 from kitsunekko_tools.scrapper.parse import (
     find_all_subtitle_dirs,
     find_all_subtitle_files,
@@ -98,19 +101,29 @@ def get_http_client(config: KitsuConfig) -> httpx.AsyncClient:
     )
 
 
-def make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> Sequence[KitsuSubtitleDownload]:
-    return [
-        KitsuSubtitleDownload(
-            url=SubtitleFileUrl(file.url),
-            file_path=(config.destination / file.show_name / file.file_name),
-        )
-        for file in found_files
-    ]
+def get_show_name(found_files: Sequence[SubtitleFile]) -> str:
+    names = {file.show_name for file in found_files}
+    if len(names) != 1:
+        raise KitsuError(f"more than one show name found: {names}")
+    return names.pop()
+
+
+def scrapper_make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> DownloadSubtitlesList:
+    show_name = get_show_name(found_files)
+    return DownloadSubtitlesList(
+        to_download=[
+            KitsuSubtitleDownload(
+                url=SubtitleFileUrl(file.url),
+                file_path=(config.destination / show_name / file.file_name),
+            )
+            for file in found_files
+        ],
+        ignore_list=IgnoreListForDir(ignore_filepath=config.destination.joinpath(show_name, IGNORE_FILENAME)),
+    )
 
 
 class KitsuScrapper(ClientBase):
     _config: KitsuConfig
-    _ignore: IgnoreList
     _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
@@ -119,8 +132,7 @@ class KitsuScrapper(ClientBase):
         super().__init__()
         self._config = config
         self._config.raise_for_destination()
-        self._ignore = IgnoreList(self._config)
-        self._downloader = KitsuSubtitleDownloader(self._config, self._ignore)
+        self._downloader = KitsuSubtitleDownloader(self._config)
         self._now = datetime.datetime.now()
         self._full_sync = full_sync
 
@@ -156,7 +168,7 @@ class KitsuScrapper(ClientBase):
                 print(page_visit)
                 downloads = await self._downloader.download_subs(
                     client=client,
-                    to_download=make_payload(self._config, page_visit.found_files),
+                    entry=scrapper_make_payload(self._config, page_visit.found_files),
                 )
                 results.update(page_visit, downloads)
                 # TODO write .kitsuinfo.json
@@ -169,4 +181,3 @@ class KitsuScrapper(ClientBase):
                 task: FetchResult = await self.find_subs_all(client, state.to_visit)
                 print(task)
                 state.balance(task)
-        self._ignore.commit()
