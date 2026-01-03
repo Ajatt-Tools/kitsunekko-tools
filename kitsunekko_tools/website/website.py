@@ -18,11 +18,14 @@ from kitsunekko_tools.website.context import (
     WebSiteBuilderPaths,
     mk_context,
 )
-from kitsunekko_tools.website.templates import JinjaEnvHolder, render_template
+from kitsunekko_tools.website.templates import JinjaEnvHolder, render_template, timestamp_int
 
 
 def collect_files(directory: pathlib.Path) -> list[pathlib.Path]:
-    return [p.resolve() for p in directory.rglob("*") if p.is_file() and p.name not in SKIP_FILES]
+    return sorted(
+        (p.resolve() for p in directory.rglob("*") if p.is_file() and p.name not in SKIP_FILES),
+        key=lambda f: f.name,
+    )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -51,6 +54,15 @@ def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
         return EntryExternalSearchLink(url=f"https://mydramalist.com/search?q={query}", text="Search MDL")
 
 
+def sort_entries_key_last_modified(entry: LocalDirectoryEntry) -> int:
+    """
+    Key used to sort entries based on modification date.
+    """
+    if entry.meta:
+        return timestamp_int(entry.meta.last_modified)
+    return 0
+
+
 class WebSiteBuilder:
     _cfg: KitsuConfig
 
@@ -73,7 +85,7 @@ class WebSiteBuilder:
             self._paths.site_dir_path / RESOURCES_DIR_NAME,
             dirs_exist_ok=True,
         )
-        entries = sorted(self._walk_dirs(), key=lambda entry: entry.path_to_dir)
+        entries = sorted(self._walk_dirs(), key=sort_entries_key_last_modified, reverse=True)
         self.generate_index_page(self._paths.index_file_path, [entry for entry in entries if not entry.is_drama])
         self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
