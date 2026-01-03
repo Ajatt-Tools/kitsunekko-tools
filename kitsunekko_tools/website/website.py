@@ -11,12 +11,10 @@ from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
 from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_meta
 from kitsunekko_tools.website.context import (
-    CSS_FILE_NAME,
     ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
     RESOURCES_DIR_NAME,
-    SITE_BUILD_LOCATION_NAME,
-    TEMPLATES_DIR_NAME,
+    WebSiteBuilderPaths,
     mk_context,
 )
 from kitsunekko_tools.website.templates import JinjaEnvHolder, render_template
@@ -32,6 +30,7 @@ class LocalDirectoryEntry:
     path_to_dir: pathlib.Path
     files_in_dir: list[pathlib.Path]
     site_path_to_html_file: pathlib.Path
+    is_drama: bool
 
 
 def name_to_addr(name: str) -> str:
@@ -57,35 +56,38 @@ class WebSiteBuilder:
     def __init__(self, config: KitsuConfig) -> None:
         self._cfg = config
         self._cfg.raise_for_destination()
-        self._work_root = config.destination.resolve().parent
-        self._site_dir_path = self._work_root.joinpath(SITE_BUILD_LOCATION_NAME)
-        self._templates_dir_path = self._work_root.joinpath(TEMPLATES_DIR_NAME)
-        self._resources_dir_path = self._work_root.joinpath(RESOURCES_DIR_NAME)
+        self._paths = WebSiteBuilderPaths.new(config)
         self._tmpl_holder = JinjaEnvHolder(
-            self._cfg, templates_dir_path=self._templates_dir_path, site_dir_path=self._site_dir_path
+            self._cfg,
+            templates_dir_path=self._paths.templates_dir_path,
+            site_dir_path=self._paths.site_dir_path,
         )
-        self._index_file_path = self._site_dir_path / INDEX_TEMPLATE_NAME
-        self._entries_dir_path = self._index_file_path.parent / "entries"
 
     def build(self) -> None:
-        self._site_dir_path.mkdir(parents=True, exist_ok=True)
-        self._entries_dir_path.mkdir(parents=True, exist_ok=True)
-
-        shutil.copytree(self._resources_dir_path, self._site_dir_path / RESOURCES_DIR_NAME, dirs_exist_ok=True)
+        self._paths.site_dir_path.mkdir(parents=True, exist_ok=True)
+        self._paths.entries_dir_path.mkdir(parents=True, exist_ok=True)
+        self._paths.drama_entries_dir_path.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(
+            self._paths.resources_dir_path,
+            self._paths.site_dir_path / RESOURCES_DIR_NAME,
+            dirs_exist_ok=True,
+        )
         entries = sorted(self._walk_dirs(), key=lambda entry: entry.path_to_dir)
-        self.generate_index_page(entries)
+        self.generate_index_page(self._paths.index_file_path, [entry for entry in entries if not entry.is_drama])
+        self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
 
     def generate_index_page(
         self,
+        index_file_path: pathlib.Path,
         entries: list[LocalDirectoryEntry],
     ) -> None:
         """Generate the index page with all entries."""
-        print("Rebuilding the index.")
-        context = mk_context(self._cfg, self._site_dir_path, self._index_file_path)
+        print(f"Rebuilding the index: {index_file_path.name}")
+        context = mk_context(self._cfg, self._paths, index_file_path)
         context.ctx.entries = entries
         html_content = render_template(INDEX_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
-        self._index_file_path.write_text(html_content, encoding="utf-8")
+        index_file_path.write_text(html_content, encoding="utf-8")
 
     def _walk_dirs(self) -> Iterable[LocalDirectoryEntry]:
         print("Collecting entries", end="")
@@ -95,11 +97,13 @@ class WebSiteBuilder:
                 meta = read_directory_meta(dir_path)
             except FileNotFoundError:
                 meta = None
+            is_drama = bool(meta and meta.is_drama())
             yield LocalDirectoryEntry(
                 meta=meta,
                 path_to_dir=dir_path,
                 files_in_dir=collect_files(dir_path),
-                site_path_to_html_file=self._entries_dir_path / f"{name_to_addr(dir_path.name)}.html",
+                site_path_to_html_file=self._mk_path_to_entry_html_file(is_drama, dir_path),
+                is_drama=is_drama,
             )
         print("")
 
@@ -108,7 +112,7 @@ class WebSiteBuilder:
         print("Rebuilding the entries", end="")
         for entry in entries:
             print(".", end="")
-            context = mk_context(self._cfg, self._site_dir_path, entry.site_path_to_html_file)
+            context = mk_context(self._cfg, self._paths, entry.site_path_to_html_file)
             context.ctx.entry = entry
             if entry.meta:
                 context.ctx.entry_name = entry.meta.name
@@ -123,12 +127,18 @@ class WebSiteBuilder:
 
     def copy_site_resources(self) -> None:
         print("Removing old resources and templates.")
-        shutil.rmtree(self._resources_dir_path, ignore_errors=True)
-        shutil.rmtree(self._templates_dir_path, ignore_errors=True)
+        shutil.rmtree(self._paths.resources_dir_path, ignore_errors=True)
+        shutil.rmtree(self._paths.templates_dir_path, ignore_errors=True)
         print("Copying resources.")
-        shutil.copytree(BUNDLED_RESOURCES_DIR, self._resources_dir_path)
+        shutil.copytree(BUNDLED_RESOURCES_DIR, self._paths.resources_dir_path)
         print("Copying templates.")
-        shutil.copytree(BUNDLED_TEMPLATES_DIR, self._templates_dir_path)
+        shutil.copytree(BUNDLED_TEMPLATES_DIR, self._paths.templates_dir_path)
+
+    def _mk_path_to_entry_html_file(self, is_drama: bool, dir_path: pathlib.Path) -> pathlib.Path:
+        file_name = f"{name_to_addr(dir_path.name)}.html"
+        if is_drama:
+            return self._paths.drama_entries_dir_path / file_name
+        return self._paths.entries_dir_path / file_name
 
 
 def build_website(config: KitsuConfig) -> None:

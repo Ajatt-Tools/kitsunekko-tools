@@ -71,6 +71,9 @@ class ApiDirectoryEntry:
     def is_anime(self) -> bool:
         return self.entry_type.startswith("anime_")
 
+    def is_drama(self) -> bool:
+        return not self.is_anime()
+
     @classmethod
     def from_api_json(cls, json_dict: ApiDirectoryDict) -> typing.Self:
         """
