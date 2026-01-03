@@ -17,7 +17,7 @@
 
     <div id="all_posts">
         <a href="{{ ctx.entry.path_to_dir | as_subtitle_git_url }}" target="_blank">Upload new files</a> &mdash;
-        <a href="https://myanimelist.net/search/all?q={{ ctx.entry_name }}" target="_blank">Search MAL</a> &mdash;
+        <a href="{{ ctx.search_link.url }}" target="_blank">{{ ctx.search_link.text }}</a> &mdash;
         <a href="{{ ctx.index_path | as_relative_to(ctx.output_file_path) }}" class="logo">Back to Index</a>
     </div>
 

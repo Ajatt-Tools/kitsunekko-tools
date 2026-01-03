@@ -68,6 +68,9 @@ class ApiDirectoryEntry:
     anilist_id: AnilistId | None = None
     tmdb_id: TMDBId | None = None
 
+    def is_anime(self) -> bool:
+        return self.entry_type.startswith("anime_")
+
     @classmethod
     def from_api_json(cls, json_dict: ApiDirectoryDict) -> typing.Self:
         """

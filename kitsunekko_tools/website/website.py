@@ -38,6 +38,19 @@ def name_to_addr(name: str) -> str:
     return name.lower().replace(" ", "-").replace("_", "-")
 
 
+@dataclasses.dataclass(frozen=True)
+class EntryExternalSearchLink:
+    url: str
+    text: str
+
+
+def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
+    if is_anime:
+        return EntryExternalSearchLink(url=f"https://myanimelist.net/anime.php?q={query}", text="Search MAL")
+    else:
+        return EntryExternalSearchLink(url=f"https://mydramalist.com/search?q={query}", text="Search MDL")
+
+
 class WebSiteBuilder:
     _cfg: KitsuConfig
 
@@ -99,8 +112,10 @@ class WebSiteBuilder:
             context.ctx.entry = entry
             if entry.meta:
                 context.ctx.entry_name = entry.meta.name
+                context.ctx.search_link = make_search_link(is_anime=entry.meta.is_anime(), query=entry.meta.name)
             else:
                 context.ctx.entry_name = entry.path_to_dir.name
+                context.ctx.search_link = make_search_link(is_anime=True, query=context.ctx.entry_name)
 
             html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
             entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
