@@ -107,7 +107,7 @@ class KitsuSubtitleDownloader:
         results = KitsuDownloadResults()
         for fut in asyncio.as_completed(tasks):
             try:
-                result = await fut
+                result: DownloadResult = await fut
             except KitsuConnectionError as ex:
                 print(ex)
             else:
