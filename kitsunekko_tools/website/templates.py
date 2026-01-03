@@ -108,6 +108,9 @@ class JinjaEnvHolder:
 
         @beartype
         def as_subtitle_download_url_filter(path: pathlib.Path) -> str:
+            """
+            Make a URL like this: https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/ShowName/file.srt
+            """
             return full_site_url_to_resource(
                 global_url=self._cfg.raw_subtitles_dir_url,
                 site_dir=self._cfg.destination,
@@ -116,6 +119,9 @@ class JinjaEnvHolder:
 
         @beartype
         def as_subtitle_git_url_filter(path: pathlib.Path) -> str:
+            """
+            Make a URL like this: https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/ShowName
+            """
             return full_site_url_to_resource(
                 global_url=self._cfg.git_subtitles_dir_url,
                 site_dir=self._cfg.destination,
