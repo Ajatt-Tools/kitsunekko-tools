@@ -149,3 +149,13 @@ def add_file_to_ignore_list(cfg: KitsuConfig, path_to_file: pathlib.Path) -> Non
     ignore_list = IgnoreTSVForDir(ignore_filepath=get_ignore_file_path_on_disk(parent_dir))
     ignore_list.add_file(path_to_file)
     ignore_list.commit()
+
+
+def add_all_files_to_ignore_list(cfg: KitsuConfig) -> None:
+    for directory in iter_subtitle_directories(cfg):
+        ignore_list = IgnoreTSVForDir(get_ignore_file_path_on_disk(directory))
+        for file in iter_subtitle_files(directory):
+            if not ignore_list.is_matching(file):
+                # Only add missing files.
+                ignore_list.add_file(file)
+        ignore_list.commit()

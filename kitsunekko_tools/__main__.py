@@ -11,7 +11,7 @@ from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuError, KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError
 from kitsunekko_tools.consts import PROG_NAME
-from kitsunekko_tools.ignore import add_file_to_ignore_list
+from kitsunekko_tools.ignore import add_file_to_ignore_list, add_all_files_to_ignore_list
 from kitsunekko_tools.mega_upload import mega_upload
 from kitsunekko_tools.sanitize import sanitize_directories
 from kitsunekko_tools.website.website import WebSiteBuilder, build_website
@@ -84,6 +84,17 @@ class IgnoreCli:
             print(ex.what)
         else:
             add_file_to_ignore_list(cfg=cfg, path_to_file=pathlib.Path(path_to_file).resolve())
+
+    def add_all(self) -> None:
+        """
+        Update all ignore lists across the entire repository and add missing files.
+        """
+        try:
+            cfg = self._config.data()
+        except ConfigFileNotFoundError as ex:
+            print(ex.what)
+        else:
+            add_all_files_to_ignore_list(cfg)
 
 
 class Application:
