@@ -33,6 +33,7 @@ def collect_files(directory: pathlib.Path) -> Iterable[FileMetaData]:
         if not ignore_list.is_matching(file_path):
             ignore_list.add_file(file_path)
         yield ignore_list.file_info(file_path)
+    ignore_list.commit()
 
 
 @dataclasses.dataclass(frozen=True)
