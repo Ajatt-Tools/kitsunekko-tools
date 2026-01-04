@@ -4,7 +4,7 @@
 
 :root {
     --index-page-width: min(1800px, 90vw);
-    --article-page-width: min(1400px, 90vw);
+    --entry-page-width: min(1400px, 90vw);
     --table-highlight-color: hsl(0 0% 0% / 0.04);
     --table-header-color: hsl(0 0% 0% / 0.09);
 }
@@ -50,9 +50,9 @@ main a[href$=".srt"]::before {
 
 /* Subtitle entries */
 
-.entry_main_wrap {
+#divbodyholder > .entry_main_wrap {
     /* List of subtitle files */
-    max-width: var(--article-page-width);
+    max-width: var(--entry-page-width);
 }
 
 .entries_table {
