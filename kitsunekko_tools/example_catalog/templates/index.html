@@ -7,7 +7,7 @@
 <div class="subtitle_catalog_main_wrap">
 <!-- index begin -->
     <main class="subtitle_catalog_main">
-    <table class="entries_table">
+    <table class="entries_table index_table">
         <thead>
         <tr>
             <th scope="col" class="entry_number">#</th>
@@ -19,23 +19,23 @@
         </tr>
         </thead>
         <tbody>
-        {% for entry in ctx.entries %}
-            {% if entry.meta %}
-            <tr data-timestamp="{{ entry.meta.last_modified | timestamp_int }}">
-                <td data-cell="#" class="entry_number">{{ loop.index }}</td>
-                <td data-cell="Name" class="entry_name"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
-                <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.replace("_", " ") }}</td>
-                <td data-cell="English" class="english_name">{{ entry.meta.english_name }}</td>
-                <td data-cell="Japanese" class="japanese_name">{{ entry.meta.japanese_name }}</td>
-                <td data-cell="Last modified" class="last_modified">{{ entry.meta.last_modified | strftime("%d %b %Y %H:%M:%S") }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td data-cell="#" class="entry_number">{{ loop.index }}</td>
-                <td colspan="5" data-cell="Name" class="entry_name missing_meta"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
-            </tr>
-            {% endif %}
-        {% endfor %}
+            {% for entry in ctx.entries %}
+                {% if entry.meta %}
+                <tr data-timestamp="{{ entry.meta.last_modified | timestamp_int }}">
+                    <td data-cell="#" class="entry_number">{{ loop.index }}</td>
+                    <td data-cell="Name" class="entry_name"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
+                    <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.replace("_", " ") }}</td>
+                    <td data-cell="English" class="english_name">{{ entry.meta.english_name }}</td>
+                    <td data-cell="Japanese" class="japanese_name">{{ entry.meta.japanese_name }}</td>
+                    <td data-cell="Last modified" class="last_modified">{{ entry.meta.last_modified | strftime("%d %b %Y %H:%M:%S") }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td data-cell="#" class="entry_number">{{ loop.index }}</td>
+                    <td colspan="5" data-cell="Name" class="entry_name missing_meta"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
             <tr class="subtitle_catalog_end">
                 <td colspan="6"><a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}#" class="logo">Back to Index</a></td>
             </tr>

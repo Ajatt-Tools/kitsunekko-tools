@@ -1,5 +1,14 @@
 @charset "utf-8";
 
+/* Body */
+
+:root {
+    --index-page-width: min(1800px, 90vw);
+    --article-page-width: min(1400px, 90vw);
+    --table-highlight-color: hsl(0 0% 0% / 0.04);
+    --table-header-color: hsl(0 0% 0% / 0.09);
+}
+
 /* Labels for ASS and SRT */
 
 main a[href$=".ass"]::before,
@@ -25,8 +34,6 @@ main a[href$=".srt"]::before {
 /* Subtitle catalog - main */
 
 .subtitle_catalog_main_wrap {
-    --article-page-width: min(1800px, 90vw);
-
     flex: 1 0 auto;
     overflow-wrap: break-word;
     margin: var(--gap-large) 0 var(--gap-large);
@@ -36,18 +43,22 @@ main a[href$=".srt"]::before {
     background-color: var(--article-background, white);
     margin: 0 auto;
     width: 100%;
-    max-width: var(--article-page-width);
+    max-width: var(--index-page-width);
     box-shadow: 0 1px 4px 0 var(--elem-shadow-color);
     padding: 0;
 }
 
 /* Subtitle entries */
 
+.entry_main_wrap {
+    /* List of subtitle files */
+    max-width: var(--article-page-width);
+}
+
 .entries_table {
     --border-color: hsl(0, 0%, 85%);
 
     border: 1px solid var(--border-color);
-    margin-block: 0;
     width: 100%;
     border-collapse: collapse;
 
@@ -55,10 +66,15 @@ main a[href$=".srt"]::before {
         margin-block: 0;
     }
 
+    th {
+        font-weight: 600;
+        background-color: var(--table-header-color);
+    }
+
     th,
     td {
-        padding-inline: 0.25rem;
-        padding-block: 0.5rem;
+        padding-inline: 0.2rem;
+        padding-block: 0.2rem;
         border: 1px solid var(--border-color);
         text-align: left;
         word-break: normal;
@@ -73,6 +89,10 @@ main a[href$=".srt"]::before {
         max-width: 100%;
         content-visibility: auto;
         contain-intrinsic-size: auto;
+    }
+
+    tr:nth-of-type(2n) {
+        background-color: var(--table-highlight-color);
     }
 
     thead,
@@ -94,6 +114,12 @@ main a[href$=".srt"]::before {
     .last_modified {
         min-width: 21ch;
         word-break: keep-all;
+        font-family: var(--monospace-font-families, monospace);
+    }
+    .file_size {
+        min-width: 7ch;
+        word-break: keep-all;
+        font-family: var(--monospace-font-families, monospace);
     }
     .entry_name,
     .english_name,
@@ -102,25 +128,87 @@ main a[href$=".srt"]::before {
     }
 }
 
-.entries_table tr:nth-of-type(2n) {
-    background-color: hsl(0 0% 0% / 0.05);
-}
-
-/* Header row */
-
-.entries_table thead th {
-    font-weight: 600;
-    background-color: var(--table-header-color, rgba(0, 0, 0, 0.1));
-}
-
-.entries_table td.last_modified {
-    font-family: var(--monospace-font-families, monospace);
-}
-
 /* Column placement */
 
 .subtitle_catalog_end td {
+    /* Back to index and other links */
     text-align: center;
+}
+
+/* Tabs */
+
+input[type="radio"].subs_format_input {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.subs_format_tabs {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    * {
+        margin: 0;
+    }
+}
+
+.tabs_title {
+    font-weight: 700;
+}
+
+.subs_format_tabs label {
+    padding: 0.35rem 0.75rem;
+
+    border: 1px solid #d0d0d0;
+    border-radius: 100vmax;
+
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+    line-height: 1;
+
+    &:hover {
+        background-color: rgba(127, 127, 127, 0.07);
+    }
+
+    box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.1);
+    font-family: var(--monospace-font-families, monospace);
+}
+
+#ext_srt:checked ~ .subs_format_tabs label[for="ext_srt"],
+#ext_ass:checked ~ .subs_format_tabs label[for="ext_ass"],
+#ext_all:checked ~ .subs_format_tabs label[for="ext_all"] {
+    background-color: rgba(127, 127, 127, 0.14);
+    font-weight: 800;
+}
+
+/* show only selected group */
+
+#ext_srt:checked ~ :is(.group_ass, .group_all) {
+    display: none;
+}
+#ext_ass:checked ~ :is(.group_srt, .group_all) {
+    display: none;
+}
+#ext_all:checked ~ :is(.group_srt, .group_ass) {
+    display: none;
+}
+
+/* Shell commands */
+
+.cmd_wrap {
+    padding: 0.6rem 0.65rem;
+    border: 1px dashed #ccc;
+    border-radius: 0.6rem;
+
+    .cmdlabel {
+        font-weight: 800;
+    }
 }
 
 /* Small screens */
@@ -147,7 +235,7 @@ main a[href$=".srt"]::before {
         }
     }
     .entry_name {
-        background-color: var(--table-header-color, rgba(0, 0, 0, 0.1));
+        background-color: var(--table-header-color);
     }
     td.entry_name ~ td {
         padding-inline-start: 2ch;
