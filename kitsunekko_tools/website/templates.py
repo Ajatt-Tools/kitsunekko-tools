@@ -49,6 +49,14 @@ def date_full_filter(dt: datetime.datetime) -> str:
     return strftime_filter(dt, DATE_FORMAT_FULL)
 
 
+def size_bytes_to_human(size_bytes: int) -> str:
+    for unit in ["B", "KiB", "MiB", "GiB", "TiB"]:
+        if size_bytes < 1024:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024
+    return f"{size_bytes:.2f} PB"
+
+
 @beartype
 def no_trailing_slash(url: str) -> str:
     return url.rstrip(r"\/")
@@ -143,6 +151,9 @@ class JinjaEnvHolder:
         env.filters["date_allposts"] = date_allposts_filter
         env.filters["date_allposts_post"] = date_allposts_post_filter
         env.filters["date_full"] = date_full_filter
+
+        # Files size
+        env.filters["size_bytes_to_human"] = size_bytes_to_human
 
         return env
 
