@@ -3,12 +3,10 @@
 import dataclasses
 import pathlib
 import shutil
-import urllib.parse
 from collections.abc import Iterable
 from typing import Self
 
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
-from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
