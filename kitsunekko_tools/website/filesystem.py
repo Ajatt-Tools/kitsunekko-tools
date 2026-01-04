@@ -1,11 +1,12 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import pathlib
+import urllib.parse
 from collections.abc import Iterable
 
 from beartype import beartype
 
-from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.common import KitsuError
 
 
 @beartype
@@ -78,5 +79,6 @@ def full_site_url_to_resource(global_url: str, site_dir: pathlib.Path, file_path
     # Convert to relative path from site directory
     relative_path = str(file_path.resolve().relative_to(site_dir))
     # Return the URL by joining the global URL with the relative path
-    assert relative_path.startswith("/") is False, "relative path can't start with a slash."
-    return f"{global_url.rstrip('/')}/{relative_path}"
+    if relative_path.startswith("/"):
+        raise KitsuError("relative path can't start with a slash.")
+    return f"{global_url.rstrip('/')}/{urllib.parse.quote(relative_path)}"

@@ -10,7 +10,12 @@ from kitsunekko_tools.api_access.root_directory import format_api_time, parse_ap
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException
 from kitsunekko_tools.config import Config, KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
-from kitsunekko_tools.filesystem import get_tsv_reader, get_tsv_writer, iter_subtitle_directories, iter_subtitle_files
+from kitsunekko_tools.filesystem import (
+    get_tsv_reader,
+    get_tsv_writer,
+    iter_subtitle_directories,
+    iter_subtitle_files,
+)
 
 
 @dataclasses.dataclass(frozen=True)

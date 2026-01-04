@@ -4,7 +4,7 @@ import csv
 import io
 import pathlib
 import typing
-from typing import Iterable
+from collections.abc import Iterable
 
 from beartype import beartype
 

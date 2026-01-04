@@ -49,6 +49,18 @@ def date_full_filter(dt: datetime.datetime) -> str:
     return strftime_filter(dt, DATE_FORMAT_FULL)
 
 
+@beartype
+def as_subtitle_download_url(path: pathlib.Path, cfg: KitsuConfig) -> str:
+    """
+    Make a URL like this: https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/ShowName/file.srt
+    """
+    return full_site_url_to_resource(
+        global_url=cfg.raw_subtitles_dir_url,
+        site_dir=cfg.destination,
+        file_path=path,
+    )
+
+
 def size_bytes_to_human(size_bytes: int) -> str:
     for unit in ["B", "KiB", "MiB", "GiB", "TiB"]:
         if size_bytes < 1024:
@@ -106,7 +118,7 @@ class JinjaEnvHolder:
         def full_url_filter(path: str | pathlib.Path) -> str:
             return full_site_url_to_resource(
                 global_url=self._cfg.site_url,
-                site_dir=self._site_dir_path,
+                site_dir=self._site_dir_path,  # _site
                 file_path=pathlib.Path(path),
             )
 
@@ -119,11 +131,7 @@ class JinjaEnvHolder:
             """
             Make a URL like this: https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/ShowName/file.srt
             """
-            return full_site_url_to_resource(
-                global_url=self._cfg.raw_subtitles_dir_url,
-                site_dir=self._cfg.destination,
-                file_path=path,
-            )
+            return as_subtitle_download_url(path, self._cfg)
 
         @beartype
         def as_subtitle_git_url_filter(path: pathlib.Path) -> str:

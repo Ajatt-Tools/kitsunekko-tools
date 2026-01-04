@@ -3,15 +3,21 @@
 import dataclasses
 import pathlib
 import shutil
+import urllib.parse
 from collections.abc import Iterable
+from typing import Self
 
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
 from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
-from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk, FileMetaData
-from kitsunekko_tools.sanitize import read_directory_meta
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
+from kitsunekko_tools.ignore import (
+    FileMetaData,
+    IgnoreTSVForDir,
+    get_ignore_file_path_on_disk,
+)
+from kitsunekko_tools.sanitize import read_directory_meta
 from kitsunekko_tools.website.context import (
     ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
@@ -22,6 +28,7 @@ from kitsunekko_tools.website.context import (
 )
 from kitsunekko_tools.website.templates import (
     JinjaEnvHolder,
+    as_subtitle_download_url,
     render_template,
     timestamp_int,
 )
@@ -43,6 +50,9 @@ class LocalDirectoryEntry:
     files_in_dir: list[FileMetaData]
     site_path_to_html_file: pathlib.Path
     is_drama: bool
+
+    def filter_files(self, name_suffix: str) -> list[FileMetaData]:
+        return [file for file in self.files_in_dir if file.path.name.endswith(name_suffix)]
 
 
 def name_to_addr(name: str) -> str:
@@ -69,6 +79,36 @@ def sort_entries_key_last_modified(entry: LocalDirectoryEntry) -> int:
     if entry.meta:
         return timestamp_int(entry.meta.last_modified)
     return 0
+
+
+def mk_shell_compatible_url_list(files: list[FileMetaData], cfg: KitsuConfig) -> str:
+    return " ".join(f"'{link}'" for link in [as_subtitle_download_url(file.path, cfg) for file in files])
+
+
+WGET_COMMAND_PREFIX = "wget --no-glob --no-clobber --content-disposition --trust-server-names --iri"
+
+
+@dataclasses.dataclass(frozen=True)
+class FileExtGroup:
+    type: str
+    files: list[FileMetaData]
+    wget_command: str
+
+    @classmethod
+    def new(cls, group_type: str, files: list[FileMetaData], cfg: KitsuConfig) -> Self:
+        return cls(
+            group_type,
+            files,
+            wget_command=f"{WGET_COMMAND_PREFIX} {mk_shell_compatible_url_list(files, cfg)}",
+        )
+
+
+def mk_file_ext_groups(entry: LocalDirectoryEntry, cfg: KitsuConfig) -> list[FileExtGroup]:
+    return [
+        FileExtGroup.new("srt", entry.filter_files(".srt"), cfg),
+        FileExtGroup.new("ass", entry.filter_files(".ass"), cfg),
+        FileExtGroup.new("all", entry.files_in_dir, cfg),
+    ]
 
 
 class WebSiteBuilder:
@@ -147,6 +187,7 @@ class WebSiteBuilder:
         for entry in entries:
             context = mk_context(self._cfg, self._paths, entry.site_path_to_html_file)
             context.ctx.entry = entry
+            context.ctx.file_ext_groups = mk_file_ext_groups(entry, self._cfg)
             if entry.meta:
                 context.ctx.entry_name = entry.meta.name
                 context.ctx.search_link = make_search_link(is_anime=entry.meta.is_anime(), query=entry.meta.name)
