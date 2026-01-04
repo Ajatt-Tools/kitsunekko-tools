@@ -23,31 +23,35 @@
 
     {% for group in ctx.file_ext_groups %}
     <section class="group_{{ group.type }}">
-        <div class="cmd_wrap">
-            <div class="cmdlabel">wget</div>
-            <div class="pre-wrap"><pre><code>{{ group.wget_command }}</code></pre></div>
-        </div>
+        {% if group.files %}
+            <div class="cmd_wrap">
+                <div class="cmdlabel">wget</div>
+                <div class="pre-wrap"><pre><code>{{ group.wget_command }}</code></pre></div>
+            </div>
 
-        <table class="entries_table file_list_table">
-            <thead>
-            <tr>
-                <th scope="col" class="entry_number">#</th>
-                <th scope="col" class="entry_name">Name</th>
-                <th scope="col" class="file_size">Size</th>
-                <th scope="col" class="last_modified">Last modified</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for file in group.files %}
-                <tr data-timestamp="{{ file.last_modified | timestamp_int }}">
-                    <td data-cell="#" class="entry_number">{{ loop.index }}</td>
-                    <td data-cell="Name" class="entry_name"><a href="{{ file.path | as_subtitle_download_url }}" download="{{ file.name }}">{{ file.path.relative_to(ctx.entry.path_to_dir) }}</a></td>
-                    <td data-cell="Size" class="file_size">{{ file.st_size | size_bytes_to_human }}</td>
-                    <td data-cell="Last modified" class="last_modified">{{ file.last_modified | strftime("%d %b %Y %H:%M:%S") }}</td>
+            <table class="entries_table file_list_table">
+                <thead>
+                <tr>
+                    <th scope="col" class="entry_number">#</th>
+                    <th scope="col" class="entry_name">Name</th>
+                    <th scope="col" class="file_size">Size</th>
+                    <th scope="col" class="last_modified">Last modified</th>
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                {% for file in group.files %}
+                    <tr data-timestamp="{{ file.last_modified | timestamp_int }}">
+                        <td data-cell="#" class="entry_number">{{ loop.index }}</td>
+                        <td data-cell="Name" class="entry_name"><a href="{{ file.path | as_subtitle_download_url }}" download="{{ file.name }}">{{ file.path.relative_to(ctx.entry.path_to_dir) }}</a></td>
+                        <td data-cell="Size" class="file_size">{{ file.st_size | size_bytes_to_human }}</td>
+                        <td data-cell="Last modified" class="last_modified">{{ file.last_modified | strftime("%d %b %Y %H:%M:%S") }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nothing to show.</p>
+        {% endif %}
     </section>
     {% endfor %}
 
