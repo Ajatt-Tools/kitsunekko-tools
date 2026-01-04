@@ -138,7 +138,7 @@ class IgnoreTSVForDir:
         with open(self._ignore_filepath, "w", encoding="utf-8") as of:
             writer = get_tsv_writer(of, fieldnames=tuple(IgnoreFileEntry.__annotations__))
             writer.writeheader()
-            writer.writerows(entry.to_tsv_row() for entry in self._patterns.values())
+            writer.writerows(entry.to_tsv_row() for entry in self.patterns())
         print(f"written: {self._ignore_filepath}")
 
 
