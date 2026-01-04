@@ -55,11 +55,13 @@ class IgnoreTSVForDir:
 
     _ignore_filepath: pathlib.Path
     _patterns: dict[str, IgnoreFileEntry]
+    _needs_flush: bool = False
 
     def __init__(self, ignore_filepath: pathlib.Path) -> None:
         self._ignore_filepath = ignore_filepath
         self._patterns = {}
         self._read_ignore_file()
+        self._needs_flush = False
 
     def _read_ignore_file(self) -> None:
         try:
@@ -108,6 +110,7 @@ class IgnoreTSVForDir:
         if not file.name:
             raise IgnoreListException("empty pattern")
         self._patterns[file.name] = file
+        self._needs_flush = True
 
     def add_file(self, file_path: pathlib.Path) -> None:
         """
@@ -129,6 +132,8 @@ class IgnoreTSVForDir:
         """
         if not self._patterns:
             print(f"empty ignore list: {self._ignore_filepath}")
+            return
+        if not self._needs_flush:
             return
         with open(self._ignore_filepath, "w", encoding="utf-8") as of:
             writer = get_tsv_writer(of, fieldnames=tuple(IgnoreFileEntry.__annotations__))
