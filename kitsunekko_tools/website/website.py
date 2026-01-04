@@ -10,7 +10,8 @@ from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk, FileMetaData
-from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_meta
+from kitsunekko_tools.sanitize import read_directory_meta
+from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.website.context import (
     ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
@@ -28,12 +29,11 @@ from kitsunekko_tools.website.templates import (
 
 def collect_files(directory: pathlib.Path) -> Iterable[FileMetaData]:
     ignore_list = IgnoreTSVForDir(get_ignore_file_path_on_disk(directory))
-    for path in directory.rglob("*"):
-        if path.is_file() and path.name not in SKIP_FILES:
-            if not ignore_list.is_matching(path):
-                ignore_list.add_file(path)
-            yield ignore_list.file_info(path)
-    ignore_list.commit()
+    for file_path in iter_subtitle_files(directory):
+        if not ignore_list.is_matching(file_path):
+            ignore_list.add_file(file_path)
+        yield ignore_list.file_info(file_path)
+
 
 @dataclasses.dataclass(frozen=True)
 class LocalDirectoryEntry:

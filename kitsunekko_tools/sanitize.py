@@ -11,6 +11,7 @@ from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_di
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
 
 RE_INSIGNIFICANT_CHARS = re.compile(
@@ -41,15 +42,6 @@ def nuke_dir(directory: pathlib.Path) -> None:
     get_meta_file_path_on_disk(directory).unlink(missing_ok=True)
     get_ignore_file_path_on_disk(directory).unlink(missing_ok=True)
     directory.rmdir()
-
-
-def iter_subtitle_directories(config: KitsuConfig) -> Iterable[pathlib.Path]:
-    for entry in config.destination.resolve().iterdir():
-        if not entry.is_dir():
-            continue
-        if entry.name in SKIP_FILES:
-            continue
-        yield entry
 
 
 def merge_ignore_lists(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
@@ -153,8 +145,8 @@ class FixOrphans:
 
 def delete_empty_directories(config: KitsuConfig) -> None:
     for directory in iter_subtitle_directories(config):
-        entries = [entry for entry in directory.rglob("*") if entry.is_file() and entry.name not in SKIP_FILES]
-        if not entries:
+        files = [*iter_subtitle_files(directory)]
+        if not files:
             print(f"deleting empty dir: {directory}")
             nuke_dir(directory)
 
