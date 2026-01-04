@@ -20,7 +20,7 @@ dependencies = [
   "Jinja2>=3.1.0",
 ]
 license = {file = "LICENSE"}
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [project.scripts]
 ktools = "kitsunekko_tools.__main__:main"
@@ -38,7 +38,7 @@ version-file = "kitsunekko_tools/__version__.py"
 
 [tool.black]
 line-length = 120
-target-version = ['py311']
+target-version = ['py312']
 
 [tool.isort]
 profile = "black"
