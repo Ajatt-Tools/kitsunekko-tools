@@ -11,8 +11,7 @@ from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_di
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import IGNORE_FILENAME, TRASH_DIR_NAME
-from kitsunekko_tools.ignore import IgnoreListForDir, get_ignore_file_path_on_disk
+from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
 
 RE_INSIGNIFICANT_CHARS = re.compile(
     r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾△＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽☆∀∕]+",
@@ -54,10 +53,10 @@ def iter_subtitle_directories(config: KitsuConfig) -> Iterable[pathlib.Path]:
 
 
 def merge_ignore_lists(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
-    old = IgnoreListForDir(old_dir / IGNORE_FILENAME)
-    new = IgnoreListForDir(new_dir / IGNORE_FILENAME)
+    old = IgnoreTSVForDir(get_ignore_file_path_on_disk(old_dir))
+    new = IgnoreTSVForDir(get_ignore_file_path_on_disk(new_dir))
     for pattern in old.patterns():
-        new.add_pattern(pattern)
+        new.add_entry(pattern)
     new.commit()
 
 

@@ -9,6 +9,7 @@ from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
 from kitsunekko_tools.common import SKIP_FILES
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
+from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk, FileMetaData
 from kitsunekko_tools.sanitize import iter_subtitle_directories, read_directory_meta
 from kitsunekko_tools.website.context import (
     ENTRY_TEMPLATE_NAME,
@@ -18,21 +19,27 @@ from kitsunekko_tools.website.context import (
     WebSiteBuilderPaths,
     mk_context,
 )
-from kitsunekko_tools.website.templates import JinjaEnvHolder, render_template, timestamp_int
+from kitsunekko_tools.website.templates import (
+    JinjaEnvHolder,
+    render_template,
+    timestamp_int,
+)
 
 
-def collect_files(directory: pathlib.Path) -> list[pathlib.Path]:
-    return sorted(
-        (p.resolve() for p in directory.rglob("*") if p.is_file() and p.name not in SKIP_FILES),
-        key=lambda f: f.name,
-    )
-
+def collect_files(directory: pathlib.Path) -> Iterable[FileMetaData]:
+    ignore_list = IgnoreTSVForDir(get_ignore_file_path_on_disk(directory))
+    for path in directory.rglob("*"):
+        if path.is_file() and path.name not in SKIP_FILES:
+            if not ignore_list.is_matching(path):
+                ignore_list.add_file(path)
+            yield ignore_list.file_info(path)
+    ignore_list.commit()
 
 @dataclasses.dataclass(frozen=True)
 class LocalDirectoryEntry:
     meta: KitsuDirectoryMeta | None
     path_to_dir: pathlib.Path
-    files_in_dir: list[pathlib.Path]
+    files_in_dir: list[FileMetaData]
     site_path_to_html_file: pathlib.Path
     is_drama: bool
 
@@ -118,9 +125,8 @@ class WebSiteBuilder:
         )
 
     def _walk_dirs(self) -> Iterable[LocalDirectoryEntry]:
-        print("Collecting entries", end="")
+        print("Collecting entries...")
         for dir_path in iter_subtitle_directories(self._cfg):
-            print(".", end="")
             try:
                 meta = read_directory_meta(dir_path)
             except FileNotFoundError:
@@ -129,17 +135,15 @@ class WebSiteBuilder:
             yield LocalDirectoryEntry(
                 meta=meta,
                 path_to_dir=dir_path,
-                files_in_dir=collect_files(dir_path),
+                files_in_dir=sorted(collect_files(dir_path), key=lambda f: f.name),
                 site_path_to_html_file=self._mk_path_to_entry_html_file(is_drama, dir_path),
                 is_drama=is_drama,
             )
-        print("")
 
     def generate_entry_pages(self, entries: list[LocalDirectoryEntry]) -> None:
         """Generate the index page with all entries."""
-        print("Rebuilding the entries", end="")
+        print("Rebuilding the entries...")
         for entry in entries:
-            print(".", end="")
             context = mk_context(self._cfg, self._paths, entry.site_path_to_html_file)
             context.ctx.entry = entry
             if entry.meta:
@@ -151,7 +155,6 @@ class WebSiteBuilder:
 
             html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
             entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
-        print("")
 
     def copy_site_resources(self) -> None:
         print("Removing old resources and templates.")

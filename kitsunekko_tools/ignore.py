@@ -6,9 +6,11 @@ import datetime
 import pathlib
 import typing
 
-from kitsunekko_tools.common import KitsuError, KitsuException
+from kitsunekko_tools.api_access.root_directory import format_api_time, parse_api_time
+from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException
 from kitsunekko_tools.config import Config, KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
+from kitsunekko_tools.tsv_utils import get_tsv_reader, get_tsv_writer
 
 
 @dataclasses.dataclass(frozen=True)
@@ -23,13 +25,36 @@ def get_ignore_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
     return parent_dir.joinpath(IGNORE_FILENAME)
 
 
-class IgnoreListForDir:
+class IgnoreFileEntryDict(typing.TypedDict):
+    name: str
+    last_modified: str
+    st_size: str
+
+
+@dataclasses.dataclass(frozen=True)
+class IgnoreFileEntry:
+    name: str
+    last_modified: datetime.datetime
+    st_size: int
+
+    def to_tsv_row(self) -> IgnoreFileEntryDict:
+        as_dict = dataclasses.asdict(self)
+        as_dict["last_modified"] = format_api_time(self.last_modified)
+        return as_dict
+
+
+@dataclasses.dataclass(frozen=True)
+class FileMetaData(IgnoreFileEntry):
+    path: pathlib.Path
+
+
+class IgnoreTSVForDir:
     """
     Holds a list of files that should not be downloaded even if they're not present in expected locations.
     """
 
     _ignore_filepath: pathlib.Path
-    _patterns: dict[str, None]
+    _patterns: dict[str, IgnoreFileEntry]
 
     def __init__(self, ignore_filepath: pathlib.Path) -> None:
         self._ignore_filepath = ignore_filepath
@@ -38,9 +63,16 @@ class IgnoreListForDir:
 
     def _read_ignore_file(self) -> None:
         try:
-            for pattern in self._ignore_filepath.read_text(encoding="utf8").splitlines():
-                if pattern := pattern.strip():
-                    self.add_pattern(pattern)
+            with open(self._ignore_filepath, encoding="utf-8", newline="") as f:
+                row: IgnoreFileEntryDict
+                for row in get_tsv_reader(f):
+                    self.add_entry(
+                        IgnoreFileEntry(
+                            name=row["name"],
+                            last_modified=parse_api_time(row["last_modified"]),
+                            st_size=int(row["st_size"]),
+                        )
+                    )
         except FileNotFoundError:
             pass
 
@@ -51,22 +83,31 @@ class IgnoreListForDir:
         """
         return self._ignore_filepath
 
+    def file_info(self, file_path: pathlib.Path) -> FileMetaData:
+        return FileMetaData(
+            **dataclasses.asdict(self._patterns[file_path.name]),
+            path=file_path.resolve(),
+        )
+
+    def last_modified(self, file_path: pathlib.Path) -> datetime.datetime:
+        return self.file_info(file_path).last_modified
+
     def is_matching(self, file_path: pathlib.Path) -> bool:
         return file_path.name in self._patterns
 
-    def patterns(self) -> typing.Iterable[str]:
+    def patterns(self) -> typing.Iterable[IgnoreFileEntry]:
         """
         Return all known ignore patterns.
         """
-        return self._patterns.keys()
+        return self._patterns.values()
 
-    def add_pattern(self, pattern: str) -> None:
+    def add_entry(self, file: IgnoreFileEntry) -> None:
         """
         Add a new ignore pattern to the list.
         """
-        if not pattern:
+        if not file.name:
             raise IgnoreListException("empty pattern")
-        self._patterns[pattern] = None
+        self._patterns[file.name] = file
 
     def add_file(self, file_path: pathlib.Path) -> None:
         """
@@ -74,7 +115,13 @@ class IgnoreListForDir:
         """
         if not file_path.is_file():
             raise IgnoreListException(f"not a file: {file_path}")
-        return self.add_pattern(file_path.name)
+        return self.add_entry(
+            IgnoreFileEntry(
+                name=file_path.name,
+                last_modified=datetime.datetime.fromtimestamp(file_path.stat().st_mtime, tz=datetime.UTC),
+                st_size=file_path.stat().st_size,
+            )
+        )
 
     def commit(self) -> None:
         """
@@ -83,8 +130,10 @@ class IgnoreListForDir:
         if not self._patterns:
             print(f"empty ignore list: {self._ignore_filepath}")
             return
-        data = "\n".join(self._patterns) + "\n"
-        self._ignore_filepath.write_text(data, encoding="utf-8")  # newline at the end of file
+        with open(self._ignore_filepath, "w", encoding="utf-8") as of:
+            writer = get_tsv_writer(of, fieldnames=tuple(IgnoreFileEntry.__annotations__))
+            writer.writeheader()
+            writer.writerows(entry.to_tsv_row() for entry in self._patterns.values())
         print(f"written: {self._ignore_filepath}")
 
 
@@ -97,6 +146,6 @@ def find_entry_dir(cfg: KitsuConfig, path_to_file: pathlib.Path) -> pathlib.Path
 
 def add_file_to_ignore_list(cfg: KitsuConfig, path_to_file: pathlib.Path) -> None:
     parent_dir = find_entry_dir(cfg, path_to_file)
-    ignore_list = IgnoreListForDir(ignore_filepath=get_ignore_file_path_on_disk(parent_dir))
+    ignore_list = IgnoreTSVForDir(ignore_filepath=get_ignore_file_path_on_disk(parent_dir))
     ignore_list.add_file(path_to_file)
     ignore_list.commit()

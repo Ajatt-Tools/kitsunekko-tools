@@ -14,7 +14,7 @@ import httpx
 from kitsunekko_tools.api_access.directory_entry import KitsuDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.ignore import IgnoreListForDir
+from kitsunekko_tools.ignore import IgnoreTSVForDir
 
 SubtitleFileUrl = typing.NewType("SubtitleFileUrl", str)
 
@@ -62,7 +62,7 @@ class KitsuSubtitleDownload:
 @dataclasses.dataclass(frozen=True)
 class DownloadSubtitlesList:
     to_download: list[KitsuSubtitleDownload]
-    ignore_list: IgnoreListForDir
+    ignore_list: IgnoreTSVForDir
 
 
 @enum.unique
@@ -127,17 +127,32 @@ class KitsuSubtitleDownloader:
         entry.ignore_list.commit()
         return results
 
-    async def download_sub(
-        self, client: httpx.AsyncClient, subtitle: KitsuSubtitleDownload, ignore_list: IgnoreListForDir
-    ) -> DownloadResult:
+    def _should_skip_download(
+        self, subtitle: KitsuSubtitleDownload, ignore_list: IgnoreTSVForDir
+    ) -> DownloadStatus | None:
+        try:
+            if ignore_list.last_modified(subtitle.file_path) < subtitle.last_modified_on_remote:
+                # Our file is older than theirs
+                return None
+        except KeyError:
+            pass
+
         if subtitle.is_already_downloaded():
-            return DownloadResult(reason=DownloadStatus.already_exists, subtitle=subtitle)
+            return DownloadStatus.already_exists
 
         if ignore_list.is_matching(subtitle.file_path):
-            return DownloadResult(reason=DownloadStatus.explicitly_ignored, subtitle=subtitle)
+            return DownloadStatus.explicitly_ignored
 
         if not self._config.is_allowed_file_type(subtitle.file_path):
-            return DownloadResult(reason=DownloadStatus.blocked_file_type, subtitle=subtitle)
+            return DownloadStatus.blocked_file_type
+
+        return None
+
+    async def download_sub(
+        self, client: httpx.AsyncClient, subtitle: KitsuSubtitleDownload, ignore_list: IgnoreTSVForDir
+    ) -> DownloadResult:
+        if skip_reason := self._should_skip_download(subtitle, ignore_list):
+            return DownloadResult(reason=skip_reason, subtitle=subtitle)
 
         print(f"downloading file: {subtitle.url}")
 
@@ -147,8 +162,8 @@ class KitsuSubtitleDownloader:
             raise KitsuConnectionError(subtitle.url) from e
 
         if r.status_code != httpx.codes.OK:
-            return DownloadResult(DownloadStatus.download_failed, subtitle, r.status_code)
+            return DownloadResult(reason=DownloadStatus.download_failed, subtitle=subtitle, status_code=r.status_code)
 
         subtitle.ensure_subtitle_dir()
         subtitle.file_path.write_bytes(r.content)
-        return DownloadResult(DownloadStatus.saved, subtitle, r.status_code)
+        return DownloadResult(reason=DownloadStatus.saved, subtitle=subtitle, status_code=r.status_code)

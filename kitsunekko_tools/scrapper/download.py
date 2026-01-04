@@ -20,7 +20,7 @@ from kitsunekko_tools.file_downloader import (
     KitsuSubtitleDownloader,
     SubtitleFileUrl,
 )
-from kitsunekko_tools.ignore import IgnoreListForDir
+from kitsunekko_tools.ignore import IgnoreTSVForDir
 from kitsunekko_tools.scrapper.parse import (
     find_all_subtitle_dirs,
     find_all_subtitle_files,
@@ -120,7 +120,7 @@ def scrapper_make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFil
             )
             for file in found_files
         ],
-        ignore_list=IgnoreListForDir(ignore_filepath=config.destination.joinpath(show_name, IGNORE_FILENAME)),
+        ignore_list=IgnoreTSVForDir(ignore_filepath=config.destination.joinpath(show_name, IGNORE_FILENAME)),
     )
 
 

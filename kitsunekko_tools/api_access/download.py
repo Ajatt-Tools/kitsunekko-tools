@@ -28,7 +28,7 @@ from kitsunekko_tools.file_downloader import (
     KitsuSubtitleDownloader,
     SubtitleFileUrl,
 )
-from kitsunekko_tools.ignore import IgnoreListForDir, get_ignore_file_path_on_disk
+from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
 
 
 @enum.unique
@@ -86,7 +86,7 @@ def api_make_payload(
             )
             for file in found_files
         ],
-        ignore_list=IgnoreListForDir(ignore_filepath=get_ignore_file_path_on_disk(directory.dir_path)),
+        ignore_list=IgnoreTSVForDir(ignore_filepath=get_ignore_file_path_on_disk(directory.dir_path)),
     )
 
 
