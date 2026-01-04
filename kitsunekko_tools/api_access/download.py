@@ -149,7 +149,7 @@ class ApiSyncClient(ClientBase):
         self._config = config
         self._config.raise_for_destination()
         self._downloader = KitsuSubtitleDownloader(self._config)
-        self._now = datetime.datetime.now()
+        self._now = datetime.datetime.now(tz=datetime.UTC)
         self._full_sync = full_sync
         self._ignore_dir_mod_times = ignore_dir_mod_times
         self._tasks = collections.deque()

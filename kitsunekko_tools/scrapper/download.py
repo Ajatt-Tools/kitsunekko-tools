@@ -79,7 +79,7 @@ class FetchState(typing.NamedTuple):
     def new(cls, download_root_url: str) -> typing.Self:
         return cls(
             to_visit={
-                AnimeDir(download_root_url, "subtitles", datetime.datetime.now()),
+                AnimeDir(download_root_url, "subtitles", datetime.datetime.now(tz=datetime.UTC)),
             },
             visited=set(),
         )
@@ -135,7 +135,7 @@ class KitsuScrapper(ClientBase):
         self._config = config
         self._config.raise_for_destination()
         self._downloader = KitsuSubtitleDownloader(self._config)
-        self._now = datetime.datetime.now()
+        self._now = datetime.datetime.now(tz=datetime.UTC)
         self._full_sync = full_sync
 
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:
