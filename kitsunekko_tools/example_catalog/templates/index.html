@@ -27,7 +27,7 @@
                     <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.replace("_", " ") }}</td>
                     <td data-cell="English" class="english_name">{{ entry.meta.english_name }}</td>
                     <td data-cell="Japanese" class="japanese_name">{{ entry.meta.japanese_name }}</td>
-                    <td data-cell="Last modified" class="last_modified">{{ entry.meta.last_modified | strftime("%d %b %Y %H:%M:%S") }}</td>
+                    <td data-cell="Last modified" class="last_modified"><span class="font-mono">{{ entry.meta.last_modified | strftime("%d %b %Y %H:%M:%S") }}</span></td>
                 </tr>
                 {% else %}
                 <tr>

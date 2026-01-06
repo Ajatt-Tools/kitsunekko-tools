@@ -115,17 +115,20 @@ main a[href$=".srt"]::before {
     .last_modified {
         min-width: 21ch;
         word-break: keep-all;
-        font-family: var(--monospace-font-families, monospace);
     }
     .file_size {
         min-width: 7ch;
         word-break: keep-all;
-        font-family: var(--monospace-font-families, monospace);
     }
     .entry_name,
     .english_name,
     .japanese_name {
         word-break: break-word;
+    }
+
+    .font-mono {
+        /* Change font for file size and last modified. */
+        font-family: var(--monospace-font-families, monospace);
     }
 }
 
@@ -240,9 +243,6 @@ input[type="radio"].subs_format_input {
     }
     td.entry_name ~ td {
         padding-inline-start: 2ch;
-    }
-    .last_modified::before {
-        font-family: var(--sans-font-families, sans);
     }
     .entry_number {
         display: none;
