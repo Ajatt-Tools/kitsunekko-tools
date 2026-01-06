@@ -110,6 +110,17 @@ def get_ignore_entry_from_download(subtitle: KitsuSubtitleDownload) -> IgnoreFil
     )
 
 
+def should_add_to_ignore_list(ignore_list: IgnoreTSVForDir, result: DownloadResult) -> bool:
+    match result.reason:
+        case DownloadStatus.saved:
+            return True
+        case DownloadStatus.already_exists if not ignore_list.is_matching(result.subtitle.file_path):
+            return True
+        case _:
+            return False
+    raise RuntimeError("unreachable")
+
+
 class KitsuSubtitleDownloader:
     def __init__(self, config: KitsuConfig):
         self._config = config
@@ -128,10 +139,10 @@ class KitsuSubtitleDownloader:
                 print(ex)
             else:
                 print(result)
-                if result.is_successful():
+                results.add_result(result)
+                if should_add_to_ignore_list(entry.ignore_list, result):
                     # this file will not be downloaded again even if it is moved(renamed) later.
                     entry.ignore_list.add_entry(get_ignore_entry_from_download(result.subtitle))
-                results.add_result(result)
         entry.ignore_list.commit()
         return results
 
