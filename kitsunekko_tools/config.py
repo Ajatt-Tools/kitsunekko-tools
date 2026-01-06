@@ -13,6 +13,7 @@ import typing
 
 from beartype.door import die_if_unbearable
 
+from kitsunekko_tools.api_access.root_directory import EntryType
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import PROG_NAME, SETTINGS_FILE_NAME
 

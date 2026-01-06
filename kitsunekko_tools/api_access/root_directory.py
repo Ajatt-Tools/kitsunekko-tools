@@ -3,6 +3,7 @@
 
 import dataclasses
 import datetime
+import enum
 import json
 import pathlib
 import typing
@@ -35,8 +36,17 @@ class ApiDirectoryDict(typing.TypedDict):
     creator_id: typing.NotRequired[int]
 
 
-def describe_entry_type(flags: ApiDirectoryFlagsDict) -> str:
-    return f'{"anime" if flags["anime"] else "drama"}_{"movie" if flags["movie"] else "tv"}'
+@enum.unique
+class EntryType(enum.Enum):
+    anime_tv = "Anime TV"
+    anime_movie = "Anime movie"
+    drama_tv = "Drama TV"
+    drama_movie = "Drama movie"
+    unsorted = "Unsorted"
+
+
+def describe_entry_type(flags: ApiDirectoryFlagsDict) -> EntryType:
+    return EntryType[f'{"anime" if flags["anime"] else "drama"}_{"movie" if flags["movie"] else "tv"}']
 
 
 def parse_api_time(time: str) -> datetime.datetime:
@@ -63,7 +73,7 @@ TMDBId = typing.NewType("TMDBId", str)  # example: "tv:153496"
 class ApiDirectoryEntry:
     entry_id: KitsunekkoId  # used to query API for files in the directory
     name: str  # name of the anime and the directory on the disk.
-    entry_type: str
+    entry_type: EntryType
     last_modified: datetime.datetime  # format RFC3339: '2024-04-27T17:54:01Z'
     english_name: str | None = None
     japanese_name: str | None = None
@@ -71,10 +81,10 @@ class ApiDirectoryEntry:
     tmdb_id: TMDBId | None = None
 
     def is_anime(self) -> bool:
-        return self.entry_type.startswith("anime_")
+        return self.entry_type in (EntryType.anime_tv, EntryType.anime_movie)
 
     def is_drama(self) -> bool:
-        return not self.is_anime()
+        return self.entry_type in (EntryType.drama_tv, EntryType.drama_movie)
 
     @classmethod
     def from_api_json(cls, json_dict: ApiDirectoryDict) -> typing.Self:
@@ -99,6 +109,7 @@ class ApiDirectoryEntry:
         """
         as_dict = dataclasses.asdict(self)
         as_dict["last_modified"] = format_api_time(self.last_modified)
+        as_dict["entry_type"] = self.entry_type.name
         nuke_key(as_dict, "dir_path")  # no need to store this on disk
         json.dump(
             {k: v for k, v in as_dict.items() if v},
@@ -120,6 +131,7 @@ class KitsuDirectoryMeta(ApiDirectoryEntry):
     def _load_json(f: typing.TextIO) -> dict:
         data = json.load(f)
         data["last_modified"] = parse_api_time(data["last_modified"])
+        data["entry_type"] = EntryType[data["entry_type"]]
         return data
 
     def write_self_to_file(self) -> None:
@@ -140,9 +152,7 @@ def get_meta_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
 
 
 def destination_for_dir(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
-    if remote_dir.is_drama():
-        return config.drama_destination
-    return config.destination
+    return config.destination / remote_dir.entry_type.name
 
 
 def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
