@@ -14,7 +14,7 @@ import httpx
 from kitsunekko_tools.api_access.directory_entry import KitsuDirectoryEntry
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.ignore import IgnoreTSVForDir
+from kitsunekko_tools.ignore import IgnoreFileEntry, IgnoreTSVForDir
 
 SubtitleFileUrl = typing.NewType("SubtitleFileUrl", str)
 
@@ -102,6 +102,14 @@ class KitsuDownloadResults(collections.Counter):
         return self[DownloadStatus.download_failed]
 
 
+def get_ignore_entry_from_download(subtitle: KitsuSubtitleDownload) -> IgnoreFileEntry:
+    return IgnoreFileEntry(
+        name=subtitle.file_path.name,
+        last_modified=subtitle.last_modified_on_remote,
+        st_size=subtitle.file_path.stat().st_size,
+    )
+
+
 class KitsuSubtitleDownloader:
     def __init__(self, config: KitsuConfig):
         self._config = config
@@ -122,7 +130,7 @@ class KitsuSubtitleDownloader:
                 print(result)
                 if result.is_successful():
                     # this file will not be downloaded again even if it is moved(renamed) later.
-                    entry.ignore_list.add_file(result.subtitle.file_path)
+                    entry.ignore_list.add_entry(get_ignore_entry_from_download(result.subtitle))
                 results.add_result(result)
         entry.ignore_list.commit()
         return results
