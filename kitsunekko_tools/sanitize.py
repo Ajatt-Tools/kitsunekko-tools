@@ -218,4 +218,3 @@ def sanitize_directories(config: KitsuConfig) -> None:
     rename_badly_named_directories(config)
     MergeSameId(config).merge_directories_with_same_id()
     FixOrphans(config).merge_directories()
-    delete_empty_directories(config)
