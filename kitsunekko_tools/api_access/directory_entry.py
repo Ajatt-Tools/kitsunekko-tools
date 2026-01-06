@@ -9,7 +9,7 @@ from kitsunekko_tools.api_access.root_directory import (
     KitsuDirectoryMeta,
     get_meta_file_path,
 )
-from kitsunekko_tools.common import max_datetime
+from kitsunekko_tools.common import datetime_now_utc, max_datetime
 from kitsunekko_tools.config import KitsuConfig
 
 

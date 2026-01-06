@@ -101,6 +101,9 @@ class ApiDirectoryEntry:
             ensure_ascii=False,
         )
 
+    def with_mod_time(self, mod_time: datetime.datetime) -> typing.Self:
+        return dataclasses.replace(self, last_modified=mod_time)
+
 
 @dataclasses.dataclass(frozen=True)
 class KitsuDirectoryMeta(ApiDirectoryEntry):
