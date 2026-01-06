@@ -13,9 +13,9 @@ import typing
 
 from beartype.door import die_if_unbearable
 
-from kitsunekko_tools.api_access.root_directory import EntryType
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import PROG_NAME, SETTINGS_FILE_NAME
+from kitsunekko_tools.entry import EntryType
 
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:108.0) Gecko/20100101 Firefox/108.0",

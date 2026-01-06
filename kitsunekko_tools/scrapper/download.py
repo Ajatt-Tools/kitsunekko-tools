@@ -9,11 +9,11 @@ from collections.abc import Sequence
 
 import httpx
 
-from kitsunekko_tools.api_access.root_directory import EntryType
 from kitsunekko_tools.common import KitsuError, datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
 from kitsunekko_tools.download import ClientBase, ClientType
+from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.file_downloader import (
     DownloadSubtitlesList,
     KitsuConnectionError,
