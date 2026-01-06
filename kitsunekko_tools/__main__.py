@@ -220,6 +220,7 @@ def main() -> None:
         fire.Fire(Application)
     except KitsuException as ex:
         print(ex.what)
+        sys.exit(1)
     except KeyboardInterrupt:
         print("\nAborted by the user.")
 

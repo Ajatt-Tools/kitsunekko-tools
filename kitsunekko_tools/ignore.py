@@ -177,6 +177,7 @@ def add_file_to_ignore_list(cfg: KitsuConfig, path_to_file: pathlib.Path) -> Non
 
 
 def add_all_files_to_ignore_list(cfg: KitsuConfig) -> None:
+    cfg.raise_for_destination()
     for directory in iter_subtitle_directories(cfg):
         ignore_list = IgnoreTSVForDir(get_ignore_file_path_on_disk(directory))
         for file in iter_subtitle_files(directory):
