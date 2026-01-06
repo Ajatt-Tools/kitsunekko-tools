@@ -22,7 +22,7 @@
             {% for entry in ctx.entries %}
                 {% if entry.meta %}
                 <tr data-timestamp="{{ entry.meta.last_modified | timestamp_int }}" data-entry-type="{{ entry.meta.entry_type.name }}">
-                    <td data-cell="#" class="entry_number">{{ loop.index }}</td>
+                    <td data-cell="#" class="entry_number"><span class="font-mono">{{ loop.index }}</span></td>
                     <td data-cell="Name" class="entry_name"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
                     <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.value }}</td>
                     <td data-cell="English" class="english_name">{{ entry.meta.english_name }}</td>

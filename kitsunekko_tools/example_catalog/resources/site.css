@@ -113,7 +113,7 @@ main a[href$=".srt"]::before {
         word-break: keep-all;
     }
     .last_modified {
-        min-width: 21ch;
+        min-width: 22ch;
         word-break: keep-all;
     }
     .file_size {
