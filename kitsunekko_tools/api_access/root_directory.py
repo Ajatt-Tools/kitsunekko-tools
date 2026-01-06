@@ -3,7 +3,6 @@
 
 import dataclasses
 import datetime
-import enum
 import json
 import pathlib
 import typing
@@ -13,14 +12,7 @@ from pprint import pprint
 from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import INFO_FILENAME
-
-
-class ApiDirectoryFlagsDict(typing.TypedDict):
-    adult: bool
-    anime: bool
-    external: bool
-    low_quality: bool
-    movie: bool
+from kitsunekko_tools.entry import ApiDirectoryFlagsDict, EntryType, describe_entry_type
 
 
 class ApiDirectoryDict(typing.TypedDict):
@@ -34,19 +26,6 @@ class ApiDirectoryDict(typing.TypedDict):
     tmdb_id: typing.NotRequired[str]
     anilist_id: typing.NotRequired[int]
     creator_id: typing.NotRequired[int]
-
-
-@enum.unique
-class EntryType(enum.Enum):
-    anime_tv = "Anime TV"
-    anime_movie = "Anime movie"
-    drama_tv = "Drama TV"
-    drama_movie = "Drama movie"
-    unsorted = "Unsorted"
-
-
-def describe_entry_type(flags: ApiDirectoryFlagsDict) -> EntryType:
-    return EntryType[f'{"anime" if flags["anime"] else "drama"}_{"movie" if flags["movie"] else "tv"}']
 
 
 def parse_api_time(time: str) -> datetime.datetime:
