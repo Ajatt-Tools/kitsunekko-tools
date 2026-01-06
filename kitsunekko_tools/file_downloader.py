@@ -133,6 +133,7 @@ class KitsuSubtitleDownloader:
         try:
             if ignore_list.last_modified(subtitle.file_path) < subtitle.last_modified_on_remote:
                 # Our file is older than theirs
+                print(f"remote is newer: {subtitle.file_path}")
                 return None
         except KeyError:
             pass
