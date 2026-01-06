@@ -167,6 +167,8 @@ class KitsuConfig:
         return {"Authorization": self.api_key}
 
     def is_allowed_file_type(self, file_path: pathlib.Path) -> bool:
+        if not self.allowed_file_types:
+            return True
         return any(file_path.name.endswith(f".{ext}") for ext in self.allowed_file_types)
 
 
