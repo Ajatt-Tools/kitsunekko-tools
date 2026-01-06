@@ -2,9 +2,10 @@
 
 /* Body */
 
-:root {
-    --index-page-width: min(1800px, 90vw);
-    --entry-page-width: min(1400px, 90vw);
+:root,
+:root.light {
+    --index-page-width: max(1800px, 90vw);
+    --entry-page-width: max(1400px, 90vw);
     --table-highlight-color: hsl(0 0% 0% / 0.04);
     --table-header-color: hsl(0 0% 0% / 0.09);
 }
