@@ -3,6 +3,7 @@
 
 import abc
 import dataclasses
+import datetime
 import re
 
 from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
@@ -40,3 +41,11 @@ def fs_name_strip(name: str) -> str:
     name = re.sub(RE_MULTI_SPACE, " ", name)
     # Note: Windows-like OSes don't allow dots at the end.
     return name.strip().rstrip(".")
+
+
+def datetime_now_utc() -> datetime.datetime:
+    return datetime.datetime.now(tz=datetime.UTC)
+
+
+def max_datetime(t1: datetime.datetime, t2: datetime.datetime) -> datetime.datetime:
+    return min(datetime_now_utc(), max(t1, t2))

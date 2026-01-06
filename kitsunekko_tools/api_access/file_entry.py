@@ -6,7 +6,7 @@ import datetime
 import typing
 
 from kitsunekko_tools.api_access.root_directory import parse_api_time
-from kitsunekko_tools.common import fs_name_strip
+from kitsunekko_tools.common import datetime_now_utc, fs_name_strip
 
 
 class ApiFileDict(typing.TypedDict):
@@ -30,7 +30,7 @@ class ApiFileEntry:
                 json_dict
                 | {
                     "name": fs_name_strip(json_dict["name"]),
-                    "last_modified": parse_api_time(json_dict["last_modified"]),
+                    "last_modified": min(datetime_now_utc(), parse_api_time(json_dict["last_modified"])),
                 }
             )
         )

@@ -9,6 +9,7 @@ from kitsunekko_tools.api_access.root_directory import (
     KitsuDirectoryMeta,
     get_meta_file_path,
 )
+from kitsunekko_tools.common import max_datetime
 from kitsunekko_tools.config import KitsuConfig
 
 
@@ -30,6 +31,7 @@ def keep_removed_values(remote_dir: ApiDirectoryEntry, local_state: KitsuDirecto
         japanese_name=(remote_dir.japanese_name or local_state.japanese_name),
         anilist_id=(remote_dir.anilist_id or local_state.anilist_id),
         tmdb_id=(remote_dir.tmdb_id or local_state.tmdb_id),
+        last_modified=max_datetime(remote_dir.last_modified, local_state.last_modified),
     )
 
 

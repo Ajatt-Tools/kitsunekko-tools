@@ -8,7 +8,7 @@ import re
 import typing
 import urllib.parse
 
-from kitsunekko_tools.common import fs_name_strip
+from kitsunekko_tools.common import datetime_now_utc, fs_name_strip
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
 from kitsunekko_tools.scrapper.types import AnimeDir, SubtitleFile
 
@@ -16,7 +16,7 @@ MOD_TIMESTAMP_FORMAT = "%b %d %Y %I:%M:%S %p"  # timestamp format used on kitsun
 
 
 def datetime_from_str(mod_timestamp: str) -> datetime.datetime:
-    return datetime.datetime.strptime(mod_timestamp, MOD_TIMESTAMP_FORMAT)
+    return min(datetime_now_utc(), datetime.datetime.strptime(mod_timestamp, MOD_TIMESTAMP_FORMAT))
 
 
 RE_FLAGS = re.IGNORECASE

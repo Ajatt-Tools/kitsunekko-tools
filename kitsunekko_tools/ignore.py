@@ -7,7 +7,7 @@ import pathlib
 import typing
 
 from kitsunekko_tools.api_access.root_directory import format_api_time, parse_api_time
-from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException
+from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException, max_datetime
 from kitsunekko_tools.config import Config, KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
 from kitsunekko_tools.filesystem import (
@@ -122,6 +122,13 @@ class IgnoreTSVForDir:
         """
         if not file.name:
             raise IgnoreListException("empty pattern")
+        try:
+            file = dataclasses.replace(
+                file,
+                last_modified=max_datetime(file.last_modified, self._patterns[file.name].last_modified),
+            )
+        except KeyError:
+            pass
         self._patterns[file.name] = file
         self._needs_flush = True
 
