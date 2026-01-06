@@ -218,12 +218,12 @@ class MergeSameId:
 
 
 def organize_by_entry_type(config: KitsuConfig) -> None:
-    print("Organizing directories by entry types.")
+    print("Organizing directories by entry types...")
     for directory in iter_subtitle_directories(config):
         try:
             meta: KitsuDirectoryMeta = read_directory_meta(directory)
         except FileNotFoundError:
-            new_dir_path = unsorted_destination(config) / directory.name
+            new_dir_path = unsorted_destination(config) / fs_name_strip(directory.name)
         else:
             new_dir_path = get_meta_file_path(meta, config).parent
         if new_dir_path == directory:

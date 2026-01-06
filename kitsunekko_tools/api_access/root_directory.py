@@ -65,6 +65,10 @@ class ApiDirectoryEntry:
     def is_drama(self) -> bool:
         return self.entry_type in (EntryType.drama_tv, EntryType.drama_movie)
 
+    @property
+    def fs_name(self) -> str:
+        return fs_name_strip(self.name)
+
     @classmethod
     def from_api_json(cls, json_dict: ApiDirectoryDict) -> typing.Self:
         """
@@ -72,7 +76,7 @@ class ApiDirectoryEntry:
         """
         return cls(
             entry_id=KitsunekkoId(json_dict["id"]),
-            name=fs_name_strip(json_dict["name"]),
+            name=json_dict["name"].strip(),
             entry_type=describe_entry_type(json_dict["flags"]),
             last_modified=parse_api_time(json_dict["last_modified"]),
             english_name=json_dict.get("english_name", "").strip(),
@@ -135,7 +139,7 @@ def destination_for_dir(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> p
 
 
 def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
-    return get_meta_file_path_on_disk(parent_dir=destination_for_dir(remote_dir, config).joinpath(remote_dir.name))
+    return get_meta_file_path_on_disk(parent_dir=destination_for_dir(remote_dir, config).joinpath(remote_dir.fs_name))
 
 
 def main() -> None:
