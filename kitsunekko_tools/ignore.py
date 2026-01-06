@@ -53,6 +53,10 @@ class FileMetaData(IgnoreFileEntry):
     path: pathlib.Path
 
 
+def get_modification_time(file_path: pathlib.Path) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(file_path.stat().st_mtime, tz=datetime.UTC)
+
+
 class IgnoreTSVForDir:
     """
     Holds a list of files that should not be downloaded even if they're not present in expected locations.
@@ -126,7 +130,7 @@ class IgnoreTSVForDir:
         return self.add_entry(
             IgnoreFileEntry(
                 name=file_path.name,
-                last_modified=datetime.datetime.fromtimestamp(file_path.stat().st_mtime, tz=datetime.UTC),
+                last_modified=get_modification_time(file_path),
                 st_size=file_path.stat().st_size,
             )
         )
