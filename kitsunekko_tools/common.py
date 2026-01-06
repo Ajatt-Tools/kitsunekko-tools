@@ -7,6 +7,7 @@ import datetime
 import re
 
 from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
+from kitsunekko_tools.entry import EntryType
 
 
 class KitsuException(Exception, abc.ABC):
@@ -18,7 +19,7 @@ class KitsuError(KitsuException):
     what: str
 
 
-SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME)
+SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME, *(et.name for et in EntryType))
 RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#{}<>^*/:\"`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
 RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
 WINDOWS_SUBSTITUTE_CHARS = {
