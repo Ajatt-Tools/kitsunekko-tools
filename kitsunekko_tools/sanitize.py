@@ -107,12 +107,17 @@ def name_strip_insignificant_chars(name: str) -> str:
 def iter_lookup_keys(meta: KitsuDirectoryMeta) -> Iterable[str]:
     if meta.name:
         yield name_strip_insignificant_chars(meta.name)
+        yield name_strip_insignificant_chars(meta.fs_name)
     if meta.english_name:
         yield name_strip_insignificant_chars(meta.english_name)
+        yield name_strip_insignificant_chars(fs_name_strip(meta.english_name))
     if meta.japanese_name:
         yield name_strip_insignificant_chars(meta.japanese_name)
+        yield name_strip_insignificant_chars(fs_name_strip(meta.japanese_name))
     yield meta.dir_path.name.lower()
+    yield fs_name_strip(meta.dir_path.name.lower())
     yield name_strip_insignificant_chars(meta.dir_path.name)
+    yield name_strip_insignificant_chars(fs_name_strip(meta.dir_path.name))
 
 
 class FixOrphans:
