@@ -57,7 +57,7 @@ def get_modification_time(file_path: pathlib.Path) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(file_path.stat().st_mtime, tz=datetime.UTC)
 
 
-def sort_patterns_key(pattern: IgnoreFileEntry) -> tuple[str, datetime.datetime, int]:
+def pattern_sort_key(pattern: IgnoreFileEntry) -> tuple[str, datetime.datetime, int]:
     return pattern.name, pattern.last_modified, pattern.st_size
 
 
@@ -158,7 +158,7 @@ class IgnoreTSVForDir:
         with open(self._ignore_filepath, "w", encoding="utf-8") as of:
             writer = get_tsv_writer(of, fieldnames=tuple(IgnoreFileEntry.__annotations__))
             writer.writeheader()
-            writer.writerows(entry.to_tsv_row() for entry in sorted(self.patterns(), key=sort_patterns_key))
+            writer.writerows(entry.to_tsv_row() for entry in sorted(self.patterns(), key=pattern_sort_key))
         print(f"written: {self._ignore_filepath}")
 
 

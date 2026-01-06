@@ -2,8 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
 import datetime
+import os
 import pathlib
 import re
+import string
 import typing
 from collections.abc import Iterable
 
@@ -11,6 +13,7 @@ from kitsunekko_tools.api_access.directory_entry import (
     keep_removed_values,
 )
 from kitsunekko_tools.api_access.root_directory import (
+    ApiDirectoryEntry,
     KitsuDirectoryMeta,
     KitsunekkoId,
     get_meta_file_path,
@@ -61,6 +64,7 @@ def merge_ignore_lists(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
 
 
 def rename_badly_named_directories(config: KitsuConfig) -> None:
+    print("Renaming badly named directories...")
     for directory in iter_subtitle_directories(config):
         sanitized_name = fs_name_strip(directory.name)
         if sanitized_name == directory.name:
@@ -177,8 +181,18 @@ def delete_empty_directories(config: KitsuConfig) -> None:
             nuke_dir(directory)
 
 
-def dir_sort_key_by_last_modified(dir_meta: KitsuDirectoryMeta) -> datetime.datetime:
-    return dir_meta.last_modified
+ASCII_LETTERS = frozenset(string.ascii_letters)
+
+
+def count_ascii_letters(s: str) -> int:
+    """
+    Return the number of Latin letters (A-Z, a-z) in s.
+    """
+    return sum(1 for ch in s if ch in ASCII_LETTERS)
+
+
+def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[datetime.datetime, int, str]:
+    return dir_meta.last_modified, count_ascii_letters(dir_meta.name), dir_meta.name
 
 
 class DuplicatesGroup(typing.NamedTuple):
@@ -189,7 +203,7 @@ class DuplicatesGroup(typing.NamedTuple):
     def from_list(cls, entries: list[KitsuDirectoryMeta]) -> typing.Self:
         if len(entries) < 2:
             raise KitsuError("a group of duplicates should contain at least two files")
-        entries = sorted(entries, key=dir_sort_key_by_last_modified, reverse=True)
+        entries = sorted(entries, key=dir_meta_sort_key, reverse=True)
         # Assign the most recently modified entry as the original.
         assert entries[0].last_modified >= entries[1].last_modified
         return cls(original=entries[0], copies=entries[1:])

@@ -11,7 +11,8 @@ from kitsunekko_tools.api_access.directory_entry import read_meta_file
 from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryDict,
     ApiDirectoryEntry,
-    iter_catalog_directories, KitsuDirectoryMeta,
+    KitsuDirectoryMeta,
+    iter_catalog_directories,
 )
 from kitsunekko_tools.consts import BUNDLED_SUBTITLES_DIR, INFO_FILENAME
 from kitsunekko_tools.sanitize import DuplicatesGroup

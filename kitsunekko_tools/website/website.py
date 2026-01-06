@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import dataclasses
+import datetime
 import pathlib
 import shutil
 from collections.abc import Iterable
@@ -14,7 +15,7 @@ from kitsunekko_tools.ignore import (
     FileMetaData,
     IgnoreTSVForDir,
     get_ignore_file_path_on_disk,
-    sort_patterns_key,
+    pattern_sort_key,
 )
 from kitsunekko_tools.sanitize import read_directory_meta
 from kitsunekko_tools.website.context import (
@@ -71,13 +72,13 @@ def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
         return EntryExternalSearchLink(url=f"https://mydramalist.com/search?q={query}", text="Search MDL")
 
 
-def sort_entries_key(entry: LocalDirectoryEntry) -> tuple[int, str]:
+def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[datetime.datetime, str]:
     """
     Key used to sort entries based on modification date.
     """
     if entry.meta:
-        return timestamp_int(entry.meta.last_modified), entry.meta.name
-    return 0, entry.path_to_dir.name
+        return entry.meta.last_modified, entry.meta.name
+    return datetime.datetime.fromtimestamp(0, tz=datetime.UTC), entry.path_to_dir.name
 
 
 def mk_shell_compatible_url_list(files: list[FileMetaData], cfg: KitsuConfig) -> str:
@@ -132,7 +133,7 @@ class WebSiteBuilder:
             self._paths.site_dir_path / RESOURCES_DIR_NAME,
             dirs_exist_ok=True,
         )
-        entries = sorted(self._walk_dirs(), key=sort_entries_key, reverse=True)
+        entries = sorted(self._walk_dirs(), key=entry_sort_key, reverse=True)
         self.generate_index_page(self._paths.index_file_path, [entry for entry in entries if not entry.is_drama])
         self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
@@ -175,7 +176,7 @@ class WebSiteBuilder:
             yield LocalDirectoryEntry(
                 meta=meta,
                 path_to_dir=dir_path,
-                files_in_dir=sorted(collect_files(dir_path), key=sort_patterns_key),
+                files_in_dir=sorted(collect_files(dir_path), key=pattern_sort_key),
                 site_path_to_html_file=self._mk_path_to_entry_html_file(is_drama, dir_path),
                 is_drama=is_drama,
             )
