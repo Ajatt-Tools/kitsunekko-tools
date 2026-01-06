@@ -129,6 +129,8 @@ class FixOrphans:
                 meta = read_directory_meta(directory)
             except FileNotFoundError:
                 continue
+            if not meta.entry_id:
+                continue
             for lookup_key in iter_lookup_keys(meta):
                 self._lookup_key_to_meta[lookup_key] = meta
 
