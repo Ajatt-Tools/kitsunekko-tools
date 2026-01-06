@@ -28,10 +28,10 @@ RE_INSIGNIFICANT_CHARS = re.compile(
 )
 
 
-def move_files(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
+def move_files(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     for entry in old_dir.iterdir():
         if entry.is_dir():
-            move_files(entry, new_dir / entry.name)
+            move_files(entry, new_dir=new_dir / entry.name)
             continue
         if entry.name in SKIP_FILES:
             continue
@@ -52,7 +52,7 @@ def nuke_dir(directory: pathlib.Path) -> None:
     directory.rmdir()
 
 
-def merge_ignore_lists(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
+def merge_ignore_lists(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     old = IgnoreTSVForDir(get_ignore_file_path_on_disk(old_dir))
     new = IgnoreTSVForDir(get_ignore_file_path_on_disk(new_dir))
     for pattern in old.patterns():
@@ -66,12 +66,7 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
         if sanitized_name == directory.name:
             continue
         new_dir = directory.parent / sanitized_name
-        print(f"moving '{directory}' to '{new_dir}'")
-        if new_dir.exists():
-            merge_ignore_lists(directory, new_dir)
-            move_files(directory, new_dir)
-        else:
-            directory.rename(new_dir)
+        move_directory(directory, new_dir=new_dir)
 
 
 def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
@@ -79,7 +74,7 @@ def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
         return KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
 
 
-def merge_metadata(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
+def merge_metadata(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     try:
         old_meta: KitsuDirectoryMeta = read_directory_meta(old_dir)
         new_meta: KitsuDirectoryMeta = read_directory_meta(new_dir)
@@ -89,15 +84,20 @@ def merge_metadata(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
         keep_removed_values(new_meta, old_meta).write_to_file(of)
 
 
-def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> None:
+def move_directory(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     """
     Merge two directories. Move all files from directory to the main entry's directory.
     """
-    if main_entry.dir_path != directory:
-        print(f"moving '{directory}' to '{main_entry.dir_path}'")
-        merge_ignore_lists(directory, new_dir=main_entry.dir_path)
-        merge_metadata(directory, new_dir=main_entry.dir_path)
-        move_files(directory, new_dir=main_entry.dir_path)
+    if new_dir == old_dir:
+        return
+    if new_dir.exists():
+        print(f"moving '{old_dir}' to '{new_dir}'")
+        merge_ignore_lists(old_dir, new_dir=new_dir)
+        merge_metadata(old_dir, new_dir=new_dir)
+        move_files(old_dir, new_dir=new_dir)
+    else:
+        print(f"rename '{old_dir}' to '{new_dir}'")
+        old_dir.rename(new_dir)
 
 
 def name_strip_insignificant_chars(name: str) -> str:
@@ -148,7 +148,7 @@ class FixOrphans:
                 main_entry = self._lookup_key_to_meta[try_key]
             except KeyError:
                 continue
-            move_directory(dir_path, main_entry)
+            move_directory(dir_path, new_dir=main_entry.dir_path)
             break
 
     def _find_matches_and_merge(self) -> None:
@@ -213,10 +213,26 @@ class MergeSameId:
         print(f"found {len(groups)} directories with matching entry_id.")
         for group in groups:
             for copy in group.copies:
-                move_directory(copy.dir_path, group.original)
+                move_directory(copy.dir_path, new_dir=group.original.dir_path)
+
+
+def organize_by_entry_type(config: KitsuConfig) -> None:
+    for directory in config.all_destinations():
+        directory.mkdir(exist_ok=True)
+    for directory in iter_subtitle_directories(config):
+        try:
+            meta: KitsuDirectoryMeta = read_directory_meta(directory)
+        except FileNotFoundError:
+            new_dir_path = unsorted_destination(config) / directory.name
+        else:
+            new_dir_path = get_meta_file_path(meta, config).parent
+        if new_dir_path == directory:
+            continue
+        move_directory(directory, new_dir=new_dir_path)
 
 
 def sanitize_directories(config: KitsuConfig) -> None:
     rename_badly_named_directories(config)
     MergeSameId(config).merge_directories_with_same_id()
     FixOrphans(config).merge_directories()
+    organize_by_entry_type(config)
