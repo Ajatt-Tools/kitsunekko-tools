@@ -139,8 +139,14 @@ def get_meta_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
     return parent_dir.joinpath(INFO_FILENAME)
 
 
+def destination_for_dir(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
+    if remote_dir.is_drama():
+        return config.drama_destination
+    return config.destination
+
+
 def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
-    return get_meta_file_path_on_disk(parent_dir=config.destination.joinpath(remote_dir.name))
+    return get_meta_file_path_on_disk(parent_dir=destination_for_dir(remote_dir, config).joinpath(remote_dir.name))
 
 
 def main() -> None:

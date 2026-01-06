@@ -164,7 +164,7 @@ class IgnoreTSVForDir:
 
 def find_entry_dir(cfg: KitsuConfig, path_to_file: pathlib.Path) -> pathlib.Path:
     for parent_dir in path_to_file.parents:
-        if parent_dir.parent == cfg.destination:
+        if parent_dir.parent in cfg.all_destinations():
             return parent_dir
     raise KitsuError(f"couldn't find location for the {IGNORE_FILENAME} file.")
 

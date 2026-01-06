@@ -13,6 +13,7 @@ from kitsunekko_tools.api_access.directory_entry import (
 from kitsunekko_tools.api_access.root_directory import (
     KitsuDirectoryMeta,
     KitsunekkoId,
+    get_meta_file_path,
     get_meta_file_path_on_disk,
 )
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip

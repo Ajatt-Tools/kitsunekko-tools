@@ -36,12 +36,13 @@ def get_tsv_writer(of: io.TextIOWrapper, fieldnames: typing.Sequence[str]) -> cs
 
 
 def iter_subtitle_directories(config: KitsuConfig) -> Iterable[pathlib.Path]:
-    for entry in config.destination.resolve().iterdir():
-        if not entry.is_dir():
-            continue
-        if entry.name in SKIP_FILES:
-            continue
-        yield entry
+    for destination in config.all_destinations():
+        for entry in destination.resolve().iterdir():
+            if not entry.is_dir():
+                continue
+            if entry.name in SKIP_FILES:
+                continue
+            yield entry
 
 
 def iter_subtitle_files(directory: pathlib.Path) -> Iterable[pathlib.Path]:
