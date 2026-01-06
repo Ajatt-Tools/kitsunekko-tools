@@ -9,7 +9,11 @@ from typing import Self
 
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import BUNDLED_RESOURCES_DIR, BUNDLED_TEMPLATES_DIR
+from kitsunekko_tools.consts import (
+    BUNDLED_RESOURCES_DIR,
+    BUNDLED_TEMPLATES_DIR,
+    TRASH_DIR_NAME,
+)
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import (
     FileMetaData,
@@ -30,7 +34,6 @@ from kitsunekko_tools.website.templates import (
     JinjaEnvHolder,
     as_subtitle_download_url,
     render_template,
-    timestamp_int,
 )
 
 
@@ -111,6 +114,14 @@ def mk_file_ext_groups(entry: LocalDirectoryEntry, cfg: KitsuConfig) -> list[Fil
     ]
 
 
+def catalog_file_sort_key(file: FileMetaData) -> tuple[int, str, datetime.datetime, int]:
+    sort_tuple = pattern_sort_key(file)
+    if file.path.parent.name == TRASH_DIR_NAME:
+        # place trashed files at the end of a file list.
+        return 1, *sort_tuple
+    return 0, *sort_tuple
+
+
 class WebSiteBuilder:
     _cfg: KitsuConfig
 
@@ -176,7 +187,7 @@ class WebSiteBuilder:
             yield LocalDirectoryEntry(
                 meta=meta,
                 path_to_dir=dir_path,
-                files_in_dir=sorted(collect_files(dir_path), key=pattern_sort_key),
+                files_in_dir=sorted(collect_files(dir_path), key=catalog_file_sort_key),
                 site_path_to_html_file=self._mk_path_to_entry_html_file(is_drama, dir_path),
                 is_drama=is_drama,
             )
