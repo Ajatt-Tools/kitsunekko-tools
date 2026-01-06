@@ -117,13 +117,6 @@ class KitsuConfig:
     )
     git_subtitles_dir_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/"
 
-    @property
-    def drama_destination(self) -> pathlib.Path:
-        """
-        Place subtitles for dramas in a different directory to avoid name clashes.
-        """
-        return self.destination.joinpath("drama")
-
     @classmethod
     def default(cls) -> typing.Self:
         return cls(
@@ -159,11 +152,8 @@ class KitsuConfig:
             api_url=os.getenv("KITSU_API_URL", instance.api_url),
         )
 
-    def all_destinations(self) -> typing.Sequence[pathlib.Path]:
-        return (
-            self.destination,
-            self.drama_destination,
-        )
+    def all_destinations(self) -> frozenset[pathlib.Path]:
+        return frozenset(self.destination.joinpath(entry_type.name) for entry_type in EntryType)
 
     def raise_for_destination(self) -> None:
         for dest in self.all_destinations():

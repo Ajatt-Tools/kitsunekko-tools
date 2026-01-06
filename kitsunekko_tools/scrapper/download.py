@@ -3,11 +3,13 @@
 
 import asyncio
 import datetime
+import pathlib
 import typing
 from collections.abc import Sequence
 
 import httpx
 
+from kitsunekko_tools.api_access.root_directory import EntryType
 from kitsunekko_tools.common import KitsuError, datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
@@ -109,18 +111,22 @@ def get_show_name(found_files: Sequence[SubtitleFile]) -> str:
     return names.pop()
 
 
+def unsorted_destination(config: KitsuConfig) -> pathlib.Path:
+    return config.destination / EntryType.unsorted.name
+
+
 def scrapper_make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> DownloadSubtitlesList:
     show_name = get_show_name(found_files)
     return DownloadSubtitlesList(
         to_download=[
             KitsuSubtitleDownload(
                 url=SubtitleFileUrl(file.url),
-                file_path=(config.destination / show_name / file.file_name),
+                file_path=(unsorted_destination(config) / show_name / file.file_name),
                 last_modified_on_remote=file.mod_timestamp,
             )
             for file in found_files
         ],
-        ignore_list=IgnoreTSVForDir(ignore_filepath=config.destination.joinpath(show_name, IGNORE_FILENAME)),
+        ignore_list=IgnoreTSVForDir(ignore_filepath=(unsorted_destination(config) / show_name / IGNORE_FILENAME)),
     )
 
 

@@ -5,6 +5,7 @@ import datetime
 import pathlib
 from types import SimpleNamespace
 
+from kitsunekko_tools.api_access.root_directory import EntryType
 from kitsunekko_tools.common import datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource

@@ -20,6 +20,7 @@ from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
+from kitsunekko_tools.scrapper.download import unsorted_destination
 
 RE_INSIGNIFICANT_CHARS = re.compile(
     r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾△＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽☆∀∕]+",
