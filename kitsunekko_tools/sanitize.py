@@ -217,8 +217,7 @@ class MergeSameId:
 
 
 def organize_by_entry_type(config: KitsuConfig) -> None:
-    for directory in config.all_destinations():
-        directory.mkdir(exist_ok=True)
+    print("Organizing directories by entry types.")
     for directory in iter_subtitle_directories(config):
         try:
             meta: KitsuDirectoryMeta = read_directory_meta(directory)
@@ -231,8 +230,15 @@ def organize_by_entry_type(config: KitsuConfig) -> None:
         move_directory(directory, new_dir=new_dir_path)
 
 
+def make_destination_dirs(config):
+    print("Making directories.")
+    for directory in config.all_destinations():
+        directory.mkdir(exist_ok=True)
+
+
 def sanitize_directories(config: KitsuConfig) -> None:
+    make_destination_dirs(config)
+    organize_by_entry_type(config)
     rename_badly_named_directories(config)
     MergeSameId(config).merge_directories_with_same_id()
     FixOrphans(config).merge_directories()
-    organize_by_entry_type(config)

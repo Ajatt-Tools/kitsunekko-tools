@@ -153,7 +153,7 @@ class KitsuConfig:
         )
 
     def all_destinations(self) -> frozenset[pathlib.Path]:
-        return frozenset(self.destination.joinpath(entry_type.name) for entry_type in EntryType)
+        return frozenset((self.destination, *(self.destination.joinpath(entry_type.name) for entry_type in EntryType)))
 
     def raise_for_destination(self) -> None:
         for dest in self.all_destinations():
