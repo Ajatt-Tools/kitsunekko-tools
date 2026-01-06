@@ -9,8 +9,9 @@ import typing
 from collections.abc import Sequence
 from pprint import pprint
 
-from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_disk
 from kitsunekko_tools.common import fs_name_strip
+from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import INFO_FILENAME
 
 
 class ApiDirectoryFlagsDict(typing.TypedDict):
@@ -131,7 +132,18 @@ def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typin
         yield ApiDirectoryEntry.from_api_json(item)
 
 
-def main():
+def get_meta_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
+    """
+    Return path to .kitsuinfo.json in this directory.
+    """
+    return parent_dir.joinpath(INFO_FILENAME)
+
+
+def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
+    return get_meta_file_path_on_disk(parent_dir=config.destination.joinpath(remote_dir.name))
+
+
+def main() -> None:
     example = {
         "id": 923,
         "name": "Yuru Yuri Nachuyachumi!",

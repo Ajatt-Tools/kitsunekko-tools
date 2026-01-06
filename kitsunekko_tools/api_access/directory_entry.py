@@ -7,20 +7,9 @@ import pathlib
 from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
     KitsuDirectoryMeta,
+    get_meta_file_path,
 )
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import INFO_FILENAME
-
-
-def get_meta_file_path_on_disk(parent_dir: pathlib.Path) -> pathlib.Path:
-    """
-    Return path to .kitsuinfo.json in this directory.
-    """
-    return parent_dir.joinpath(INFO_FILENAME)
-
-
-def get_meta_file_path(remote_dir: ApiDirectoryEntry, config: KitsuConfig) -> pathlib.Path:
-    return get_meta_file_path_on_disk(parent_dir=config.destination.joinpath(remote_dir.name))
 
 
 def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:

@@ -8,10 +8,13 @@ import typing
 from collections.abc import Iterable
 
 from kitsunekko_tools.api_access.directory_entry import (
-    get_meta_file_path_on_disk,
     keep_removed_values,
 )
-from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
+from kitsunekko_tools.api_access.root_directory import (
+    KitsuDirectoryMeta,
+    KitsunekkoId,
+    get_meta_file_path_on_disk,
+)
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
