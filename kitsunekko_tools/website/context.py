@@ -80,5 +80,7 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
             # Dates
             current_year=now.year,
             date_now=now,
+            # Entry types
+            EntryType=EntryType,
         ),
     )

@@ -21,16 +21,16 @@
         <tbody>
             {% for entry in ctx.entries %}
                 {% if entry.meta %}
-                <tr data-timestamp="{{ entry.meta.last_modified | timestamp_int }}">
+                <tr data-timestamp="{{ entry.meta.last_modified | timestamp_int }}" data-entry-type="{{ entry.meta.entry_type.name }}">
                     <td data-cell="#" class="entry_number">{{ loop.index }}</td>
                     <td data-cell="Name" class="entry_name"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
-                    <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.replace("_", " ") }}</td>
+                    <td data-cell="Type" class="entry_type">{{ entry.meta.entry_type.value }}</td>
                     <td data-cell="English" class="english_name">{{ entry.meta.english_name }}</td>
                     <td data-cell="Japanese" class="japanese_name">{{ entry.meta.japanese_name }}</td>
                     <td data-cell="Last modified" class="last_modified"><span class="font-mono">{{ entry.meta.last_modified | strftime("%d %b %Y %H:%M:%S") }}</span></td>
                 </tr>
                 {% else %}
-                <tr>
+                <tr data-timestamp="0" data-entry-type="{{ ctx.EntryType.unsorted.name }}">
                     <td data-cell="#" class="entry_number">{{ loop.index }}</td>
                     <td colspan="5" data-cell="Name" class="entry_name missing_meta"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
                 </tr>
