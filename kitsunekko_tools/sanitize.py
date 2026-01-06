@@ -186,7 +186,7 @@ class DuplicatesGroup(typing.NamedTuple):
             raise KitsuError("a group of duplicates should contain at least two files")
         entries = sorted(entries, key=dir_sort_key_by_last_modified, reverse=True)
         # Assign the most recently modified entry as the original.
-        assert entries[0].last_modified > entries[1].last_modified
+        assert entries[0].last_modified >= entries[1].last_modified
         return cls(original=entries[0], copies=entries[1:])
 
 
