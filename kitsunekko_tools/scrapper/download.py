@@ -8,7 +8,7 @@ from collections.abc import Sequence
 
 import httpx
 
-from kitsunekko_tools.common import KitsuError
+from kitsunekko_tools.common import KitsuError, datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
 from kitsunekko_tools.download import ClientBase, ClientType
@@ -79,7 +79,7 @@ class FetchState(typing.NamedTuple):
     def new(cls, download_root_url: str) -> typing.Self:
         return cls(
             to_visit={
-                AnimeDir(download_root_url, "subtitles", datetime.datetime.now(tz=datetime.UTC)),
+                AnimeDir(download_root_url, "subtitles", datetime_now_utc()),
             },
             visited=set(),
         )
@@ -135,7 +135,7 @@ class KitsuScrapper(ClientBase):
         self._config = config
         self._config.raise_for_destination()
         self._downloader = KitsuSubtitleDownloader(self._config)
-        self._now = datetime.datetime.now(tz=datetime.UTC)
+        self._now = datetime_now_utc()
         self._full_sync = full_sync
 
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:

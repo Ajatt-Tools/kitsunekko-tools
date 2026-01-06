@@ -5,6 +5,7 @@ import datetime
 import pathlib
 from types import SimpleNamespace
 
+from kitsunekko_tools.common import datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 
@@ -57,7 +58,7 @@ class SiteContext:
 
 def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path: pathlib.Path) -> SiteContext:
     # Get current time for build date
-    now = datetime.datetime.now(tz=datetime.UTC)
+    now = datetime_now_utc()
 
     return SiteContext(
         cfg=config,

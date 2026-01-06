@@ -17,7 +17,7 @@ from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
     iter_catalog_directories,
 )
-from kitsunekko_tools.common import SKIP_FILES, KitsuException
+from kitsunekko_tools.common import SKIP_FILES, KitsuException, datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig, get_config
 from kitsunekko_tools.consts import TRASH_DIR_NAME
 from kitsunekko_tools.download import ClientBase
@@ -149,7 +149,7 @@ class ApiSyncClient(ClientBase):
         self._config = config
         self._config.raise_for_destination()
         self._downloader = KitsuSubtitleDownloader(self._config)
-        self._now = datetime.datetime.now(tz=datetime.UTC)
+        self._now = datetime_now_utc()
         self._full_sync = full_sync
         self._ignore_dir_mod_times = ignore_dir_mod_times
         self._tasks = collections.deque()
