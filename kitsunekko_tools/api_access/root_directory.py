@@ -9,6 +9,7 @@ import typing
 from collections.abc import Sequence
 from pprint import pprint
 
+from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_disk
 from kitsunekko_tools.common import fs_name_strip
 
 
@@ -119,6 +120,10 @@ class KitsuDirectoryMeta(ApiDirectoryEntry):
         data = json.load(f)
         data["last_modified"] = parse_api_time(data["last_modified"])
         return data
+
+    def write_self_to_file(self) -> None:
+        with open(get_meta_file_path_on_disk(self.dir_path), "w", encoding="utf-8") as of:
+            self.write_to_file(of)
 
 
 def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
