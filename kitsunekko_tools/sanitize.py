@@ -7,7 +7,10 @@ import re
 import typing
 from collections.abc import Iterable
 
-from kitsunekko_tools.api_access.directory_entry import get_meta_file_path_on_disk
+from kitsunekko_tools.api_access.directory_entry import (
+    get_meta_file_path_on_disk,
+    keep_removed_values,
+)
 from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta, KitsunekkoId
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
@@ -71,6 +74,16 @@ def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
         return KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
 
 
+def merge_metadata(old_dir: pathlib.Path, new_dir: pathlib.Path) -> None:
+    try:
+        old_meta: KitsuDirectoryMeta = read_directory_meta(old_dir)
+        new_meta: KitsuDirectoryMeta = read_directory_meta(new_dir)
+    except FileNotFoundError:
+        return
+    with open(get_meta_file_path_on_disk(new_meta.dir_path), "w", encoding="utf-8") as of:
+        keep_removed_values(new_meta, old_meta).write_to_file(of)
+
+
 def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> None:
     """
     Merge two directories. Move all files from directory to the main entry's directory.
@@ -78,6 +91,7 @@ def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> N
     if main_entry.dir_path != directory:
         print(f"moving '{directory}' to '{main_entry.dir_path}'")
         merge_ignore_lists(directory, main_entry.dir_path)
+        merge_metadata(directory, main_entry.dir_path)
         move_files(directory, main_entry.dir_path)
 
 
