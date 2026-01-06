@@ -229,6 +229,7 @@ class MergeSameId:
         return [DuplicatesGroup.from_list(entries) for entries in id_to_entries.values() if len(entries) > 1]
 
     def merge_directories_with_same_id(self) -> None:
+        print("Merging directories with matching entry_id...")
         groups = self._collect_directories_with_same_id()
         print(f"found {len(groups)} directories with matching entry_id.")
         for group in groups:
@@ -251,7 +252,7 @@ def organize_by_entry_type(config: KitsuConfig) -> None:
 
 
 def make_destination_dirs(config):
-    print("Making directories.")
+    print("Making directories...")
     for directory in config.all_destinations():
         directory.mkdir(exist_ok=True)
 

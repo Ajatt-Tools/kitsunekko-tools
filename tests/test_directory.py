@@ -35,10 +35,7 @@ def test_shows_in_root_dir(search_response_json: Sequence[ApiDirectoryDict]) -> 
 
 
 def collect_meta(subtitles_dir: pathlib.Path) -> list[KitsuDirectoryMeta]:
-    return [
-        read_meta_file(meta_file_path)
-        for meta_file_path in subtitles_dir.rglob(INFO_FILENAME)
-    ]
+    return [read_meta_file(meta_file_path) for meta_file_path in subtitles_dir.rglob(INFO_FILENAME)]
 
 
 @pytest.mark.parametrize(
