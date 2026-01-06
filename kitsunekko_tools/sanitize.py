@@ -90,9 +90,9 @@ def move_directory(directory: pathlib.Path, main_entry: KitsuDirectoryMeta) -> N
     """
     if main_entry.dir_path != directory:
         print(f"moving '{directory}' to '{main_entry.dir_path}'")
-        merge_ignore_lists(directory, main_entry.dir_path)
-        merge_metadata(directory, main_entry.dir_path)
-        move_files(directory, main_entry.dir_path)
+        merge_ignore_lists(directory, new_dir=main_entry.dir_path)
+        merge_metadata(directory, new_dir=main_entry.dir_path)
+        move_files(directory, new_dir=main_entry.dir_path)
 
 
 def name_strip_insignificant_chars(name: str) -> str:
