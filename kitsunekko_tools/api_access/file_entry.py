@@ -24,7 +24,7 @@ class ApiFileEntry:
     last_modified: datetime.datetime  # Modification time in UTC, e.g. "2024-04-01T07:57:39.541025942Z"
 
     @classmethod
-    def from_api_json(cls, json_dict: ApiFileDict):
+    def from_api_json(cls, json_dict: ApiFileDict) -> typing.Self:
         return cls(
             **(
                 json_dict
