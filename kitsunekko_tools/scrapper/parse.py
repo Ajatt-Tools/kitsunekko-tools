@@ -7,6 +7,7 @@ import pathlib
 import re
 import typing
 import urllib.parse
+from zoneinfo import ZoneInfo
 
 from kitsunekko_tools.common import datetime_now_utc, fs_name_strip
 from kitsunekko_tools.consts import KITSUNEKKO_DOMAIN_URL
@@ -16,7 +17,11 @@ MOD_TIMESTAMP_FORMAT = "%b %d %Y %I:%M:%S %p"  # timestamp format used on kitsun
 
 
 def datetime_from_str(mod_timestamp: str) -> datetime.datetime:
-    return min(datetime_now_utc(), datetime.datetime.strptime(mod_timestamp, MOD_TIMESTAMP_FORMAT))
+    return min(
+        datetime_now_utc(),
+        # use the timezone of https://kitsunekko.net/
+        datetime.datetime.strptime(mod_timestamp, MOD_TIMESTAMP_FORMAT).replace(tzinfo=ZoneInfo("Europe/Kyiv")),
+    )
 
 
 RE_FLAGS = re.IGNORECASE
