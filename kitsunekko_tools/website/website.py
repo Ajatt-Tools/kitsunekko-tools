@@ -1,7 +1,9 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import concurrent.futures
 import dataclasses
 import datetime
+import multiprocessing
 import pathlib
 import shutil
 from collections.abc import Iterable
@@ -35,6 +37,8 @@ from kitsunekko_tools.website.templates import (
     as_subtitle_download_url,
     render_template,
 )
+
+MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
 
 
 def collect_files(directory: pathlib.Path) -> Iterable[FileMetaData]:
@@ -193,21 +197,31 @@ class WebSiteBuilder:
             )
 
     def generate_entry_pages(self, entries: list[LocalDirectoryEntry]) -> None:
-        """Generate the index page with all entries."""
+        """
+        Generate each entry page.
+        """
         print("Rebuilding the entries...")
-        for entry in entries:
-            context = mk_context(self._cfg, self._paths, entry.site_path_to_html_file)
-            context.ctx.entry = entry
-            context.ctx.file_ext_groups = mk_file_ext_groups(entry, self._cfg)
-            if entry.meta:
-                context.ctx.entry_name = entry.meta.name
-                context.ctx.search_link = make_search_link(is_anime=entry.meta.is_anime(), query=entry.meta.name)
-            else:
-                context.ctx.entry_name = entry.path_to_dir.name
-                context.ctx.search_link = make_search_link(is_anime=True, query=context.ctx.entry_name)
+        # We can use a with statement to ensure threads are cleaned up promptly
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            for entry in entries:
+                executor.submit(self.generate_entry_page, entry=entry)
 
-            html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
-            entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
+    def generate_entry_page(self, entry: LocalDirectoryEntry) -> None:
+        """
+        Generate entry page.
+        """
+        context = mk_context(self._cfg, self._paths, entry.site_path_to_html_file)
+        context.ctx.entry = entry
+        context.ctx.file_ext_groups = mk_file_ext_groups(entry, self._cfg)
+        if entry.meta:
+            context.ctx.entry_name = entry.meta.name
+            context.ctx.search_link = make_search_link(is_anime=entry.meta.is_anime(), query=entry.meta.name)
+        else:
+            context.ctx.entry_name = entry.path_to_dir.name
+            context.ctx.search_link = make_search_link(is_anime=True, query=context.ctx.entry_name)
+
+        html_content = render_template(ENTRY_TEMPLATE_NAME, context, self._tmpl_holder.template_env)
+        entry.site_path_to_html_file.write_text(html_content, encoding="utf-8")
 
     def copy_site_resources(self) -> None:
         print("Removing old resources and templates.")
