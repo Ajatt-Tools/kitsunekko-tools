@@ -12,6 +12,7 @@ from kitsunekko_tools.__version__ import __version__
 from kitsunekko_tools.common import KitsuError, KitsuException
 from kitsunekko_tools.config import Config, ConfigFileNotFoundError
 from kitsunekko_tools.consts import PROG_NAME
+from kitsunekko_tools.filesystem import extract_archives
 from kitsunekko_tools.ignore import (
     add_all_files_to_ignore_list,
     add_file_to_ignore_list,
@@ -218,6 +219,12 @@ class Application:
                 cwd=data.destination,
             )
             sys.exit(ret.returncode)
+
+    def extract_archives(self) -> None:
+        """
+        Find archives and extract them.
+        """
+        extract_archives(self._config.data())
 
 
 def main() -> None:
