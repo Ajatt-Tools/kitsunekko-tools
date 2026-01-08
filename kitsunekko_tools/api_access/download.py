@@ -117,7 +117,8 @@ async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing
         raise KitsuConnectionError(search_url) from e
     else:
         handle_response_status(r)
-        return [*iter_catalog_directories(r.json())]
+        # Newest entries first
+        return sorted(iter_catalog_directories(r.json()), key=lambda entry: entry.last_modified, reverse=True)
 
 
 def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: typing.Sequence[ApiFileEntry]) -> None:
