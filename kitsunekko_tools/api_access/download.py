@@ -29,6 +29,7 @@ from kitsunekko_tools.file_downloader import (
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
+from kitsunekko_tools.website.templates import date_allposts_post_filter
 
 
 @enum.unique
@@ -183,7 +184,11 @@ class ApiSyncClient(ClientBase):
             print(e)
             await e.rate_limit.sleep()
             return
-        print(f"visited directory '{directory.name}'. found {len(files)} files.")
+        print(
+            f"visited directory: '{directory.name}'. "
+            f"found: {len(files)} files. "
+            f"mod time: {date_allposts_post_filter(directory.remote_dir.last_modified)}."
+        )
         results = await self._downloader.download_subs(
             client=client,
             entry=api_make_payload(directory, files),
