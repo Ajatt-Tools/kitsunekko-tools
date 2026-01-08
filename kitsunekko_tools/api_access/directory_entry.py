@@ -6,9 +6,9 @@ import pathlib
 
 from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
-    KitsuDirectoryMeta,
     get_meta_file_path,
 )
+from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.common import datetime_now_utc, max_datetime
 from kitsunekko_tools.config import KitsuConfig
 

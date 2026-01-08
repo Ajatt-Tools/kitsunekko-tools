@@ -9,7 +9,7 @@ import shutil
 from collections.abc import Iterable
 from typing import Self
 
-from kitsunekko_tools.api_access.root_directory import KitsuDirectoryMeta
+from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import (
     BUNDLED_RESOURCES_DIR,

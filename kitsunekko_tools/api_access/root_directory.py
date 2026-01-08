@@ -105,26 +105,6 @@ class ApiDirectoryEntry:
         return dataclasses.replace(self, last_modified=mod_time)
 
 
-@dataclasses.dataclass(frozen=True)
-class KitsuDirectoryMeta(ApiDirectoryEntry):
-    dir_path: pathlib.Path = pathlib.Path()
-
-    @classmethod
-    def from_local_file(cls, f: typing.TextIO, dir_path: pathlib.Path) -> typing.Self:
-        return cls(**cls._load_json(f), dir_path=dir_path)
-
-    @staticmethod
-    def _load_json(f: typing.TextIO) -> dict:
-        data = json.load(f)
-        data["last_modified"] = parse_api_time(data["last_modified"])
-        data["entry_type"] = EntryType[data["entry_type"]]
-        return data
-
-    def write_self_to_file(self) -> None:
-        with open(get_meta_file_path_on_disk(self.dir_path), "w", encoding="utf-8") as of:
-            self.write_to_file(of)
-
-
 def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
     for item in json_response:
         yield ApiDirectoryEntry.from_api_json(item)
