@@ -16,6 +16,7 @@ from kitsunekko_tools.consts import (
     BUNDLED_TEMPLATES_DIR,
     TRASH_DIR_NAME,
 )
+from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import (
     FileMetaData,
@@ -141,8 +142,8 @@ class WebSiteBuilder:
 
     def build(self) -> None:
         self._paths.site_dir_path.mkdir(parents=True, exist_ok=True)
-        self._paths.anime_entries_dir_path.mkdir(parents=True, exist_ok=True)
-        self._paths.drama_entries_dir_path.mkdir(parents=True, exist_ok=True)
+        for destination in self._paths.site_destinations.values():
+            destination.mkdir(parents=True, exist_ok=True)
         shutil.copytree(
             self._paths.resources_dir_path,
             self._paths.site_dir_path / RESOURCES_DIR_NAME,
@@ -188,11 +189,12 @@ class WebSiteBuilder:
             except FileNotFoundError:
                 meta = None
             is_drama = bool(meta and meta.is_drama())
+            entry_type = meta.entry_type if meta else EntryType.unsorted
             yield LocalDirectoryEntry(
                 meta=meta,
                 path_to_dir=dir_path,
                 files_in_dir=sorted(collect_files(dir_path), key=catalog_file_sort_key),
-                site_path_to_html_file=self._mk_path_to_entry_html_file(is_drama, dir_path),
+                site_path_to_html_file=self._mk_path_to_entry_html_file(dir_path.name, entry_type),
                 is_drama=is_drama,
             )
 
@@ -232,11 +234,8 @@ class WebSiteBuilder:
         print("Copying templates.")
         shutil.copytree(BUNDLED_TEMPLATES_DIR, self._paths.templates_dir_path)
 
-    def _mk_path_to_entry_html_file(self, is_drama: bool, dir_path: pathlib.Path) -> pathlib.Path:
-        file_name = f"{name_to_addr(dir_path.name)}.html"
-        if is_drama:
-            return self._paths.drama_entries_dir_path / file_name
-        return self._paths.anime_entries_dir_path / file_name
+    def _mk_path_to_entry_html_file(self, entry_name: str, entry_type: EntryType) -> pathlib.Path:
+        return self._paths.site_destinations[entry_type] / f"{name_to_addr(entry_name)}.html"
 
 
 def build_website(config: KitsuConfig) -> None:

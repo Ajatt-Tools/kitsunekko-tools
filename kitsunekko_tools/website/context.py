@@ -30,8 +30,7 @@ class WebSiteBuilderPaths:
     index_file_path: pathlib.Path
     not_found_file_path: pathlib.Path
     drama_index_file_path: pathlib.Path
-    anime_entries_dir_path: pathlib.Path
-    drama_entries_dir_path: pathlib.Path
+    site_destinations: dict[EntryType, pathlib.Path]
 
     @classmethod
     def new(cls, config: KitsuConfig):
@@ -45,8 +44,7 @@ class WebSiteBuilderPaths:
             index_file_path=site_dir_path / INDEX_TEMPLATE_NAME,
             not_found_file_path=site_dir_path / NOT_FOUND_TEMPLATE_NAME,
             drama_index_file_path=site_dir_path / DRAMA_INDEX_TEMPLATE_NAME,
-            anime_entries_dir_path=site_dir_path / "anime",
-            drama_entries_dir_path=site_dir_path / "drama",
+            site_destinations={entry_type: site_dir_path.joinpath(entry_type.name) for entry_type in EntryType},
         )
 
 
