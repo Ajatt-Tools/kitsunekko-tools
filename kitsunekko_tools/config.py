@@ -174,7 +174,12 @@ class KitsuConfig:
     def is_allowed_file_type(self, file_path: pathlib.Path) -> bool:
         if not self.allowed_file_types:
             return True
-        return any(file_path.name.endswith(f".{ext}") for ext in self.allowed_file_types)
+
+        @functools.cache
+        def allowed_file_extensions(allowed_file_types: frozenset[str]) -> frozenset[str]:
+            return frozenset(f".{ext}".lower() for ext in allowed_file_types)
+
+        return file_path.suffix.lower() in allowed_file_extensions(self.allowed_file_types)
 
 
 class ReadConfigResult(typing.NamedTuple):
