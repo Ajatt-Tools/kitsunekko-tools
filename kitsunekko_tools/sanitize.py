@@ -84,7 +84,7 @@ def move_directory(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     """
     Merge two directories. Move all files from directory to the main entry's directory.
     """
-    if new_dir == old_dir:
+    if new_dir == old_dir or not old_dir.is_dir():
         return
     if new_dir.exists():
         print(f"moving '{old_dir}' to '{new_dir}'")
