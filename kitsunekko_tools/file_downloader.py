@@ -149,6 +149,9 @@ class KitsuSubtitleDownloader:
     def _should_skip_download(
         self, subtitle: KitsuSubtitleDownload, ignore_list: IgnoreTSVForDir
     ) -> DownloadStatus | None:
+        if not self._config.is_allowed_file_type(subtitle.file_path):
+            return DownloadStatus.blocked_file_type
+
         try:
             if ignore_list.last_modified(subtitle.file_path) < subtitle.last_modified_on_remote:
                 # Our file is older than theirs
@@ -162,9 +165,6 @@ class KitsuSubtitleDownloader:
 
         if ignore_list.is_matching(subtitle.file_path):
             return DownloadStatus.explicitly_ignored
-
-        if not self._config.is_allowed_file_type(subtitle.file_path):
-            return DownloadStatus.blocked_file_type
 
         return None
 
