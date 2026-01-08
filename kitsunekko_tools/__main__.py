@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import dataclasses
 import pathlib
 import subprocess
 import sys
@@ -134,7 +135,9 @@ class Application:
         else:
             print(data.destination)
 
-    async def sync(self, full: bool = False, api: bool = False, ignore_dir_mod_times: bool = False) -> None:
+    async def sync(
+        self, full: bool = False, api: bool = False, ignore_dir_mod_times: bool = False, accept_file_types: str = ""
+    ) -> None:
         """
         Download everything from Kitsunekko to a local folder.
 
@@ -142,17 +145,19 @@ class Application:
             full: Do a full sync. Ignore the 'skip_older' setting.
             api: Use the API to access the contents.
             ignore_dir_mod_times: Ignore modification times of directories when using the API.
+            accept_file_types: a comma separated list of file types to download. If not set, use the value set in the config file.
         """
 
-        try:
-            if api:
-                s = ApiSyncClient(config=self._config.data(), full_sync=full, ignore_dir_mod_times=ignore_dir_mod_times)
-            else:
-                s = KitsuScrapper(config=self._config.data(), full_sync=full)
-        except KitsuException as ex:
-            print(ex.what)
+        config = self._config.data()
+        if accept_file_types:
+            config = dataclasses.replace(config, allowed_file_types=frozenset(accept_file_types.split(",")))
+
+        if api:
+            s = ApiSyncClient(config=config, full_sync=full, ignore_dir_mod_times=ignore_dir_mod_times)
         else:
-            await s.sync_all()
+            s = KitsuScrapper(config=config, full_sync=full)
+
+        await s.sync_all()
 
     def upload(self) -> None:
         """
