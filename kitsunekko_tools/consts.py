@@ -15,6 +15,9 @@ BUNDLED_RESOURCES_DIR = THIS_DIR / "example_catalog" / "resources"
 BUNDLED_TEMPLATES_DIR = BUNDLED_RESOURCES_DIR.with_name("templates")
 BUNDLED_SUBTITLES_DIR = BUNDLED_RESOURCES_DIR.with_name("subtitles")
 
+SUBTITLE_FILE_TYPES = ("srt", "ass", "ssa")
+ARCHIVE_FILE_TYPES = ("zip", "rar", "7z")
+
 assert BUNDLED_RESOURCES_DIR.is_dir()
 assert BUNDLED_TEMPLATES_DIR.is_dir()
 assert BUNDLED_SUBTITLES_DIR.is_dir()

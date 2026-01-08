@@ -14,7 +14,12 @@ import typing
 from beartype.door import die_if_unbearable
 
 from kitsunekko_tools.common import KitsuException
-from kitsunekko_tools.consts import PROG_NAME, SETTINGS_FILE_NAME
+from kitsunekko_tools.consts import (
+    ARCHIVE_FILE_TYPES,
+    PROG_NAME,
+    SETTINGS_FILE_NAME,
+    SUBTITLE_FILE_TYPES,
+)
 from kitsunekko_tools.entry import EntryType
 
 DEFAULT_HEADERS = {
@@ -120,7 +125,7 @@ class KitsuConfig:
     @classmethod
     def default(cls) -> typing.Self:
         return cls(
-            allowed_file_types=frozenset(["ssa", "ass", "srt", "zip", "rar", "7z"]),
+            allowed_file_types=frozenset([*SUBTITLE_FILE_TYPES, *ARCHIVE_FILE_TYPES]),
             skip_older=datetime.timedelta(days=30),
             destination=pathlib.Path.home().joinpath("kitsunekko").resolve(),
         )
