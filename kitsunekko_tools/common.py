@@ -21,7 +21,7 @@ class KitsuError(KitsuException):
 
 SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME, *(et.name for et in EntryType))
 RE_FILENAME_PROHIBITED = re.compile(r"[ _\\\n\t\r#{}<>^*/:\"`?'|]+", flags=re.MULTILINE | re.IGNORECASE)
-RE_MULTI_SPACE = re.compile(r" {2,}", flags=re.MULTILINE | re.IGNORECASE)
+RE_MULTI_SPACE = re.compile(r"\s{2,}", flags=re.MULTILINE | re.IGNORECASE)
 WINDOWS_SUBSTITUTE_CHARS = {
     "??": "2",
     "||": "2",
@@ -41,7 +41,7 @@ def fs_name_strip(name: str) -> str:
     name = re.sub(RE_FILENAME_PROHIBITED, " ", name)
     name = re.sub(RE_MULTI_SPACE, " ", name)
     # Note: Windows-like OSes don't allow dots at the end.
-    return name.strip().rstrip(".")
+    return name.strip().strip(" .")
 
 
 def datetime_now_utc() -> datetime.datetime:
