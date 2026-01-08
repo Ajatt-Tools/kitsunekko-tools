@@ -13,8 +13,8 @@ from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
     iter_catalog_directories,
 )
-from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.consts import BUNDLED_SUBTITLES_DIR, INFO_FILENAME
+from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.sanitize import DuplicatesGroup
 from tests.test_parser import DATA_DIR
 

@@ -9,7 +9,7 @@ import shutil
 from collections.abc import Iterable
 from typing import Self
 
-from kitsunekko_tools.local_state import KitsuDirectoryMeta
+from kitsunekko_tools.common import epoch_datetime
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import (
     BUNDLED_RESOURCES_DIR,
@@ -24,7 +24,7 @@ from kitsunekko_tools.ignore import (
     get_ignore_file_path_on_disk,
     pattern_sort_key,
 )
-from kitsunekko_tools.sanitize import read_directory_meta
+from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
 from kitsunekko_tools.website.context import (
     ENTRY_TEMPLATE_NAME,
     INDEX_TEMPLATE_NAME,
@@ -86,7 +86,7 @@ def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[datetime.datetime, str]:
     """
     if entry.meta:
         return entry.meta.last_modified, entry.meta.name
-    return datetime.datetime.fromtimestamp(0, tz=datetime.UTC), entry.path_to_dir.name
+    return epoch_datetime(), entry.path_to_dir.name
 
 
 def mk_shell_compatible_url_list(files: list[FileMetaData], cfg: KitsuConfig) -> str:

@@ -8,9 +8,9 @@ from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
     get_meta_file_path,
 )
-from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.common import datetime_now_utc, max_datetime
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.local_state import KitsuDirectoryMeta
 
 
 def read_meta_file(meta_file_path: pathlib.Path) -> KitsuDirectoryMeta | None:

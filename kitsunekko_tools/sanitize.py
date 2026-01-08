@@ -2,12 +2,9 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import collections
 import datetime
-import os
 import pathlib
-import re
 import string
 import typing
-from collections.abc import Iterable
 
 from kitsunekko_tools.api_access.directory_entry import (
     keep_removed_values,
@@ -18,17 +15,17 @@ from kitsunekko_tools.api_access.root_directory import (
     get_meta_file_path,
     get_meta_file_path_on_disk,
 )
-from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
-from kitsunekko_tools.scrapper.download import unsorted_destination
-
-RE_INSIGNIFICANT_CHARS = re.compile(
-    r"[\- ー,.。、！!@#$%^&*()_=+＠＃＄％＾△＆＊（）＋＝「」\s\\\n\t\r\[\]{}<>?/\'\":`|;〄〇〈〉〓〔〕〖〗〘〙〚〛〝〞〟〠〡〢〣〥〦〧〨〭〮〯〫〬〶〷〸〹〺〻〼〾〿？…ヽヾゞ〱〲〳〵〴［］｛｝｟｠゠‥•◦﹅﹆♪♫♬♩ⓍⓁⓎ仝　・※【】〒◎×〃゜『』《》～〜~〽☆∀∕]+",
-    flags=re.MULTILINE | re.IGNORECASE,
+from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
+from kitsunekko_tools.scrapper.dir_path_matcher import (
+    DirPathMatcher,
+    MatcherKeyError,
+    name_strip_insignificant_chars,
 )
+from kitsunekko_tools.scrapper.download import unsorted_destination
 
 
 def move_files(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
@@ -73,11 +70,6 @@ def rename_badly_named_directories(config: KitsuConfig) -> None:
         move_directory(directory, new_dir=new_dir)
 
 
-def read_directory_meta(directory: pathlib.Path) -> KitsuDirectoryMeta:
-    with open(get_meta_file_path_on_disk(directory), encoding="utf-8") as f:
-        return KitsuDirectoryMeta.from_local_file(f, dir_path=directory)
-
-
 def merge_metadata(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
     try:
         old_meta: KitsuDirectoryMeta = read_directory_meta(old_dir)
@@ -104,73 +96,35 @@ def move_directory(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
         old_dir.rename(new_dir)
 
 
-def name_strip_insignificant_chars(name: str) -> str:
-    return re.sub(RE_INSIGNIFICANT_CHARS, "", name).lower()
-
-
-def iter_lookup_keys(meta: KitsuDirectoryMeta) -> Iterable[str]:
-    if meta.name:
-        yield name_strip_insignificant_chars(meta.name)
-        yield name_strip_insignificant_chars(meta.fs_name)
-    if meta.english_name:
-        yield name_strip_insignificant_chars(meta.english_name)
-        yield name_strip_insignificant_chars(fs_name_strip(meta.english_name))
-    if meta.japanese_name:
-        yield name_strip_insignificant_chars(meta.japanese_name)
-        yield name_strip_insignificant_chars(fs_name_strip(meta.japanese_name))
-    yield meta.dir_path.name.lower()
-    yield fs_name_strip(meta.dir_path.name.lower())
-    yield name_strip_insignificant_chars(meta.dir_path.name)
-    yield name_strip_insignificant_chars(fs_name_strip(meta.dir_path.name))
-
-
 class FixOrphans:
     """
     Try to find metadata for directories without .kitsuinfo.json files.
     """
 
     _config: KitsuConfig
-    _lookup_key_to_meta: dict[str, KitsuDirectoryMeta]
+    _matcher: DirPathMatcher
 
     def __init__(self, config: KitsuConfig) -> None:
         self._config = config
-        self._lookup_key_to_meta = {}
-
-    def _build_lookup_dicts(self) -> None:
-        print("building lookup dict to match orphans...")
-        for directory in iter_subtitle_directories(self._config):
-            try:
-                meta = read_directory_meta(directory)
-            except FileNotFoundError:
-                continue
-            if not meta.entry_id:
-                continue
-            for lookup_key in iter_lookup_keys(meta):
-                self._lookup_key_to_meta[lookup_key] = meta
+        self._matcher = DirPathMatcher(self._config)
 
     def _try_match_by_directory_name(self, dir_path: pathlib.Path) -> None:
         """
         Try to find the main entry by directory name.
         """
-        for try_key in (dir_path.name.lower(), name_strip_insignificant_chars(dir_path.name)):
-            try:
-                main_entry = self._lookup_key_to_meta[try_key]
-            except KeyError:
-                continue
-            move_directory(dir_path, new_dir=main_entry.dir_path)
-            break
+        try:
+            main_entry = self._matcher.find_best_matching_entry(dir_path.name)
+        except MatcherKeyError:
+            return
+        move_directory(dir_path, new_dir=main_entry.dir_path)
 
-    def _find_matches_and_merge(self) -> None:
+    def merge_directories(self) -> None:
         print("matching orphans...")
         for directory in iter_subtitle_directories(self._config):
             if get_meta_file_path_on_disk(directory).is_file():
                 # already has metadata
                 continue
             self._try_match_by_directory_name(directory)
-
-    def merge_directories(self) -> None:
-        self._build_lookup_dicts()
-        self._find_matches_and_merge()
 
 
 def delete_empty_directories(config: KitsuConfig) -> None:

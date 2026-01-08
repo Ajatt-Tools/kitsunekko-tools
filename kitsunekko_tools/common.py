@@ -50,3 +50,7 @@ def datetime_now_utc() -> datetime.datetime:
 
 def max_datetime(t1: datetime.datetime, t2: datetime.datetime) -> datetime.datetime:
     return min(datetime_now_utc(), max(t1, t2))
+
+
+def epoch_datetime() -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(0, tz=datetime.UTC)

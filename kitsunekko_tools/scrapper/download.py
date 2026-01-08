@@ -12,7 +12,7 @@ import httpx
 from kitsunekko_tools.common import KitsuError, datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import IGNORE_FILENAME
-from kitsunekko_tools.download import ClientBase, ClientType
+from kitsunekko_tools.download import ClientBase
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.file_downloader import (
     DownloadSubtitlesList,
@@ -23,6 +23,11 @@ from kitsunekko_tools.file_downloader import (
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreTSVForDir
+from kitsunekko_tools.scrapper.dir_path_matcher import (
+    DirPathMatcher,
+    MatcherKeyError,
+    name_strip_insignificant_chars,
+)
 from kitsunekko_tools.scrapper.parse import (
     find_all_subtitle_dirs,
     find_all_subtitle_files,
@@ -115,26 +120,12 @@ def unsorted_destination(config: KitsuConfig) -> pathlib.Path:
     return config.destination / EntryType.unsorted.name
 
 
-def scrapper_make_payload(config: KitsuConfig, found_files: Sequence[SubtitleFile]) -> DownloadSubtitlesList:
-    show_name = get_show_name(found_files)
-    return DownloadSubtitlesList(
-        to_download=[
-            KitsuSubtitleDownload(
-                url=SubtitleFileUrl(file.url),
-                file_path=(unsorted_destination(config) / show_name / file.file_name),
-                last_modified_on_remote=file.mod_timestamp,
-            )
-            for file in found_files
-        ],
-        ignore_list=IgnoreTSVForDir(ignore_filepath=(unsorted_destination(config) / show_name / IGNORE_FILENAME)),
-    )
-
-
 class KitsuScrapper(ClientBase):
     _config: KitsuConfig
     _downloader: KitsuSubtitleDownloader
     _now: datetime.datetime
     _full_sync: bool
+    _matcher: DirPathMatcher
 
     def __init__(self, config: KitsuConfig, full_sync: bool = False) -> None:
         super().__init__()
@@ -143,6 +134,7 @@ class KitsuScrapper(ClientBase):
         self._downloader = KitsuSubtitleDownloader(self._config)
         self._now = datetime_now_utc()
         self._full_sync = full_sync
+        self._matcher = DirPathMatcher(self._config)
 
     def _should_visit(self, location: AnimeDir | SubtitleFile) -> bool:
         """
@@ -165,6 +157,24 @@ class KitsuScrapper(ClientBase):
             found_files=[*filter(self._should_visit, find_all_subtitle_files(r.text))],
         )
 
+    def _scrapper_make_payload(self, found_files: Sequence[SubtitleFile]) -> DownloadSubtitlesList:
+        show_name = get_show_name(found_files)
+        try:
+            out_dir_path = self._matcher.find_best_matching_entry(show_name).dir_path
+        except MatcherKeyError:
+            out_dir_path = unsorted_destination(self._config) / show_name
+        return DownloadSubtitlesList(
+            to_download=[
+                KitsuSubtitleDownload(
+                    url=SubtitleFileUrl(file.url),
+                    file_path=(out_dir_path / file.file_name),
+                    last_modified_on_remote=file.mod_timestamp,
+                )
+                for file in found_files
+            ],
+            ignore_list=IgnoreTSVForDir(ignore_filepath=(out_dir_path / IGNORE_FILENAME)),
+        )
+
     async def find_subs_all(self, client: httpx.AsyncClient, to_visit: set[AnimeDir]) -> FetchResult:
         results = FetchResult.new()
         for fut in asyncio.as_completed([self.crawl_page(client, page) for page in to_visit]):
@@ -177,7 +187,7 @@ class KitsuScrapper(ClientBase):
                 if page_visit.found_files:
                     downloads = await self._downloader.download_subs(
                         client=client,
-                        entry=scrapper_make_payload(self._config, page_visit.found_files),
+                        entry=self._scrapper_make_payload(page_visit.found_files),
                     )
                 else:
                     downloads = None

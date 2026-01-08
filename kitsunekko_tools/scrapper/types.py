@@ -1,7 +1,11 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import dataclasses
 import datetime
+import pathlib
 import typing
+
+from kitsunekko_tools.entry import EntryType
 
 
 class CompareError(ValueError):
@@ -42,3 +46,25 @@ class SubtitleFile(typing.NamedTuple):
 
     def __hash__(self) -> int:
         return hash(f"{self.show_name}/{self.file_name}")
+
+
+@dataclasses.dataclass(frozen=True)
+class NoMetaDirectoryEntry:
+    """
+    Fallback type for directories without metadata.
+    Meta file (.kitsuinfo.json) is not present.
+    """
+
+    dir_path: pathlib.Path
+    name: str
+    entry_type: EntryType = EntryType.unsorted
+    english_name: None = None
+    japanese_name: None = None
+    last_modified: datetime.datetime = datetime.datetime.fromtimestamp(0, tz=datetime.UTC)
+
+    @classmethod
+    def from_dir(cls, dir_path: pathlib.Path) -> typing.Self:
+        return cls(
+            name=dir_path.name,
+            dir_path=dir_path,
+        )
