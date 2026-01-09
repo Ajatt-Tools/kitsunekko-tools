@@ -18,7 +18,7 @@ from kitsunekko_tools.ignore import (
     add_file_to_ignore_list,
 )
 from kitsunekko_tools.mega_upload import mega_upload
-from kitsunekko_tools.sanitize import sanitize_directories
+from kitsunekko_tools.sanitize import sanitize_directories, delete_empty_directories, delete_trash_dirs
 from kitsunekko_tools.website.website import WebSiteBuilder, build_website
 
 
@@ -170,16 +170,21 @@ class Application:
         except KitsuException as ex:
             print(ex.what)
 
-    def sanitize(self) -> None:
+    def sanitize(self, empty: bool = False, trash: bool = False) -> None:
         """
         Rename directories if they have prohibited names.
+        Args:
+            empty: Delete empty directories.
+            trash: Delete trash directories.
         """
-        try:
-            data = self._config.data()
-        except ConfigFileNotFoundError as ex:
-            print(ex.what)
+        cfg = self._config.data()
+
+        if empty:
+            delete_empty_directories(cfg)
+        elif trash:
+            delete_trash_dirs(cfg)
         else:
-            sanitize_directories(data)
+            sanitize_directories(cfg)
 
     def build(self) -> None:
         """
