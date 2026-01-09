@@ -3,6 +3,7 @@
 import collections
 import datetime
 import pathlib
+import shutil
 import string
 import typing
 
@@ -17,6 +18,7 @@ from kitsunekko_tools.api_access.root_directory import (
 )
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import TRASH_DIR_NAME
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
 from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
@@ -25,6 +27,7 @@ from kitsunekko_tools.scrapper.dir_path_matcher import (
     MatcherKeyError,
 )
 from kitsunekko_tools.scrapper.download import unsorted_destination
+from kitsunekko_tools.website.website import collect_files
 
 
 def move_files(old_dir: pathlib.Path, *, new_dir: pathlib.Path) -> None:
@@ -208,6 +211,21 @@ def make_destination_dirs(config):
     print("Making directories...")
     for directory in config.all_destinations():
         directory.mkdir(exist_ok=True)
+
+
+def delete_trash_dirs(config: KitsuConfig) -> None:
+    for dir_path in iter_subtitle_directories(config):
+        trashed_files = []
+        other_files = []
+        trash_dir = dir_path.joinpath(TRASH_DIR_NAME)
+        for file in collect_files(dir_path):
+            if file.path.parent == trash_dir:
+                trashed_files.append(file)
+            else:
+                other_files.append(file)
+        if other_files and trashed_files:
+            print(f"delete dir: {trash_dir}")
+            shutil.rmtree(trash_dir)
 
 
 def sanitize_directories(config: KitsuConfig) -> None:
