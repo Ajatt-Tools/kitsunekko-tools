@@ -219,6 +219,7 @@ class ApiSyncClient(ClientBase):
                 print(e)
 
     async def sync_all(self) -> None:
+        print(f"Sync start ({'full' if self._full_sync else 'normal'}).")
         async with get_http_api_client(self._config) as client:
             self._tasks.append(self._search_catalog(client, self.get_search_url(is_anime=True)))
             self._tasks.append(self._search_catalog(client, self.get_search_url(is_anime=False)))
