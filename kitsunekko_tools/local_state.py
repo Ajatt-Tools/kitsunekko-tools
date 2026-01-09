@@ -10,7 +10,7 @@ from kitsunekko_tools.api_access.root_directory import (
     get_meta_file_path_on_disk,
     parse_api_time,
 )
-from kitsunekko_tools.entry import EntryType
+from kitsunekko_tools.entry import DirectoryMetaProtocol, EntryType
 
 
 @dataclasses.dataclass(frozen=True)

@@ -5,6 +5,7 @@ import datetime
 import pytest
 
 from kitsunekko_tools.common import datetime_now_utc, max_datetime
+from kitsunekko_tools.scrapper.dir_path_matcher import name_strip_insignificant_chars
 
 NOW = datetime_now_utc()
 
@@ -24,3 +25,14 @@ def year(year_: int) -> datetime.datetime:
 def test_max_datetime(t1: datetime.datetime, t2: datetime.datetime, expectation: datetime.datetime) -> None:
     result = max_datetime(t1, t2)
     assert result.year == expectation.year
+
+
+@pytest.mark.parametrize(
+    "s1, s2",
+    [
+        ("Yu☆Gi☆Oh! ARC-V", "Yu-Gi-Oh! ARC-V"),
+        ("Yu-Gi-Oh! ZEXAL", "Yu☆Gi☆Oh! ZEXAL"),
+    ],
+)
+def test_name_strip_insignificant_chars(s1: str, s2: str) -> None:
+    assert name_strip_insignificant_chars(s1) == name_strip_insignificant_chars(s2)

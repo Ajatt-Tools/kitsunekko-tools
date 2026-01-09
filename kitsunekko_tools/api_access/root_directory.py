@@ -12,7 +12,12 @@ from pprint import pprint
 from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import INFO_FILENAME
-from kitsunekko_tools.entry import ApiDirectoryFlagsDict, EntryType, describe_entry_type
+from kitsunekko_tools.entry import (
+    ApiDirectoryFlagsDict,
+    DirectoryMetaProtocol,
+    EntryType,
+    describe_entry_type,
+)
 
 
 class ApiDirectoryDict(typing.TypedDict):
@@ -49,7 +54,7 @@ TMDBId = typing.NewType("TMDBId", str)  # example: "tv:153496"
 
 
 @dataclasses.dataclass(frozen=True)
-class ApiDirectoryEntry:
+class ApiDirectoryEntry(DirectoryMetaProtocol):
     entry_id: KitsunekkoId  # used to query API for files in the directory
     name: str  # name of the anime and the directory on the disk.
     entry_type: EntryType

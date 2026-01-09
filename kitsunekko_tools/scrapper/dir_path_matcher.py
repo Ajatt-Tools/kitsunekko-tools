@@ -1,5 +1,4 @@
 import datetime
-import pathlib
 import re
 from collections.abc import Iterable
 
@@ -24,15 +23,13 @@ def name_strip_insignificant_chars(name: str) -> str:
 def iter_lookup_keys(meta: LocalDirectoryMeta) -> Iterable[str]:
     if meta.name:
         yield name_strip_insignificant_chars(meta.name)
-        yield name_strip_insignificant_chars(meta.fs_name)
+        yield name_strip_insignificant_chars(fs_name_strip(meta.name))
     if meta.english_name:
         yield name_strip_insignificant_chars(meta.english_name)
         yield name_strip_insignificant_chars(fs_name_strip(meta.english_name))
     if meta.japanese_name:
         yield name_strip_insignificant_chars(meta.japanese_name)
         yield name_strip_insignificant_chars(fs_name_strip(meta.japanese_name))
-    yield meta.dir_path.name.lower()
-    yield fs_name_strip(meta.dir_path.name.lower())
     yield name_strip_insignificant_chars(meta.dir_path.name)
     yield name_strip_insignificant_chars(fs_name_strip(meta.dir_path.name))
 
@@ -58,7 +55,7 @@ def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetim
         case KitsuDirectoryMeta():
             return 1, entry.last_modified
         case NoMetaDirectoryEntry():
-            return 0, epoch_datetime()
+            return 0, entry.last_modified
         case _:
             raise ValueError(f"unknown type: {type(entry)}")
 
@@ -76,7 +73,10 @@ class DirPathMatcher:
         self._lookup_key_to_meta = build_lookup_dicts(self._config)
 
     def find_best_matching_entry(self, directory_name: str) -> LocalDirectoryMeta:
-        for try_key in (directory_name.lower(), name_strip_insignificant_chars(directory_name)):
+        for try_key in (
+            name_strip_insignificant_chars(fs_name_strip(directory_name)),
+            name_strip_insignificant_chars(directory_name),
+        ):
             try:
                 # Get the most recently modified directory.
                 # Directories without metadata have modification timestamp set to 0.

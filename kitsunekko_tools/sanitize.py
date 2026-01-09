@@ -23,7 +23,6 @@ from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
 from kitsunekko_tools.scrapper.dir_path_matcher import (
     DirPathMatcher,
     MatcherKeyError,
-    name_strip_insignificant_chars,
 )
 from kitsunekko_tools.scrapper.download import unsorted_destination
 

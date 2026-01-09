@@ -5,7 +5,8 @@ import datetime
 import pathlib
 import typing
 
-from kitsunekko_tools.entry import EntryType
+from kitsunekko_tools.common import fs_name_strip
+from kitsunekko_tools.entry import DirectoryMetaProtocol, EntryType
 
 
 class CompareError(ValueError):
@@ -49,7 +50,7 @@ class SubtitleFile(typing.NamedTuple):
 
 
 @dataclasses.dataclass(frozen=True)
-class NoMetaDirectoryEntry:
+class NoMetaDirectoryEntry(DirectoryMetaProtocol):
     """
     Fallback type for directories without metadata.
     Meta file (.kitsuinfo.json) is not present.
