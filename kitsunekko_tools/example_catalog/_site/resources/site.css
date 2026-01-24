@@ -41,12 +41,16 @@ main a[href$=".srt"]::before {
 }
 
 .subtitle_catalog_main {
-    background-color: var(--article-background, white);
+    background-color: transparent;
     margin: 0 auto;
     width: 100%;
     max-width: var(--index-page-width);
     box-shadow: 0 1px 4px 0 var(--elem-shadow-color);
     padding: 0;
+}
+
+.subtitle_catalog_main input + * {
+    margin-block-start: 0;
 }
 
 /* Subtitle entries */
@@ -59,6 +63,7 @@ main a[href$=".srt"]::before {
 .entries_table {
     --border-color: hsl(0, 0%, 85%);
 
+    background-color: var(--article-background, white);
     border: 1px solid var(--border-color);
     width: 100%;
     border-collapse: collapse;
@@ -141,16 +146,17 @@ main a[href$=".srt"]::before {
 
 /* Tabs */
 
-input[type="radio"].subs_format_input {
+input[type="radio"].filter_by_type_input {
     position: absolute;
     left: -9999px;
     width: 1px;
     height: 1px;
     overflow: hidden;
     visibility: hidden;
+    display: none;
 }
 
-.subs_format_tabs {
+.filter_by_type {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -165,7 +171,7 @@ input[type="radio"].subs_format_input {
     font-weight: 700;
 }
 
-.subs_format_tabs label {
+.filter_by_type label {
     padding: 0.35rem 0.75rem;
 
     border: 1px solid #d0d0d0;
@@ -184,9 +190,12 @@ input[type="radio"].subs_format_input {
     font-family: var(--monospace-font-families, monospace);
 }
 
-#ext_srt:checked ~ .subs_format_tabs label[for="ext_srt"],
-#ext_ass:checked ~ .subs_format_tabs label[for="ext_ass"],
-#ext_all:checked ~ .subs_format_tabs label[for="ext_all"] {
+#ext_srt:checked ~ .filter_by_type label[for="ext_srt"],
+#ext_ass:checked ~ .filter_by_type label[for="ext_ass"],
+#ext_all:checked ~ .filter_by_type label[for="ext_all"],
+#type_movie:checked ~ .filter_by_type label[for="type_movie"],
+#type_tv:checked ~ .filter_by_type label[for="type_tv"],
+#type_all:checked ~ .filter_by_type label[for="type_all"] {
     background-color: rgba(127, 127, 127, 0.14);
     font-weight: 800;
 }
@@ -200,6 +209,15 @@ input[type="radio"].subs_format_input {
     display: none;
 }
 #ext_all:checked ~ :is(.group_srt, .group_ass) {
+    display: none;
+}
+
+.subtitle_catalog_main:has(#type_movie:checked)
+    :is([data-entry-type="anime_tv"], [data-entry-type="drama_tv"], [data-entry-type="unsorted"]) {
+    display: none;
+}
+.subtitle_catalog_main:has(#type_tv:checked)
+    :is([data-entry-type="anime_movie"], [data-entry-type="drama_movie"], [data-entry-type="unsorted"]) {
     display: none;
 }
 
