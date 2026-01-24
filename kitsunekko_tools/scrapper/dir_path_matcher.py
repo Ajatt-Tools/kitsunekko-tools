@@ -2,7 +2,7 @@ import datetime
 import re
 from collections.abc import Iterable
 
-from kitsunekko_tools.common import epoch_datetime, fs_name_strip
+from kitsunekko_tools.common import fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.filesystem import iter_subtitle_directories
 from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
