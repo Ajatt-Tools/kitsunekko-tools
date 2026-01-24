@@ -43,7 +43,7 @@
                 </tr>
                 {% else %}
                 <tr data-timestamp="0" data-entry-type="{{ ctx.EntryType.unsorted.name }}">
-                    <td data-cell="#" class="entry_number">{{ loop.index }}</td>
+                    <td data-cell="#" class="entry_number"><span class="font-mono">{{ loop.index }}</span></td>
                     <td colspan="5" data-cell="Name" class="entry_name missing_meta"><a href="{{ entry.site_path_to_html_file | as_relative_to(ctx.output_file_path) }}">{{ entry.path_to_dir.name }}</a></td>
                 </tr>
                 {% endif %}
