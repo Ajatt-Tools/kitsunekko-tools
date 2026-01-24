@@ -18,6 +18,7 @@ SITE_BUILD_LOCATION_NAME = "_site"
 TEMPLATES_DIR_NAME = "templates"
 RESOURCES_DIR_NAME = "resources"
 CSS_FILE_NAME = "site.css"
+JS_FILE_NAME = "site.js"
 FAVICON_FILE_NAME = "logo.webp"
 
 
@@ -67,6 +68,7 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
             output_file_path=output_file_path,
             site_dir_path=paths.site_dir_path,
             css_file_path=paths.site_dir_path / RESOURCES_DIR_NAME / CSS_FILE_NAME,
+            js_file_path=paths.site_dir_path / RESOURCES_DIR_NAME / JS_FILE_NAME,
             favicon_path=paths.site_dir_path / RESOURCES_DIR_NAME / FAVICON_FILE_NAME,
             # Return the URL by joining the global URL with the relative path
             request_url=full_site_url_to_resource(config.site_url, paths.site_dir_path, output_file_path),
