@@ -141,7 +141,7 @@ main a[href$=".srt"]::before {
 
 /* Tabs */
 
-input[type="radio"].subs_format_input {
+input[type="radio"].filter_by_type_input {
     position: absolute;
     left: -9999px;
     width: 1px;
@@ -150,7 +150,7 @@ input[type="radio"].subs_format_input {
     visibility: hidden;
 }
 
-.subs_format_tabs {
+.filter_by_type {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -165,7 +165,7 @@ input[type="radio"].subs_format_input {
     font-weight: 700;
 }
 
-.subs_format_tabs label {
+.filter_by_type label {
     padding: 0.35rem 0.75rem;
 
     border: 1px solid #d0d0d0;
@@ -184,9 +184,9 @@ input[type="radio"].subs_format_input {
     font-family: var(--monospace-font-families, monospace);
 }
 
-#ext_srt:checked ~ .subs_format_tabs label[for="ext_srt"],
-#ext_ass:checked ~ .subs_format_tabs label[for="ext_ass"],
-#ext_all:checked ~ .subs_format_tabs label[for="ext_all"] {
+#ext_srt:checked ~ .filter_by_type label[for="ext_srt"],
+#ext_ass:checked ~ .filter_by_type label[for="ext_ass"],
+#ext_all:checked ~ .filter_by_type label[for="ext_all"] {
     background-color: rgba(127, 127, 127, 0.14);
     font-weight: 800;
 }
