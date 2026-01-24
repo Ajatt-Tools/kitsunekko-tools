@@ -18,7 +18,11 @@ from kitsunekko_tools.ignore import (
     add_file_to_ignore_list,
 )
 from kitsunekko_tools.mega_upload import mega_upload
-from kitsunekko_tools.sanitize import sanitize_directories, delete_empty_directories, delete_trash_dirs
+from kitsunekko_tools.sanitize import (
+    delete_empty_directories,
+    delete_trash_dirs,
+    sanitize_directories,
+)
 from kitsunekko_tools.website.website import WebSiteBuilder, build_website
 
 
