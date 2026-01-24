@@ -97,6 +97,23 @@ main a[href$=".srt"]::before {
         contain-intrinsic-size: auto;
     }
 
+    tbody {
+        /* Count rows with CSS to show correct row numbers when the user clicks to display only TV or only movies. */
+        counter-reset: row-num;
+        tr {
+            counter-increment: row-num;
+        }
+        td.entry_number {
+            &::before {
+                content: counter(row-num);
+                font-family: var(--monospace-font-families, monospace);
+            }
+            .font-mono {
+                display: none;
+            }
+        }
+    }
+
     tr:nth-of-type(2n) {
         background-color: var(--table-highlight-color);
     }
