@@ -72,9 +72,34 @@ main a[href$=".srt"]::before {
         margin-block: 0;
     }
 
-    th {
+    thead th {
         font-weight: 600;
         background-color: var(--table-header-color);
+        vertical-align: middle;
+        text-align: left;
+
+        &:not(.entry_number) {
+            user-select: none;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: hsla(213, 10%, 18%, 0.3);
+            text-decoration-style: dashed;
+        }
+        &.sort-indicator::after {
+            margin-left: 1ch;
+            display: inline-block;
+            color: currentColor;
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 0.5rem solid transparent;
+            border-right: 0.5rem solid transparent;
+            border-bottom: 0.5rem solid currentColor;
+        }
+        /* Sorting indicators */
+        &.sort-asc::after {
+            rotate: 180deg;
+        }
     }
 
     th,
