@@ -29,9 +29,39 @@
 (function () {
     "use strict";
 
-    // Sorting state
-    let currentSortColumn = null;
-    let currentSortDirection = "sort-asc"; // 'sort-asc' or 'sort-desc'
+    // Sort direction constants
+    const SortDirection = {
+        ASC: "sort-asc",
+        DESC: "sort-desc"
+    };
+
+    // Sort state data class
+    class SortState {
+        constructor(column = null, isAscending = true) {
+            this.currentSortColumn = column;
+            this.isAscending = isAscending; // boolean to indicate sort direction
+        }
+
+        // Get the string representation of sort direction
+        get direction() {
+            return this.isAscending ? SortDirection.ASC : SortDirection.DESC;
+        }
+
+        // Toggle sort direction for a column
+        toggleDirection(column) {
+            if (this.currentSortColumn === column) {
+                // Second click sorts in reverse
+                this.isAscending = !this.isAscending;
+            } else {
+                this.isAscending = true;
+                this.currentSortColumn = column;
+            }
+            return this.direction;
+        }
+    }
+
+    // Single instance of sort state for the page
+    const sortState = new SortState();
 
     function dateTimeZoneShort(date) {
         const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -76,7 +106,7 @@
     }
 
     // Compare function for sorting
-    function compareRows(rowA, rowB, columnClass, direction) {
+    function compareRows(rowA, rowB, columnClass) {
         const valueA = getSortValue(rowA, columnClass);
         const valueB = getSortValue(rowB, columnClass);
 
@@ -89,7 +119,7 @@
             comparison = String(valueA).localeCompare(String(valueB));
         }
 
-        return direction === "sort-asc" ? comparison : -comparison;
+        return sortState.isAscending ? comparison : -comparison;
     }
 
     // Sort table rows by column with class "columnClass".
@@ -100,16 +130,10 @@
             tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
         );
 
-        if (currentSortColumn === columnClass) {
-            // Second click sorts in reverse.
-            currentSortDirection = currentSortDirection === "sort-asc" ? "sort-desc" : "sort-asc";
-        } else {
-            currentSortDirection = "sort-asc";
-            currentSortColumn = columnClass;
-        }
+        sortState.toggleDirection(columnClass);
 
         rows.sort((rowA, rowB) => {
-            return compareRows(rowA, rowB, columnClass, currentSortDirection);
+            return compareRows(rowA, rowB, columnClass);
         });
 
         // Re-append rows to tbody in sorted order
@@ -122,14 +146,14 @@
     function updateSortDirectionIndicators(entries_table) {
         // Clear previous indicators
         entries_table.querySelectorAll("thead th").forEach(header => {
-            header.classList.remove("sort-asc", "sort-desc", "sort-indicator");
+            header.classList.remove(SortDirection.ASC, SortDirection.DESC, "sort-indicator");
         });
 
         // Add indicator to current sort column
-        if (currentSortColumn) {
-            const currentHeader = entries_table.querySelector(`thead th.${currentSortColumn}`);
+        if (sortState.currentSortColumn) {
+            const currentHeader = entries_table.querySelector(`thead th.${sortState.currentSortColumn}`);
             if (currentHeader) {
-                currentHeader.classList.add(currentSortDirection, "sort-indicator");
+                currentHeader.classList.add(sortState.direction, "sort-indicator");
             }
         }
     }
