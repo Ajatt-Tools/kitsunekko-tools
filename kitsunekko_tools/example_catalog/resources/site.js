@@ -63,6 +63,8 @@
     // Get sort value for a row based on column class
     function getSortValue(row, columnClass) {
         switch (columnClass) {
+            case "file_size":
+                return parseInt(row.getAttribute("data-file-size")) || 0;
             case "entry_type": // Type column
                 return row.getAttribute("data-entry-type") || "";
             case "last_modified": // Last modified column
@@ -90,15 +92,16 @@
         return direction === "sort-asc" ? comparison : -comparison;
     }
 
-    // Sort table rows
-    function sortTable(columnClass) {
-        const table = document.querySelector(".entries_table");
-        const tbody = table.querySelector("tbody");
+    // Sort table rows by column with class "columnClass".
+    function sortTable(entries_table, columnClass) {
+        const tbody = entries_table.querySelector("tbody");
         const rows = Array.from(
+            // Get all sortable rows in tbody.
             tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
         );
 
         if (currentSortColumn === columnClass) {
+            // Second click sorts in reverse.
             currentSortDirection = currentSortDirection === "sort-asc" ? "sort-desc" : "sort-asc";
         } else {
             currentSortDirection = "sort-asc";
@@ -112,21 +115,19 @@
         // Re-append rows to tbody in sorted order
         rows.forEach(row => tbody.prepend(row));
 
-        // Update header indicators
-        updateHeaderIndicators();
+        updateSortDirectionIndicators(entries_table);
     }
 
-    // Update header indicators to show sort direction
-    function updateHeaderIndicators() {
-        const headers = document.querySelectorAll(".entries_table thead th");
-        headers.forEach(header => {
-            // Clear previous indicators
+    // Update header indicators to show sort direction (▲/▼).
+    function updateSortDirectionIndicators(entries_table) {
+        // Clear previous indicators
+        entries_table.querySelectorAll("thead th").forEach(header => {
             header.classList.remove("sort-asc", "sort-desc", "sort-indicator");
         });
 
         // Add indicator to current sort column
         if (currentSortColumn) {
-            const currentHeader = document.querySelector(`.entries_table thead .${currentSortColumn}`);
+            const currentHeader = entries_table.querySelector(`thead th.${currentSortColumn}`);
             if (currentHeader) {
                 currentHeader.classList.add(currentSortDirection, "sort-indicator");
             }
@@ -135,16 +136,17 @@
 
     // Add event listeners to table headers for sorting
     function addSortingListeners() {
-        const headers = document.querySelectorAll(".entries_table thead th");
-        const sort_by = ["entry_name", "entry_type", "english_name", "japanese_name", "last_modified"];
-        headers.forEach(header => {
-            const columnClass = Array.from(header.classList).find(class_name => sort_by.includes(class_name));
-
-            if (columnClass) {
-                header.addEventListener("click", () => {
-                    sortTable(columnClass);
-                });
-            }
+        const sort_by = ["entry_name", "file_size", "entry_type", "english_name", "japanese_name", "last_modified"];
+        document.querySelectorAll(".entries_table").forEach(entries_table => {
+            // We have one table on the main page, but up to 3 tables on each entry page.
+            entries_table.querySelectorAll("thead th").forEach(header => {
+                const columnClass = Array.from(header.classList).find(class_name => sort_by.includes(class_name));
+                if (columnClass) {
+                    header.addEventListener("click", () => {
+                        sortTable(entries_table, columnClass);
+                    });
+                }
+            });
         });
     }
 
