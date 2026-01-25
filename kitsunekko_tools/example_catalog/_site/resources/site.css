@@ -82,7 +82,7 @@ main a[href$=".srt"]::before {
             user-select: none;
             cursor: pointer;
             text-decoration: underline;
-            text-decoration-color: hsla(213, 10%, 18%, 0.3);
+            text-decoration-color: hsla(213, 10%, 18%, 0.4);
             text-decoration-style: dashed;
         }
         &.sort-indicator::after {
