@@ -174,16 +174,16 @@
         });
     }
 
-    function updateHeader() {
-        // Update the header to show timezone
+    function adjustModTimeColumnNameToLocalTimeZone() {
+        // Update the header to show the local timezone abbreviation.
         for (const lastModifiedHeader of document.querySelectorAll("th.last_modified")) {
             const tzAbbreviation = dateTimeZoneShort(new Date());
             lastModifiedHeader.textContent = `Last modified (${tzAbbreviation})`;
         }
     }
 
-    function updateRows() {
-        // Update the rows to show timezone
+    function adjustTableRowsToLocalTimeZone() {
+        // Update all data rows to show modification times in local time zone.
         for (const entry of document.querySelectorAll(".entries_table tr")) {
             const timestamp = entry.getAttribute("data-timestamp");
             const last_modified = entry.querySelector("td.last_modified .font-mono");
@@ -194,8 +194,8 @@
     }
 
     function main() {
-        updateHeader();
-        updateRows();
+        adjustModTimeColumnNameToLocalTimeZone();
+        adjustTableRowsToLocalTimeZone();
         addSortingListeners();
     }
 
