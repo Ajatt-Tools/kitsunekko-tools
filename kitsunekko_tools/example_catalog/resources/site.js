@@ -106,10 +106,7 @@
     }
 
     // Compare function for sorting
-    function compareRows(rowA, rowB, columnClass) {
-        const valueA = getSortValue(rowA, columnClass);
-        const valueB = getSortValue(rowB, columnClass);
-
+    function compareRows(valueA, valueB) {
         let comparison = 0;
         if (typeof valueA === "string" && typeof valueB === "string") {
             comparison = valueA.localeCompare(valueB);
@@ -118,26 +115,35 @@
         } else {
             comparison = String(valueA).localeCompare(String(valueB));
         }
-
         return sortState.isAscending ? comparison : -comparison;
+    }
+
+    function getSortableRows(tbody) {
+        return Array.from(
+            // Get all sortable rows in tbody.
+            tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
+        );
     }
 
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
         const tbody = entries_table.querySelector("tbody");
-        const rows = Array.from(
-            // Get all sortable rows in tbody.
-            tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
-        );
 
         sortState.toggleDirection(columnClass);
 
-        rows.sort((rowA, rowB) => {
-            return compareRows(rowA, rowB, columnClass);
-        });
+        // Pre-compute sort values.
+        const sortData = getSortableRows(tbody).map(row => ({
+            row: row,
+            sort_value: getSortValue(row, columnClass),
+        }));
 
-        // Re-append rows to tbody in sorted order
-        rows.forEach(row => tbody.prepend(row));
+        // Sort the pre-computed data
+        sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
+
+        // Update the DOM by using DocumentFragment
+        const fragment = document.createDocumentFragment();
+        sortData.forEach(item => fragment.appendChild(item.row));
+        tbody.prepend(fragment);
 
         updateSortDirectionIndicators(entries_table);
     }
