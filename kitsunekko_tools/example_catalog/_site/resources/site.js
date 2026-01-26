@@ -106,10 +106,7 @@
     }
 
     // Compare function for sorting
-    function compareRows(rowA, rowB, columnClass) {
-        const valueA = getSortValue(rowA, columnClass);
-        const valueB = getSortValue(rowB, columnClass);
-
+    function compareRows(valueA, valueB) {
         let comparison = 0;
         if (typeof valueA === "string" && typeof valueB === "string") {
             comparison = valueA.localeCompare(valueB);
@@ -118,28 +115,44 @@
         } else {
             comparison = String(valueA).localeCompare(String(valueB));
         }
-
         return sortState.isAscending ? comparison : -comparison;
+    }
+
+    function getSortableRows(tbody) {
+        return Array.from(
+            // Get all sortable rows in tbody.
+            tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
+        );
     }
 
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
         const tbody = entries_table.querySelector("tbody");
-        const rows = Array.from(
-            // Get all sortable rows in tbody.
-            tbody.querySelectorAll("tr:not(.subtitle_catalog_end):not([data-entry-type='unsorted'])"),
-        );
-
         sortState.toggleDirection(columnClass);
+        entries_table.setAttribute("data-is-sorting", true);
 
-        rows.sort((rowA, rowB) => {
-            return compareRows(rowA, rowB, columnClass);
-        });
+        // Use setTimeout to allow UI to update before starting heavy operation
+        setTimeout(() => {
+            try {
+                // Pre-compute sort values.
+                const sortData = getSortableRows(tbody).map(row => ({
+                    row: row,
+                    sort_value: getSortValue(row, columnClass),
+                }));
 
-        // Re-append rows to tbody in sorted order
-        rows.forEach(row => tbody.prepend(row));
+                // Sort the pre-computed data
+                sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
 
-        updateSortDirectionIndicators(entries_table);
+                // Update the DOM by using DocumentFragment
+                const fragment = document.createDocumentFragment();
+                sortData.forEach(item => fragment.appendChild(item.row));
+
+                tbody.prepend(fragment);
+            } finally {
+                entries_table.removeAttribute("data-is-sorting");
+                updateSortDirectionIndicators(entries_table);
+            }
+        }, 0);
     }
 
     // Update header indicators to show sort direction (▲/▼).
@@ -174,16 +187,16 @@
         });
     }
 
-    function updateHeader() {
-        // Update the header to show timezone
+    function adjustModTimeColumnNameToLocalTimeZone() {
+        // Update the header to show the local timezone abbreviation.
         for (const lastModifiedHeader of document.querySelectorAll("th.last_modified")) {
             const tzAbbreviation = dateTimeZoneShort(new Date());
             lastModifiedHeader.textContent = `Last modified (${tzAbbreviation})`;
         }
     }
 
-    function updateRows() {
-        // Update the rows to show timezone
+    function adjustTableRowsToLocalTimeZone() {
+        // Update all data rows to show modification times in local time zone.
         for (const entry of document.querySelectorAll(".entries_table tr")) {
             const timestamp = entry.getAttribute("data-timestamp");
             const last_modified = entry.querySelector("td.last_modified .font-mono");
@@ -194,8 +207,8 @@
     }
 
     function main() {
-        updateHeader();
-        updateRows();
+        adjustModTimeColumnNameToLocalTimeZone();
+        adjustTableRowsToLocalTimeZone();
         addSortingListeners();
     }
 

@@ -84,6 +84,7 @@ main a[href$=".srt"]::before {
             text-decoration: underline;
             text-decoration-color: hsla(213, 10%, 18%, 0.4);
             text-decoration-style: dashed;
+            text-decoration-thickness: 1px;
         }
         &.sort-indicator::after {
             margin-left: 1ch;
@@ -176,6 +177,44 @@ main a[href$=".srt"]::before {
     .font-mono {
         /* Change font for file size and last modified. */
         font-family: var(--monospace-font-families, monospace);
+    }
+
+    &[data-is-sorting="true"] {
+        pointer-events: none;
+    }
+}
+
+/* While sorting, show a notification. */
+body::after {
+    content: "Sorting...";
+    font-weight: bold;
+    font-size: 1.5rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: var(--sidebar-link-color-hover, white);
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 9999;
+    user-select: none;
+    /* transition properties */
+    display: none;
+    opacity: 0;
+    translate: -50% -25%;
+    /* transitions */
+    transition:
+        display 400ms allow-discrete,
+        opacity 400ms ease-out,
+        translate 400ms;
+}
+body:has(.entries_table[data-is-sorting="true"])::after {
+    display: block;
+    opacity: 1;
+    translate: -50% -50%;
+    @starting-style {
+        opacity: 0;
+        translate: -50% -75%;
     }
 }
 
