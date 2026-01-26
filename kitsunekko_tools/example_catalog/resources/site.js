@@ -128,24 +128,31 @@
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
         const tbody = entries_table.querySelector("tbody");
-
         sortState.toggleDirection(columnClass);
+        entries_table.setAttribute("data-is-sorting", true);
 
-        // Pre-compute sort values.
-        const sortData = getSortableRows(tbody).map(row => ({
-            row: row,
-            sort_value: getSortValue(row, columnClass),
-        }));
+        // Use setTimeout to allow UI to update before starting heavy operation
+        setTimeout(() => {
+            try {
+                // Pre-compute sort values.
+                const sortData = getSortableRows(tbody).map(row => ({
+                    row: row,
+                    sort_value: getSortValue(row, columnClass),
+                }));
 
-        // Sort the pre-computed data
-        sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
+                // Sort the pre-computed data
+                sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
 
-        // Update the DOM by using DocumentFragment
-        const fragment = document.createDocumentFragment();
-        sortData.forEach(item => fragment.appendChild(item.row));
-        tbody.prepend(fragment);
+                // Update the DOM by using DocumentFragment
+                const fragment = document.createDocumentFragment();
+                sortData.forEach(item => fragment.appendChild(item.row));
 
-        updateSortDirectionIndicators(entries_table);
+                tbody.prepend(fragment);
+            } finally {
+                entries_table.removeAttribute("data-is-sorting");
+                updateSortDirectionIndicators(entries_table);
+            }
+        }, 0);
     }
 
     // Update header indicators to show sort direction (▲/▼).
