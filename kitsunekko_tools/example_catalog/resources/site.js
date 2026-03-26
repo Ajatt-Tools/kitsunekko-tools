@@ -32,7 +32,7 @@
     // Sort direction constants
     const SortDirection = {
         ASC: "sort-asc",
-        DESC: "sort-desc"
+        DESC: "sort-desc",
     };
 
     // Sort state data class
