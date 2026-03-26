@@ -1,7 +1,8 @@
 # kitsunekko-tools
 
+[![PyPi](https://img.shields.io/pypi/v/kitsunekko-tools?style=for-the-badge)](https://pypi.org/project/kitsunekko-tools/)
 [![Chat](https://img.shields.io/badge/chat-join-green?style=for-the-badge&logo=Telegram&logoColor=green)](https://tatsumoto.neocities.org/blog/join-our-community)
-[![Support](https://img.shields.io/badge/support-developer-orange?style=for-the-badge&logo=Patreon&logoColor=orange)](https://tatsumoto.neocities.org/blog/donating-to-tatsumoto)
+[![Support](https://img.shields.io/badge/support-developer-orange?style=for-the-badge&logo=Patreon&logoColor=orange)](https://ajatt.top/blog/donating-to-tatsumoto.html)
 
 A set of scripts for creating a
 local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc)
