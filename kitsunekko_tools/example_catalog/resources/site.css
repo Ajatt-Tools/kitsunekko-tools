@@ -9,6 +9,9 @@
     --table-highlight-color: hsl(0 0% 0% / 0.04);
     --table-header-color: hsl(0 0% 0% / 0.09);
     --tag-font-size: 0.8em;
+    --button-border-color: var(--border-color, #d0d0d0);
+    --button-background-color: var(--article-background, white);
+    --button-background-color-hover: rgba(127, 127, 127, 0.08);
 }
 
 /* Labels for ASS and SRT */
