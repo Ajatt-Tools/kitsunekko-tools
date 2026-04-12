@@ -8,6 +8,7 @@
     --entry-page-width: max(1400px, 90vw);
     --table-highlight-color: hsl(0 0% 0% / 0.04);
     --table-header-color: hsl(0 0% 0% / 0.09);
+    --tag-font-size: 0.8em;
 }
 
 /* Labels for ASS and SRT */
@@ -23,7 +24,7 @@ main a[href$=".srt"]::before {
     place-items: center;
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 0.8em;
+    font-size: var(--tag-font-size);
     margin-inline-end: 1ch;
 }
 
@@ -358,7 +359,7 @@ input[type="radio"].filter_by_type_input {
             padding: 0px 4px;
             border-radius: 4px;
             font-family: var(--monospace-font-families, monospace);
-            font-size: 0.8em;
+            font-size: var(--tag-font-size);
             font-weight: bold;
         }
         td.entry_name ~ td {
