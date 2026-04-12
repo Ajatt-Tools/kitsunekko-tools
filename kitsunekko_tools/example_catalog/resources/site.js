@@ -154,11 +154,21 @@
         updateSortDirectionIndicators(entries_table);
     }
 
+    /**
+     * Wait for the browser to complete a full paint cycle.
+     * Uses double requestAnimationFrame to guarantee that any pending
+     * visual changes have been painted before the returned Promise resolves.
+     * @returns {Promise<void>}
+     */
+    function waitForPaint() {
+        return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
         sortState.toggleDirection(columnClass);
         entries_table.setAttribute("data-is-sorting", true);
-        new Promise(resolve => requestAnimationFrame(resolve))
+        waitForPaint()
             .then(() => performSort(entries_table, columnClass))
             .catch(error => alert(`Sorting failed: ${error.message}`))
             .finally(() => finishSort(entries_table));
