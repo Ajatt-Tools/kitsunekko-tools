@@ -16,6 +16,7 @@
     <meta property="og:description" content="{{ ctx.site_description }}">
     <meta property="og:image" content="{{ ctx.favicon_path | as_full_url }}">
     <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
+    {% block extra_scripts %}{% endblock %}
     <script defer src="{{ ctx.js_file_path | as_relative_to(ctx.output_file_path) }}"></script>
 </head>
 <body>
