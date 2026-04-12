@@ -189,6 +189,7 @@ main a[href$=".srt"]::before {
 }
 
 /* While sorting, show a notification. */
+
 body::after {
     content: "Sorting...";
     font-weight: bold;
@@ -212,7 +213,10 @@ body::after {
         opacity 400ms ease-out,
         translate 400ms;
 }
-body:has(.entries_table[data-is-sorting="true"])::after {
+
+/* When sorting or downloading, show the overlay. */
+body:has(.entries_table[data-is-sorting="true"])::after,
+body:has(section[data-is-downloading="true"])::after {
     display: block;
     opacity: 1;
     translate: -50% -50%;
@@ -220,6 +224,11 @@ body:has(.entries_table[data-is-sorting="true"])::after {
         opacity: 0;
         translate: -50% -75%;
     }
+}
+
+/* Downloading overlay (reuses the sorting overlay pattern) */
+body:has([data-is-downloading="true"])::after {
+    content: "Downloading...";
 }
 
 /* Column placement */
