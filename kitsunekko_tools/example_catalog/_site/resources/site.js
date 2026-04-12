@@ -32,7 +32,7 @@
     // Sort direction constants
     const SortDirection = {
         ASC: "sort-asc",
-        DESC: "sort-desc"
+        DESC: "sort-desc",
     };
 
     // Sort state data class
@@ -179,6 +179,7 @@
             entries_table.querySelectorAll("thead th").forEach(header => {
                 const columnClass = Array.from(header.classList).find(class_name => sort_by.includes(class_name));
                 if (columnClass) {
+                    header.setAttribute("title", "Click to sort Table by this column.");
                     header.addEventListener("click", () => {
                         sortTable(entries_table, columnClass);
                     });
