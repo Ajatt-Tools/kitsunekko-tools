@@ -268,7 +268,6 @@ input[type="radio"].filter_by_type_input {
     display: none;
 }
 
-
 .tabs_title {
     font-weight: 700;
 }
@@ -419,5 +418,22 @@ input[type="radio"].filter_by_type_input {
         .entry_number {
             display: none;
         }
+    }
+}
+
+/* Hide download controls when JavaScript is disabled. */
+
+.noscript-message {
+    display: none;
+    font-style: italic;
+}
+
+.no-js {
+    .download_bar,
+    .file-checkbox {
+        display: none;
+    }
+    .noscript-message {
+        display: block;
     }
 }

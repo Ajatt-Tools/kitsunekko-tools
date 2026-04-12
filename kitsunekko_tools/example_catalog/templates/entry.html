@@ -15,7 +15,7 @@
 {% block content %}
 <div id="divbodyholder">
 <div id="divbody" class="entry_main_wrap">
-<main>
+<main class="no-js">
 <!-- content begin -->
     <h1 class="entry_title">{{ ctx.entry_name }}</h1>
 
@@ -36,6 +36,10 @@
             <div class="cmd_wrap">
                 <div class="cmdlabel">wget</div>
                 <div class="pre-wrap"><pre><code>{{ group.wget_command }}</code></pre></div>
+            </div>
+
+            <div class="cmd_wrap noscript-message">
+                Enable JavaScript for bulk downloads. Individual files can be downloaded directly from the links below.
             </div>
 
             <div class="button_row_container download_bar">

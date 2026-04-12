@@ -394,6 +394,7 @@
      * Initialize checkbox listeners and download buttons for all entry sections.
      */
     function initDownloadCheckboxes() {
+        document.querySelector("main.no-js")?.classList.remove("no-js");
         for (const section of document.querySelectorAll("section[data-entry-name]")) {
             // "Select all" button.
             const selectAllBtn = section.querySelector(".select-all-btn");
