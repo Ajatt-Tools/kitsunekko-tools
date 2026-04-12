@@ -125,34 +125,43 @@
         );
     }
 
+    /**
+     * Sort table rows by column class and update the DOM.
+     * @param {HTMLElement} entries_table
+     * @param {string} columnClass
+     */
+    function performSort(entries_table, columnClass) {
+        const tbody = entries_table.querySelector("tbody");
+        // Pre-compute sort values.
+        const sortData = getSortableRows(tbody).map(row => ({
+            row: row,
+            sort_value: getSortValue(row, columnClass),
+        }));
+        // Sort the pre-computed data.
+        sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
+        // Update the DOM by using DocumentFragment
+        const fragment = document.createDocumentFragment();
+        sortData.forEach(item => fragment.appendChild(item.row));
+        tbody.prepend(fragment);
+    }
+
+    /**
+     * Clear the sorting state and update sort direction indicators.
+     * @param {HTMLElement} entries_table
+     */
+    function finishSort(entries_table) {
+        entries_table.removeAttribute("data-is-sorting");
+        updateSortDirectionIndicators(entries_table);
+    }
+
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
-        const tbody = entries_table.querySelector("tbody");
         sortState.toggleDirection(columnClass);
         entries_table.setAttribute("data-is-sorting", true);
-
-        // Use setTimeout to allow UI to update before starting heavy operation
-        setTimeout(() => {
-            try {
-                // Pre-compute sort values.
-                const sortData = getSortableRows(tbody).map(row => ({
-                    row: row,
-                    sort_value: getSortValue(row, columnClass),
-                }));
-
-                // Sort the pre-computed data
-                sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
-
-                // Update the DOM by using DocumentFragment
-                const fragment = document.createDocumentFragment();
-                sortData.forEach(item => fragment.appendChild(item.row));
-
-                tbody.prepend(fragment);
-            } finally {
-                entries_table.removeAttribute("data-is-sorting");
-                updateSortDirectionIndicators(entries_table);
-            }
-        }, 0);
+        new Promise(resolve => requestAnimationFrame(resolve))
+            .then(() => performSort(entries_table, columnClass))
+            .catch(error => alert(`Sorting failed: ${error.message}`))
+            .finally(() => finishSort(entries_table));
     }
 
     // Update header indicators to show sort direction (▲/▼).
