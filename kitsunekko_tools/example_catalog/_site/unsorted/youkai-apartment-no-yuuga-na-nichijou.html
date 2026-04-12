@@ -16,6 +16,12 @@
     <meta property="og:description" content="Japanese subtitles for Japanese anime, dramas, TV shows, and movies">
     <meta property="og:image" content="https://subtitles.ajatt.top/resources/logo.webp">
     <script defer src="https://ajatt.top/blog/res/blog.js"></script>
+    <!-- https://cdnjs.com/libraries/jszip -->
+    <script defer
+        src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+        integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
     <script defer src="../resources/site.js"></script>
 </head>
 <body>
@@ -72,25 +78,34 @@
 
 <div id="divbodyholder">
 <div id="divbody" class="entry_main_wrap">
-<main>
+<main class="no-js">
 <!-- content begin -->
     <h1 class="entry_title">Youkai Apartment no Yuuga na Nichijou</h1>
 
-    <input type="radio" name="subext" id="ext_all" class="filter_by_type_input" checked="">
+    <input type="radio" name="subext" id="ext_all" class="filter_by_type_input" checked>
     <input type="radio" name="subext" id="ext_ass" class="filter_by_type_input">
     <input type="radio" name="subext" id="ext_srt" class="filter_by_type_input">
 
-    <div class="filter_by_type">
+    <div class="button_row_container">
         <span class="tabs_title">Subtitle format:</span>
         <label for="ext_all" title="Show all">All</label>
         <label for="ext_srt" title="Show only .srt">SRT</label>
         <label for="ext_ass" title="Show only .ass">ASS</label>
     </div>
 
-    <section class="group_srt">
+    <section class="group_srt" data-entry-name="Youkai Apartment no Yuuga na Nichijou">
             <div class="cmd_wrap">
                 <div class="cmdlabel">wget</div>
                 <div class="pre-wrap"><pre><code>wget --no-glob --no-clobber --content-disposition --trust-server-names --iri &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt&#39; &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt&#39; &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt&#39;</code></pre></div>
+            </div>
+
+            <div class="cmd_wrap noscript-message">
+                Enable JavaScript for bulk downloads. Individual files can be downloaded directly from the links below.
+            </div>
+
+            <div class="button_row_container download_bar">
+                <button type="button" class="select-all-btn">Select all</button>
+                <button type="button" class="download-selected-btn" disabled>Download selected (<span class="selected-count">0</span>)</button>
             </div>
 
             <table class="entries_table file_list_table">
@@ -105,32 +120,50 @@
                 <tbody>
                     <tr data-timestamp="1724348434" data-file-size="26295">
                         <td data-cell="#" class="entry_number"><span class="font-mono">1</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" download="Elegant Yokai Apartment Life.S01E01.JA.srt">Elegant Yokai Apartment Life.S01E01.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E01.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" download="Elegant Yokai Apartment Life.S01E01.JA.srt">Elegant Yokai Apartment Life.S01E01.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">25.68 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>
                     <tr data-timestamp="1724348434" data-file-size="29044">
                         <td data-cell="#" class="entry_number"><span class="font-mono">2</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" download="Elegant Yokai Apartment Life.S01E02.JA.srt">Elegant Yokai Apartment Life.S01E02.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E02.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" download="Elegant Yokai Apartment Life.S01E02.JA.srt">Elegant Yokai Apartment Life.S01E02.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">28.36 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>
                     <tr data-timestamp="1724348434" data-file-size="27419">
                         <td data-cell="#" class="entry_number"><span class="font-mono">3</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" download="Elegant Yokai Apartment Life.S01E03.JA.srt">Elegant Yokai Apartment Life.S01E03.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E03.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" download="Elegant Yokai Apartment Life.S01E03.JA.srt">Elegant Yokai Apartment Life.S01E03.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">26.78 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>
                 </tbody>
             </table>
     </section>
-    <section class="group_ass">
+    <section class="group_ass" data-entry-name="Youkai Apartment no Yuuga na Nichijou">
             <p>Nothing to show.</p>
     </section>
-    <section class="group_all">
+    <section class="group_all" data-entry-name="Youkai Apartment no Yuuga na Nichijou">
             <div class="cmd_wrap">
                 <div class="cmdlabel">wget</div>
                 <div class="pre-wrap"><pre><code>wget --no-glob --no-clobber --content-disposition --trust-server-names --iri &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt&#39; &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt&#39; &#39;https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt&#39;</code></pre></div>
+            </div>
+
+            <div class="cmd_wrap noscript-message">
+                Enable JavaScript for bulk downloads. Individual files can be downloaded directly from the links below.
+            </div>
+
+            <div class="button_row_container download_bar">
+                <button type="button" class="select-all-btn">Select all</button>
+                <button type="button" class="download-selected-btn" disabled>Download selected (<span class="selected-count">0</span>)</button>
             </div>
 
             <table class="entries_table file_list_table">
@@ -145,19 +178,28 @@
                 <tbody>
                     <tr data-timestamp="1724348434" data-file-size="26295">
                         <td data-cell="#" class="entry_number"><span class="font-mono">1</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" download="Elegant Yokai Apartment Life.S01E01.JA.srt">Elegant Yokai Apartment Life.S01E01.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E01.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E01.JA.srt" download="Elegant Yokai Apartment Life.S01E01.JA.srt">Elegant Yokai Apartment Life.S01E01.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">25.68 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>
                     <tr data-timestamp="1724348434" data-file-size="29044">
                         <td data-cell="#" class="entry_number"><span class="font-mono">2</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" download="Elegant Yokai Apartment Life.S01E02.JA.srt">Elegant Yokai Apartment Life.S01E02.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E02.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E02.JA.srt" download="Elegant Yokai Apartment Life.S01E02.JA.srt">Elegant Yokai Apartment Life.S01E02.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">28.36 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>
                     <tr data-timestamp="1724348434" data-file-size="27419">
                         <td data-cell="#" class="entry_number"><span class="font-mono">3</span></td>
-                        <td data-cell="Name" class="entry_name"><a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" download="Elegant Yokai Apartment Life.S01E03.JA.srt">Elegant Yokai Apartment Life.S01E03.JA.srt</a></td>
+                        <td data-cell="Name" class="entry_name">
+                            <input type="checkbox" class="file-checkbox" data-download-url="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" data-filename="Elegant Yokai Apartment Life.S01E03.JA.srt">
+                            <a href="https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/unsorted/Youkai%20Apartment%20no%20Yuuga%20na%20Nichijou/Elegant%20Yokai%20Apartment%20Life.S01E03.JA.srt" download="Elegant Yokai Apartment Life.S01E03.JA.srt">Elegant Yokai Apartment Life.S01E03.JA.srt</a>
+                        </td>
                         <td data-cell="Size" class="file_size"><span class="font-mono">26.78 KiB</span></td>
                         <td data-cell="Last modified" class="last_modified"><span class="font-mono">22 Aug 2024 17:40:34</span></td>
                     </tr>

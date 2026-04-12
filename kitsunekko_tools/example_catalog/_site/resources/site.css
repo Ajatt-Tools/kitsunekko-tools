@@ -8,6 +8,10 @@
     --entry-page-width: max(1400px, 90vw);
     --table-highlight-color: hsl(0 0% 0% / 0.04);
     --table-header-color: hsl(0 0% 0% / 0.09);
+    --tag-font-size: 0.8em;
+    --button-border-color: var(--border-color, #d0d0d0);
+    --button-background-color: var(--article-background, white);
+    --button-background-color-hover: rgba(127, 127, 127, 0.08);
 }
 
 /* Labels for ASS and SRT */
@@ -23,7 +27,7 @@ main a[href$=".srt"]::before {
     place-items: center;
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 0.8em;
+    font-size: var(--tag-font-size);
     margin-inline-end: 1ch;
 }
 
@@ -185,6 +189,7 @@ main a[href$=".srt"]::before {
 }
 
 /* While sorting, show a notification. */
+
 body::after {
     content: "Sorting...";
     font-weight: bold;
@@ -208,7 +213,10 @@ body::after {
         opacity 400ms ease-out,
         translate 400ms;
 }
-body:has(.entries_table[data-is-sorting="true"])::after {
+
+/* When sorting or downloading, show the overlay. */
+body:has(.entries_table[data-is-sorting="true"])::after,
+body:has(section[data-is-downloading="true"])::after {
     display: block;
     opacity: 1;
     translate: -50% -50%;
@@ -218,11 +226,34 @@ body:has(.entries_table[data-is-sorting="true"])::after {
     }
 }
 
+/* Downloading overlay (reuses the sorting overlay pattern) */
+body:has([data-is-downloading="true"])::after {
+    content: "Downloading...";
+}
+
 /* Column placement */
 
 .subtitle_catalog_end td {
     /* Back to index and other links */
     text-align: center;
+}
+
+/* Button row container (Filter buttons, download buttons) */
+
+.button_row_container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0;
+    * {
+        margin: 0;
+    }
+}
+
+.button_row_container.download_bar {
+    justify-content: space-between;
 }
 
 /* Tabs */
@@ -237,26 +268,15 @@ input[type="radio"].filter_by_type_input {
     display: none;
 }
 
-.filter_by_type {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-    * {
-        margin: 0;
-    }
-}
-
 .tabs_title {
     font-weight: 700;
 }
 
-.filter_by_type label {
-    padding: 0.35rem 0.75rem;
-
-    border: 1px solid #d0d0d0;
+.button_row_container label {
+    border: 1px solid var(--button-border-color);
+    background-color: var(--button-background-color);
     border-radius: 100vmax;
+    padding: 0.35rem 0.75rem;
 
     cursor: pointer;
     user-select: none;
@@ -264,19 +284,19 @@ input[type="radio"].filter_by_type_input {
     line-height: 1;
 
     &:hover {
-        background-color: rgba(127, 127, 127, 0.07);
+        background-color: var(--button-background-color-hover);
     }
 
     box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.1);
     font-family: var(--monospace-font-families, monospace);
 }
 
-#ext_srt:checked ~ .filter_by_type label[for="ext_srt"],
-#ext_ass:checked ~ .filter_by_type label[for="ext_ass"],
-#ext_all:checked ~ .filter_by_type label[for="ext_all"],
-#type_movie:checked ~ .filter_by_type label[for="type_movie"],
-#type_tv:checked ~ .filter_by_type label[for="type_tv"],
-#type_all:checked ~ .filter_by_type label[for="type_all"] {
+#ext_srt:checked ~ .button_row_container label[for="ext_srt"],
+#ext_ass:checked ~ .button_row_container label[for="ext_ass"],
+#ext_all:checked ~ .button_row_container label[for="ext_all"],
+#type_movie:checked ~ .button_row_container label[for="type_movie"],
+#type_tv:checked ~ .button_row_container label[for="type_tv"],
+#type_all:checked ~ .button_row_container label[for="type_all"] {
     background-color: rgba(127, 127, 127, 0.14);
     font-weight: 800;
 }
@@ -314,6 +334,37 @@ input[type="radio"].filter_by_type_input {
     }
 }
 
+/* Download buttons (select all and downlaod selected) */
+
+.select-all-btn,
+.download-selected-btn {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--button-border-color, #d0d0d0);
+    background-color: var(--button-background-color);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 0.4rem;
+
+    &:hover:not(:disabled) {
+        background-color: var(--button-background-color-hover);
+    }
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+/* File checkbox inside entry_name cell */
+
+.file-checkbox {
+    margin-inline-end: 1ch;
+    vertical-align: middle;
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--link, #0366d6);
+}
+
 /* Small screens */
 
 @media screen and (max-width: 1000px) {
@@ -322,28 +373,67 @@ input[type="radio"].filter_by_type_input {
         flex-flow: column nowrap;
         justify-content: center;
 
+        /* On, mobile, count rows with CSS. */
+        counter-reset: row-num-mobile;
+
         tbody,
         tr {
             display: contents;
         }
-        thead {
+        thead,
+        th {
             display: none;
         }
-        td:not(.subtitle_catalog_end td)::before {
+        td:not(.subtitle_catalog_end td):not(.entry_name)::before {
             display: inline-block;
-            margin-inline-end: 1ch;
-            font-weight: bold;
             content: attr(data-cell) ":";
+            margin-inline-end: 1ch;
+
+            font-weight: bold;
             text-transform: capitalize;
         }
+        td.entry_name {
+            background-color: var(--table-header-color);
+            /* Row number counter */
+            counter-increment: row-num-mobile;
+        }
+        td.entry_name::before {
+            /* Row number counter */
+            display: inline-grid;
+            place-items: center;
+            content: counter(row-num-mobile);
+            margin-inline-end: 1ch;
+
+            background-color: var(--link, #0366d6);
+            color: var(--body-bg-color, #f3f3f3);
+            padding: 0px 4px;
+            border-radius: 4px;
+            font-family: var(--monospace-font-families, monospace);
+            font-size: var(--tag-font-size);
+            font-weight: bold;
+        }
+        td.entry_name ~ td {
+            padding-inline-start: 2ch;
+        }
+        .entry_number {
+            display: none;
+        }
     }
-    .entry_name {
-        background-color: var(--table-header-color);
-    }
-    td.entry_name ~ td {
-        padding-inline-start: 2ch;
-    }
-    .entry_number {
+}
+
+/* Hide download controls when JavaScript is disabled. */
+
+.noscript-message {
+    display: none;
+    font-style: italic;
+}
+
+.no-js {
+    .download_bar,
+    .file-checkbox {
         display: none;
+    }
+    .noscript-message {
+        display: block;
     }
 }

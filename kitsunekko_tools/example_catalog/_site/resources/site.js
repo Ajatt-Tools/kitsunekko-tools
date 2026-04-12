@@ -125,34 +125,53 @@
         );
     }
 
+    /**
+     * Sort table rows by column class and update the DOM.
+     * @param {HTMLElement} entries_table
+     * @param {string} columnClass
+     */
+    function performSort(entries_table, columnClass) {
+        const tbody = entries_table.querySelector("tbody");
+        // Pre-compute sort values.
+        const sortData = getSortableRows(tbody).map(row => ({
+            row: row,
+            sort_value: getSortValue(row, columnClass),
+        }));
+        // Sort the pre-computed data.
+        sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
+        // Update the DOM by using DocumentFragment
+        const fragment = document.createDocumentFragment();
+        sortData.forEach(item => fragment.appendChild(item.row));
+        tbody.prepend(fragment);
+    }
+
+    /**
+     * Clear the sorting state and update sort direction indicators.
+     * @param {HTMLElement} entries_table
+     */
+    function finishSort(entries_table) {
+        entries_table.removeAttribute("data-is-sorting");
+        updateSortDirectionIndicators(entries_table);
+    }
+
+    /**
+     * Wait for the browser to complete a full paint cycle.
+     * Uses double requestAnimationFrame to guarantee that any pending
+     * visual changes have been painted before the returned Promise resolves.
+     * @returns {Promise<void>}
+     */
+    function waitForPaint() {
+        return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
     // Sort table rows by column with class "columnClass".
     function sortTable(entries_table, columnClass) {
-        const tbody = entries_table.querySelector("tbody");
         sortState.toggleDirection(columnClass);
         entries_table.setAttribute("data-is-sorting", true);
-
-        // Use setTimeout to allow UI to update before starting heavy operation
-        setTimeout(() => {
-            try {
-                // Pre-compute sort values.
-                const sortData = getSortableRows(tbody).map(row => ({
-                    row: row,
-                    sort_value: getSortValue(row, columnClass),
-                }));
-
-                // Sort the pre-computed data
-                sortData.sort((rowA, rowB) => compareRows(rowA.sort_value, rowB.sort_value));
-
-                // Update the DOM by using DocumentFragment
-                const fragment = document.createDocumentFragment();
-                sortData.forEach(item => fragment.appendChild(item.row));
-
-                tbody.prepend(fragment);
-            } finally {
-                entries_table.removeAttribute("data-is-sorting");
-                updateSortDirectionIndicators(entries_table);
-            }
-        }, 0);
+        waitForPaint()
+            .then(() => performSort(entries_table, columnClass))
+            .catch(error => alert(`Sorting failed: ${error.message}`))
+            .finally(() => finishSort(entries_table));
     }
 
     // Update header indicators to show sort direction (▲/▼).
@@ -207,10 +226,215 @@
         }
     }
 
+    // Multi-file download with checkboxes
+
+    /**
+     * Get all file checkboxes within a section.
+     * @param {HTMLElement} section
+     * @returns {HTMLInputElement[]}
+     */
+    function getFileCheckboxes(section) {
+        // <input type="checkbox" class="file-checkbox" ... >
+        return Array.from(section.querySelectorAll(".file-checkbox"));
+    }
+
+    /**
+     * Get the checked file checkboxes in a section.
+     * @param {HTMLElement} section
+     * @returns {HTMLInputElement[]}
+     */
+    function getSelectedFileCheckboxes(section) {
+        return getFileCheckboxes(section).filter(checkbox => checkbox.checked);
+    }
+
+    /**
+     * Update the "Select all" / "Deselect all" button text based on checked count.
+     * @param {HTMLElement} section
+     * @param {number} checkedCount
+     */
+    function updateSelectAllButtonText(section, checkedCount) {
+        const selectAllFilesButton = section.querySelector(".select-all-btn");
+        const totalFileCount = getFileCheckboxes(section).length;
+        if (selectAllFilesButton) {
+            selectAllFilesButton.textContent = checkedCount === totalFileCount ? "Deselect all" : "Select all";
+        }
+    }
+
+    /**
+     * Update the download button's selected count and disabled state.
+     * @param {HTMLElement} section
+     * @param {number} checkedCount
+     */
+    function updateSelectedSubtitleCount(section, checkedCount) {
+        const downloadButton = section.querySelector(".download-selected-btn");
+        const selectedCountSpan = section.querySelector(".selected-count");
+        if (downloadButton && selectedCountSpan) {
+            selectedCountSpan.textContent = String(checkedCount);
+            downloadButton.disabled = checkedCount === 0;
+        }
+    }
+
+    /**
+     * Update the download button's selected count and disabled state for a section.
+     * Also updates the "Select all" / "Deselect all" button text.
+     * @param {HTMLElement} section
+     */
+    function updateDownloadBar(section) {
+        const checkedCount = getSelectedFileCheckboxes(section).length;
+        updateSelectAllButtonText(section, checkedCount);
+        updateSelectedSubtitleCount(section, checkedCount);
+    }
+
+    /**
+     * Toggle all file checkboxes within the section.
+     * If all are checked, uncheck all; otherwise, check all.
+     * @param {HTMLElement} section
+     */
+    function toggleSelectAll(section) {
+        const checkboxes = getFileCheckboxes(section);
+        const allChecked = checkboxes.every(cb => cb.checked);
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+        });
+        updateDownloadBar(section);
+    }
+
+    /**
+     * Trigger a browser download from a Blob.
+     * @param {Blob} blob
+     * @param {string} filename
+     */
+    function triggerBlobDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        try {
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+        } finally {
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    /**
+     * Fetch a single file as a blob, returning its filename and data.
+     * @param {string} url
+     * @param {string} filename
+     * @returns {Promise<{filename: string, blob: Blob}>}
+     */
+    async function fetchFileAsBlob(url, filename) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch ${filename}: ${response.status} ${response.statusText}`);
+        }
+        return { filename: filename, blob: await response.blob() };
+    }
+
+    /**
+     * Fetch the file associated with a checkbox element as a blob.
+     * @param {HTMLInputElement} checkbox
+     * @returns {Promise<{filename: string, blob: Blob}>}
+     */
+    function fetchCheckboxFile(checkbox) {
+        return fetchFileAsBlob(checkbox.getAttribute("data-download-url"), checkbox.getAttribute("data-filename"));
+    }
+
+    /**
+     * Fetch a file by URL and trigger its download.
+     * @param {string} url
+     * @param {string} filename
+     */
+    function fetchAndDownload(url, filename) {
+        fetchFileAsBlob(url, filename)
+            .then(({ blob, filename }) => triggerBlobDownload(blob, filename))
+            .catch(error => alert(`Download failed: ${error.message}`));
+    }
+
+    /**
+     * Fetch and download the file associated with a single checkbox.
+     * @param {HTMLInputElement} checkbox
+     */
+    function downloadSingleFile(checkbox) {
+        fetchAndDownload(checkbox.getAttribute("data-download-url"), checkbox.getAttribute("data-filename"));
+    }
+
+    /**
+     * Create a zip archive from fetched file results and trigger its download.
+     * @param {{filename: string, blob: Blob}[]} results
+     * @param {string} entryName
+     * @returns {Promise<void>}
+     */
+    function zipAndDownload(results, entryName) {
+        const zip = new JSZip();
+        results.forEach(({ filename, blob }) => zip.file(filename, blob));
+        return zip.generateAsync({ type: "blob" }).then(zipBlob => triggerBlobDownload(zipBlob, `${entryName}.zip`));
+    }
+
+    /**
+     * Download selected files as a zip archive using JSZip.
+     * If only one file is selected, download it directly.
+     * @param {HTMLElement} section
+     */
+    function downloadSelected(section) {
+        const checked = getSelectedFileCheckboxes(section);
+        if (checked.length === 0) {
+            return;
+        }
+
+        if (checked.length === 1) {
+            downloadSingleFile(checked[0]);
+            return;
+        }
+
+        // Multiple files: fetch all, then zip.
+        const entryName = section.getAttribute("data-entry-name") || "subtitles";
+        section.setAttribute("data-is-downloading", "true");
+        Promise.all(checked.map(fetchCheckboxFile))
+            .then(results => zipAndDownload(results, entryName))
+            .catch(error => alert(`Download failed: ${error.message}`))
+            .finally(() => section.removeAttribute("data-is-downloading"));
+    }
+
+    /**
+     * Initialize checkbox listeners and download buttons for all entry sections.
+     */
+    function initDownloadCheckboxes() {
+        for (const section of document.querySelectorAll("section[data-entry-name]")) {
+            // "Select all" button.
+            const selectAllBtn = section.querySelector(".select-all-btn");
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener("click", () => toggleSelectAll(section));
+            }
+
+            // Individual file checkboxes.
+            for (const checkbox of getFileCheckboxes(section)) {
+                checkbox.addEventListener("change", () => updateDownloadBar(section));
+            }
+
+            // "Download selected" button.
+            const downloadBtn = section.querySelector(".download-selected-btn");
+            if (downloadBtn) {
+                downloadBtn.addEventListener("click", () => downloadSelected(section));
+            }
+
+            // Intercept direct link clicks to force download (cross-origin URLs ignore the download attribute).
+            for (const link of section.querySelectorAll("a[download]")) {
+                link.addEventListener("click", event => {
+                    event.preventDefault();
+                    fetchAndDownload(link.href, link.download);
+                });
+            }
+        }
+    }
+
     function main() {
+        document.querySelector("main.no-js")?.classList.remove("no-js");
         adjustModTimeColumnNameToLocalTimeZone();
         adjustTableRowsToLocalTimeZone();
         addSortingListeners();
+        initDownloadCheckboxes();
     }
 
     document.addEventListener("DOMContentLoaded", main);
