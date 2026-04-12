@@ -31,7 +31,7 @@
     </div>
 
     {% for group in ctx.file_ext_groups %}
-    <section class="group_{{ group.type }}">
+    <section class="group_{{ group.type }}" data-entry-name="{{ ctx.entry_name }}">
         {% if group.files %}
             <div class="cmd_wrap">
                 <div class="cmdlabel">wget</div>
