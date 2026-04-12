@@ -335,6 +335,37 @@ input[type="radio"].filter_by_type_input {
     }
 }
 
+/* Download buttons (select all and downlaod selected) */
+
+.select-all-btn,
+.download-selected-btn {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--button-border-color, #d0d0d0);
+    background-color: var(--button-background-color);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 0.4rem;
+
+    &:hover:not(:disabled) {
+        background-color: var(--button-background-color-hover);
+    }
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+/* File checkbox inside entry_name cell */
+
+.file-checkbox {
+    margin-inline-end: 1ch;
+    vertical-align: middle;
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--link, #0366d6);
+}
+
 /* Small screens */
 
 @media screen and (max-width: 1000px) {
