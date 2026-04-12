@@ -239,12 +239,12 @@
     }
 
     /**
-     * Get the count of checked file checkboxes in a section.
+     * Get the checked file checkboxes in a section.
      * @param {HTMLElement} section
-     * @returns {number}
+     * @returns {HTMLInputElement[]}
      */
-    function countSelectedSubtitleFiles(section) {
-        return getFileCheckboxes(section).filter(cb => cb.checked).length;
+    function getSelectedFileCheckboxes(section) {
+        return getFileCheckboxes(section).filter(checkbox => checkbox.checked);
     }
 
     /**
@@ -280,7 +280,7 @@
      * @param {HTMLElement} section
      */
     function updateDownloadBar(section) {
-        const checkedCount = countSelectedSubtitleFiles(section);
+        const checkedCount = getSelectedFileCheckboxes(section).length;
         updateSelectAllButtonText(section, checkedCount);
         updateSelectedSubtitleCount(section, checkedCount);
     }
@@ -357,10 +357,7 @@
      * @param {HTMLInputElement} checkbox
      */
     function downloadSingleFile(checkbox) {
-        fetchAndDownload(
-            checkbox.getAttribute("data-download-url"),
-            checkbox.getAttribute("data-filename"),
-        );
+        fetchAndDownload(checkbox.getAttribute("data-download-url"), checkbox.getAttribute("data-filename"));
     }
 
     /**
@@ -381,7 +378,7 @@
      * @param {HTMLElement} section
      */
     function downloadSelected(section) {
-        const checked = getFileCheckboxes(section).filter(checkbox => checkbox.checked);
+        const checked = getSelectedFileCheckboxes(section);
         if (checked.length === 0) {
             return;
         }
