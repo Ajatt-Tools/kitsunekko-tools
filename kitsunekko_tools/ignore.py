@@ -58,6 +58,12 @@ def get_modification_time(file_path: pathlib.Path) -> datetime.datetime:
 
 
 def ignore_pattern_sort_key(pattern: IgnoreFileEntry) -> tuple[str, int, datetime.datetime]:
+    """
+    Sort ignore-list entries for stable, human-readable TSV output.
+    Used when writing the ignore file to disk.
+    Sorting by name first makes the file easy to scan visually and produces
+    deterministic output for version control (git).
+    """
     return pattern.name, pattern.st_size, pattern.last_modified
 
 
