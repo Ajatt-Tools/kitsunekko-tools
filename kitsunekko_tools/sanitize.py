@@ -148,6 +148,18 @@ def count_ascii_letters(s: str) -> int:
 
 
 def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[float, int, ApiDirectoryEntry]:
+    """
+    Sort API directory entries for deduplication and catalog display.
+
+    Used by DuplicatesGroup to pick the best "original" when merging directories
+    that share the same entry_id, and by get_catalog_dirs() to list remote directories with the newest entries first.
+
+    Sorting order (ascending, so negated values come first):
+    1. Newest modification date first (negated timestamp).
+    2. Among entries with the same timestamp, prefer names with more ASCII (Latin) letters.
+       Kitsunekko names can be Japanese or English. The English name is more filesystem-friendly and recognizable.
+    3. The entry itself as a final tiebreaker for deterministic ordering.
+    """
     return -dir_meta.last_modified.timestamp(), -count_ascii_letters(dir_meta.name), dir_meta
 
 
