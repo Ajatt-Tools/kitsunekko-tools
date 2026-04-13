@@ -57,3 +57,44 @@ dependencies = [
 check = "mypy --install-types --non-interactive {args:kitsunekko_tools tests}"
 format = "bash \"$(git rev-parse --show-toplevel)/format.sh\""
 test = "pytest;"
+
+[tool.hatch.envs.hatch-test]
+# https://hatch.pypa.io/latest/config/internal/testing/
+# https://hatch.pypa.io/latest/tutorials/testing/overview/
+dependencies = [
+    "mypy>=1.0.0",
+    "pytest",
+    "pytest-asyncio",
+]
+randomize = true
+
+[[tool.hatch.envs.hatch-test.matrix]]
+# https://hatch.pypa.io/latest/tutorials/testing/overview/#testing-projects
+python = ["3.13", ]
+
+[tool.hatch.envs.hatch-static-analysis]
+# https://hatch.pypa.io/latest/how-to/static-analysis/behavior/
+dependencies = [
+    "black",
+    "flake8",
+    "isort",
+    "pyupgrade",
+]
+
+[tool.hatch.envs.hatch-static-analysis.scripts]
+format-check = [
+    "black --check --diff {args:.}",
+    "isort --check-only --diff {args:.}",
+]
+format-fix = [
+    # run as: hatch fmt -f
+    "bash \"$(git rev-parse --show-toplevel)/scripts/format.sh\" ",
+]
+lint-check = "flake8 --max-line-length 120 {args:.}"
+lint-fix = "lint-check"
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "session"
+filterwarnings = [
+    "ignore:There is no current event loop",
+]
