@@ -41,7 +41,7 @@ def collect_meta(subtitles_dir: pathlib.Path) -> list[KitsuDirectoryMeta]:
 @pytest.mark.parametrize(
     "entries,  original_name",
     [
-        (collect_meta(BUNDLED_SUBTITLES_DIR / "anime_tv"), "SPY×FAMILY Season 3"),
+        (collect_meta(BUNDLED_SUBTITLES_DIR / "anime_tv"), "[Oshi no Ko] 3rd Season"),
         (collect_meta(BUNDLED_SUBTITLES_DIR / "drama_tv"), "Setsuen Chase"),
     ],
 )
