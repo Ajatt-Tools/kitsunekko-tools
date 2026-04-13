@@ -147,8 +147,8 @@ def count_ascii_letters(s: str) -> int:
     return sum(1 for ch in s if ch in ASCII_LETTERS)
 
 
-def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[datetime.datetime, int, str]:
-    return dir_meta.last_modified, count_ascii_letters(dir_meta.name), dir_meta.name
+def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[float, int, ApiDirectoryEntry]:
+    return -dir_meta.last_modified.timestamp(), -count_ascii_letters(dir_meta.name), dir_meta
 
 
 class DuplicatesGroup(typing.NamedTuple):
@@ -159,7 +159,7 @@ class DuplicatesGroup(typing.NamedTuple):
     def from_list(cls, entries: list[KitsuDirectoryMeta]) -> typing.Self:
         if len(entries) < 2:
             raise KitsuError("a group of duplicates should contain at least two files")
-        entries = sorted(entries, key=dir_meta_sort_key, reverse=True)
+        entries = sorted(entries, key=dir_meta_sort_key)
         # Assign the most recently modified entry as the original.
         assert entries[0].last_modified >= entries[1].last_modified
         return cls(original=entries[0], copies=entries[1:])
