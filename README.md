@@ -20,6 +20,20 @@ Install using [pipx](https://pipx.pypa.io/stable/) from [pypi](https://pypi.org/
 pipx install kitsunekko-tools
 ```
 
+The `ktools` executable will be available in your `$PATH`.
+
+> [!NOTE]
+> On [Windows-like systems](https://reactos.org/),
+> you may need to add the folder containing the `ktools` executable to your `$PATH` manually.
+
+> [!NOTE]
+> If you don't have the required python version, install it first with [hatch](https://github.com/pypa/hatch).
+>
+> ```
+> hatch python install 3.13
+> pipx install kitsunekko-tools --python ~/.local/share/hatch/pythons/3.13/python/bin/python
+> ```
+
 ## Configure
 
 Run this command to create the config file.
