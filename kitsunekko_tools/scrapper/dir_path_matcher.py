@@ -47,7 +47,7 @@ def build_lookup_dicts(config: KitsuConfig) -> dict[str, list[LocalDirectoryMeta
     return lookup_key_to_meta
 
 
-def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetime, LocalDirectoryMeta]:
+def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetime, str]:
     """
     Sort local directories to pick the best match for a remote directory name.
 
@@ -60,9 +60,9 @@ def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetim
     """
     match entry:
         case KitsuDirectoryMeta():
-            return 1, entry.last_modified, entry
+            return 1, entry.last_modified, entry.name
         case NoMetaDirectoryEntry():
-            return 0, entry.last_modified, entry
+            return 0, entry.last_modified, entry.name
         case _:
             raise ValueError(f"unknown type: {type(entry)}")
 

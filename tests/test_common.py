@@ -140,6 +140,7 @@ def test_pattern_sort_key(entries: list[IgnoreFileEntry], expected_order: list) 
     result = sorted(entries, key=ignore_pattern_sort_key)
     assert result == expected_order
 
+
 def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
     """Create a KitsuDirectoryMeta for testing."""
     return KitsuDirectoryMeta(
