@@ -139,3 +139,45 @@ OSHI_NO_KO_IGNORE_LIST_SORTED = [
 def test_pattern_sort_key(entries: list[IgnoreFileEntry], expected_order: list) -> None:
     result = sorted(entries, key=ignore_pattern_sort_key)
     assert result == expected_order
+
+def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
+    """Create a KitsuDirectoryMeta for testing."""
+    return KitsuDirectoryMeta(
+        entry_id=KitsunekkoId(1),
+        name=name,
+        entry_type=EntryType.anime_tv,
+        last_modified=year(year_),
+        dir_path=pathlib.Path(f"/tmp/{name}"),
+    )
+
+
+def mk_no_meta(*, name: str, year_: int = 2024) -> NoMetaDirectoryEntry:
+    """Create a NoMetaDirectoryEntry for testing."""
+    return NoMetaDirectoryEntry(
+        dir_path=pathlib.Path(f"/tmp/{name}"),
+        name=name,
+        last_modified=year(year_),
+    )
+
+
+@pytest.mark.parametrize(
+    "entries, expected_best_name",
+    [
+        (
+            [mk_no_meta(name="No Meta", year_=2025), mk_kitsu_meta(name="Has Meta", year_=2020)],
+            "Has Meta",
+        ),
+        (
+            [mk_kitsu_meta(name="Older Show", year_=2020), mk_kitsu_meta(name="Newer Show", year_=2025)],
+            "Newer Show",
+        ),
+        (
+            [mk_no_meta(name="Older Orphan", year_=2020), mk_no_meta(name="Newer Orphan", year_=2025)],
+            "Newer Orphan",
+        ),
+    ],
+    ids=["meta_over_no_meta", "newer_meta_wins", "newer_no_meta_wins"],
+)
+def test_local_dir_sort_key(entries: list, expected_best_name: str) -> None:
+    best = max(entries, key=local_dir_sort_key)
+    assert best.name == expected_best_name
