@@ -49,7 +49,14 @@ def build_lookup_dicts(config: KitsuConfig) -> dict[str, list[LocalDirectoryMeta
 
 def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetime, LocalDirectoryMeta]:
     """
-    Key used to sort entries based on modification date.
+    Sort local directories to pick the best match for a remote directory name.
+
+    Used when fixing orphans and when scraping Kitsunekko to select the
+    single best local directory when multiple directories share the same lookup key.
+
+    The best match is selected using max(), so timestamp is not negated.
+    Most recently modified directory wins among same-type entries.
+    Directories with metadata are preferred over directories without it.
     """
     match entry:
         case KitsuDirectoryMeta():
