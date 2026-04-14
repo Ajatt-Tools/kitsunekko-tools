@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import concurrent.futures
 import dataclasses
-import datetime
 import multiprocessing
 import pathlib
 import shutil
@@ -22,7 +21,6 @@ from kitsunekko_tools.ignore import (
     FileMetaData,
     IgnoreTSVForDir,
     get_ignore_file_path_on_disk,
-    pattern_sort_key,
 )
 from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
 from kitsunekko_tools.website.context import (
