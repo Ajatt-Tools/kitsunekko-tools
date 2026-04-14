@@ -80,13 +80,13 @@ def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
         return EntryExternalSearchLink(url=f"https://mydramalist.com/search?q={query}", text="Search MDL")
 
 
-def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[datetime.datetime, str]:
+def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[float, str]:
     """
     Key used to sort entries based on modification date.
     """
     if entry.meta:
-        return entry.meta.last_modified, entry.meta.name
-    return epoch_datetime(), entry.path_to_dir.name
+        return -entry.meta.last_modified.timestamp(), entry.meta.name
+    return -epoch_datetime().timestamp(), entry.path_to_dir.name
 
 
 def mk_shell_compatible_url_list(files: list[FileMetaData], cfg: KitsuConfig) -> str:
@@ -149,7 +149,7 @@ class WebSiteBuilder:
             self._paths.site_dir_path / RESOURCES_DIR_NAME,
             dirs_exist_ok=True,
         )
-        entries = sorted(self._walk_dirs(), key=entry_sort_key, reverse=True)
+        entries = sorted(self._walk_dirs(), key=entry_sort_key)
         self.generate_index_page(self._paths.index_file_path, [entry for entry in entries if not entry.is_drama])
         self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
