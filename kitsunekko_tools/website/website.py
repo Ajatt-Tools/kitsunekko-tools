@@ -123,12 +123,11 @@ def mk_file_ext_groups(entry: LocalDirectoryEntry, cfg: KitsuConfig) -> list[Fil
     ]
 
 
-def catalog_file_sort_key(file: FileMetaData) -> tuple[int, str, datetime.datetime, int]:
-    sort_tuple = pattern_sort_key(file)
+def catalog_file_sort_key(file: FileMetaData) -> tuple[int, float, str, int]:
     if file.path.parent.name == TRASH_DIR_NAME:
         # place trashed files at the end of a file list.
-        return 1, *sort_tuple
-    return 0, *sort_tuple
+        return 1, -file.last_modified.timestamp(), file.name, file.st_size
+    return 0, -file.last_modified.timestamp(), file.name, file.st_size
 
 
 class WebSiteBuilder:
