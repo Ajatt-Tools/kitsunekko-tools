@@ -79,8 +79,14 @@ def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
 
 
 def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[float, str]:
-    """
-    Key used to sort entries based on modification date.
+    """Sort directory entries for the website index page, newest first.
+
+    Used by WebSiteBuilder to order all entries on the index pages.
+
+    Sorting order (ascending, so negated timestamps come first):
+    1. Newest modification date first (negated timestamp). Entries without
+       metadata fall back to the Unix epoch, pushing them to the end.
+    2. Directory name as an alphabetical tiebreaker.
     """
     if entry.meta:
         return -entry.meta.last_modified.timestamp(), entry.meta.name
