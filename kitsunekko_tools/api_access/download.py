@@ -29,6 +29,7 @@ from kitsunekko_tools.file_downloader import (
     SubtitleFileUrl,
 )
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
+from kitsunekko_tools.sanitize import dir_meta_sort_key
 from kitsunekko_tools.website.templates import date_allposts_post_filter
 
 
@@ -119,7 +120,7 @@ async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing
     else:
         handle_response_status(r)
         # Newest entries first
-        return sorted(iter_catalog_directories(r.json()), key=lambda entry: entry.last_modified, reverse=True)
+        return sorted(iter_catalog_directories(r.json()), key=dir_meta_sort_key)
 
 
 def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: typing.Sequence[ApiFileEntry]) -> None:
