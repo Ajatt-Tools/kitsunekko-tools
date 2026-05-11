@@ -69,3 +69,58 @@ def mk_file(*, name: str, year_: int = 2024, st_size: int = 100, trashed: bool =
     )
 
 
+
+
+# A subset of a real ignore list, already in expected sorted order.
+OSHI_NO_KO_IGNORE_LIST_SORTED = [
+    mk_real_ignore_entry(
+        name="OSHI.NO.KO.S03E01.1080p.NF.WEB-DL.JPN.AAC2.0.H.264.MSubs-ToonsHub.srt",
+        st_size=32664,
+        last_modified="2026-01-15T22:56:46.590728Z",
+    ),
+    mk_real_ignore_entry(
+        name="[NanakoRaws] Oshi no Ko - S03E05 (TV 1920x1080 x265 AAC).ass",
+        st_size=68084,
+        last_modified="2026-03-07T15:23:30.954202Z",
+    ),
+    mk_real_ignore_entry(
+        name="[NanakoRaws] Oshi no Ko - S03E05 (TV 1920x1080 x265 AAC).srt",
+        st_size=30602,
+        last_modified="2026-03-07T15:23:30.954202Z",
+    ),
+    mk_real_ignore_entry(
+        name="[NanakoRaws] Oshi no Ko S3 - 01 (AT-X 1920x1080 x265 AAC).ass",
+        st_size=67637,
+        last_modified="2026-01-16T16:43:28.550094Z",
+    ),
+    mk_real_ignore_entry(
+        name="[SubsPlease] Oshi no Ko S3 - 01 (1080p) [8E2B58B0].jpn.ass",
+        st_size=67634,
+        last_modified="2026-02-09T13:24:41.792165Z",
+    ),
+    mk_real_ignore_entry(
+        name="[shincaps] Oshi no Ko 3rd Season - 01 (AT-X 1440x1080 MPEG2 AAC).ass",
+        st_size=68183,
+        last_modified="2026-01-15T13:50:46.714913Z",
+    ),
+    mk_real_ignore_entry(
+        name="[shincaps] Oshi no Ko 3rd Season - 01 (AT-X 1440x1080 MPEG2 AAC).srt",
+        st_size=31070,
+        last_modified="2026-01-15T13:50:46.714913Z",
+    ),
+    mk_real_ignore_entry(
+        name="【OSHI NO KO】 S03E35 Episode 35 Japanese [CC].srt",
+        st_size=32914,
+        last_modified="2026-01-15T22:56:38.470710Z",
+    ),
+    mk_real_ignore_entry(
+        name="【推しの子】.S03E03.第27話.コンプライアンス.WEBRip.Amazon.ja-jp[sdh].srt",
+        st_size=84900,
+        last_modified="2026-03-28T05:54:16.930450Z",
+    ),
+    mk_real_ignore_entry(
+        name="【推しの子】.S03E26.打算.WEBRip.Netflix.ja[cc].srt",
+        st_size=31099,
+        last_modified="2026-04-02T01:21:28.410030Z",
+    ),
+]
