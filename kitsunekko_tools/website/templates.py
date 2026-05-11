@@ -3,6 +3,7 @@
 import dataclasses
 import datetime
 import enum
+import mimetypes
 import pathlib
 from typing import Any
 
@@ -10,6 +11,7 @@ import jinja2
 from beartype import beartype
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from kitsunekko_tools.consts import FALLBACK_MIME_TYPE
 from kitsunekko_tools.website.context import SiteContext
 from kitsunekko_tools.website.filesystem import (
     as_relative_to,
@@ -67,6 +69,16 @@ def size_bytes_to_human(size_bytes: int) -> str:
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
     return f"{size_bytes:.2f} PB"
+
+
+def mime_type_filter(path: pathlib.Path | str) -> str:
+    """
+    Jinja2 filter: guess the MIMEtype of a file from its extension.
+    Detects the favicon MIME type at template time so the right value lands in `<link rel="icon" type="...">`.
+    Returns "application/octet-stream" when the extension is unrecognized.
+    """
+    mime, _ = mimetypes.guess_type(pathlib.Path(path).name)
+    return mime or FALLBACK_MIME_TYPE
 
 
 @beartype
@@ -162,6 +174,9 @@ class JinjaEnvHolder:
 
         # Files size
         env.filters["size_bytes_to_human"] = size_bytes_to_human
+
+        # MIME-type detection (replaces BashBlog's `file --mime-type` call).
+        env.filters["mime_type"] = mime_type_filter
 
         return env
 

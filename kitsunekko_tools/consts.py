@@ -22,4 +22,8 @@ assert BUNDLED_RESOURCES_DIR.is_dir()
 assert BUNDLED_TEMPLATES_DIR.is_dir()
 assert BUNDLED_SUBTITLES_DIR.is_dir()
 
+# Default MIME type for files whose extension cannot be guessed.
+# Matches the IANA fallback for "unknown binary" content.
+FALLBACK_MIME_TYPE = "application/octet-stream"
+
 __all__ = [name for name in globals() if name.isupper()]
