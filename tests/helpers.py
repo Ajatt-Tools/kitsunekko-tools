@@ -25,3 +25,12 @@ def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
         last_modified=year(year_),
         dir_path=pathlib.Path(f"/tmp/{name}"),
     )
+
+
+def mk_no_meta(*, name: str, year_: int = 2024) -> NoMetaDirectoryEntry:
+    """Create a NoMetaDirectoryEntry for testing."""
+    return NoMetaDirectoryEntry(
+        dir_path=pathlib.Path(f"/tmp/{name}"),
+        name=name,
+        last_modified=year(year_),
+    )
