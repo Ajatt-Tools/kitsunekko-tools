@@ -14,19 +14,6 @@ from kitsunekko_tools.website.website import (
     catalog_file_sort_key,
     entry_sort_key,
 )
-
-
-def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
-    """Create a KitsuDirectoryMeta for testing."""
-    return KitsuDirectoryMeta(
-        entry_id=KitsunekkoId(1),
-        name=name,
-        entry_type=EntryType.anime_tv,
-        last_modified=year(year_),
-        dir_path=pathlib.Path(f"/tmp/{name}"),
-    )
-
-
 def mk_entry(*, name: str, year_: int = 0, has_meta: bool = True) -> LocalDirectoryEntry:
     """Create a LocalDirectoryEntry for testing."""
     meta = mk_kitsu_meta(name=name, year_=year_) if has_meta else None

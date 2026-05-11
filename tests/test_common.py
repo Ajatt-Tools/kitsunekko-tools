@@ -137,17 +137,6 @@ def test_pattern_sort_key(entries: list[IgnoreFileEntry], expected_order: list) 
     assert result == expected_order
 
 
-def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
-    """Create a KitsuDirectoryMeta for testing."""
-    return KitsuDirectoryMeta(
-        entry_id=KitsunekkoId(1),
-        name=name,
-        entry_type=EntryType.anime_tv,
-        last_modified=year(year_),
-        dir_path=pathlib.Path(f"/tmp/{name}"),
-    )
-
-
 def mk_no_meta(*, name: str, year_: int = 2024) -> NoMetaDirectoryEntry:
     """Create a NoMetaDirectoryEntry for testing."""
     return NoMetaDirectoryEntry(
