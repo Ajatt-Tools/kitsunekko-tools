@@ -16,11 +16,6 @@ from kitsunekko_tools.website.website import (
 )
 
 
-def year(year_: int) -> datetime.datetime:
-    """Create a UTC datetime for January 1st of the given year."""
-    return datetime.datetime(year=year_, month=1, day=1, tzinfo=datetime.UTC)
-
-
 def mk_kitsu_meta(*, name: str, year_: int = 2024) -> KitsuDirectoryMeta:
     """Create a KitsuDirectoryMeta for testing."""
     return KitsuDirectoryMeta(

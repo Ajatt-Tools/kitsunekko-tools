@@ -20,10 +20,6 @@ from kitsunekko_tools.scrapper.types import NoMetaDirectoryEntry
 NOW = datetime_now_utc()
 
 
-def year(year_: int) -> datetime.datetime:
-    return datetime.datetime(year=year_, month=1, day=1, tzinfo=datetime.UTC)
-
-
 @pytest.mark.parametrize(
     "t1, t2,  expectation",
     [
