@@ -98,3 +98,20 @@ def test_catalog_file_sort_key(files: list[FileMetaData], expected: list[FileMet
 def test_catalog_file_sort_key_size_order(files: list[FileMetaData], expected_sizes: list[int]) -> None:
     result = sorted(files, key=catalog_file_sort_key)
     assert [f.st_size for f in result] == expected_sizes
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    [
+        ("logo.webp", "image/webp"),
+        ("index.html", "text/html"),
+        ("style.css", "text/css"),
+        (pathlib.Path("/some/dir/logo.webp"), "image/webp"),
+        ("file.unknownext", FALLBACK_MIME_TYPE),
+        ("no_extension", FALLBACK_MIME_TYPE),
+        ("", FALLBACK_MIME_TYPE),
+    ],
+    ids=["webp", "html", "css", "path_obj", "unknown_ext", "no_ext", "empty"],
+)
+def test_mime_type_filter(path: pathlib.Path | str, expected: str) -> None:
+    assert mime_type_filter(path) == expected
