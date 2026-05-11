@@ -58,3 +58,14 @@ def mk_entry(*, name: str, year_: int = 0, has_meta: bool = True) -> LocalDirect
     )
 
 
+def mk_file(*, name: str, year_: int = 2024, st_size: int = 100, trashed: bool = False) -> FileMetaData:
+    """Create a FileMetaData for testing."""
+    parent = pathlib.Path("/tmp/extra") if trashed else pathlib.Path("/tmp/subs")
+    return FileMetaData(
+        name=name,
+        last_modified=year(year_),
+        st_size=st_size,
+        path=parent / name,
+    )
+
+
