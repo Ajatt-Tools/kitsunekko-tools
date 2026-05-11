@@ -14,18 +14,6 @@ from kitsunekko_tools.website.website import (
     catalog_file_sort_key,
     entry_sort_key,
 )
-def mk_entry(*, name: str, year_: int = 0, has_meta: bool = True) -> LocalDirectoryEntry:
-    """Create a LocalDirectoryEntry for testing."""
-    meta = mk_kitsu_meta(name=name, year_=year_) if has_meta else None
-    return LocalDirectoryEntry(
-        meta=meta,
-        path_to_dir=pathlib.Path(f"/tmp/{name}"),
-        files_in_dir=[],
-        site_path_to_html_file=pathlib.Path(f"/site/{name}.html"),
-        is_drama=False,
-    )
-
-
 def mk_file(*, name: str, year_: int = 2024, st_size: int = 100, trashed: bool = False) -> FileMetaData:
     """Create a FileMetaData for testing."""
     parent = pathlib.Path("/tmp/extra") if trashed else pathlib.Path("/tmp/subs")
