@@ -34,3 +34,10 @@ def mk_no_meta(*, name: str, year_: int = 2024) -> NoMetaDirectoryEntry:
         name=name,
         last_modified=year(year_),
     )
+
+
+def mk_ignore_entry(*, name: str, st_size: int = 100, year_: int = 2024) -> IgnoreFileEntry:
+    """Create an IgnoreFileEntry for testing."""
+    return IgnoreFileEntry(name=name, last_modified=year(year_), st_size=st_size)
+
+
