@@ -7,6 +7,8 @@ __pycache__
 __version__*
 
 *TODO*
+/*.md
+!/README.md
 
 .mypy_cache
 .pytest_cache
