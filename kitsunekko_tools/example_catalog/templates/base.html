@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- title -->
+    <title>{% block title %}{{ ctx.site_title }}{% endblock %}</title>
+
+    <!-- meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ ctx.site_description }}">
     <meta name="author" content="{{ ctx.site_author }}">
     <meta name="keywords" content="{{ ctx.site_keywords }}">
-    <link rel="stylesheet" href="{{ ctx.site_blog_url }}/res/blog.css" type="text/css">
-    <link rel="stylesheet" href="{{ ctx.css_file_path | as_relative_to(ctx.output_file_path) }}" type="text/css">
-    <link rel="icon" type="image/webp" href="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
-    <title>{% block title %}{{ ctx.site_title }}{% endblock %}</title>
+
+    <!-- properties -->
     <meta property="og:title" content="{% block og_title %}{{ ctx.site_title }}{% endblock %}">
     <meta property="og:site_name" content="{{ ctx.site_title }}">
     <meta property="og:url" content="{{ ctx.request_url }}">
     <meta property="og:description" content="{{ ctx.site_description }}">
     <meta property="og:image" content="{{ ctx.favicon_path | as_full_url }}">
-    <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
+
+    <!-- In extra scripts templates can include things like jszip.min.js -->
     {% block extra_scripts %}{% endblock %}
+
+    <!-- scripts -->
+    <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
     <script defer src="{{ ctx.js_file_path | as_relative_to(ctx.output_file_path) }}"></script>
+
+    <!-- links -->
+    <link rel="stylesheet" href="{{ ctx.site_blog_url }}/res/blog.css" type="text/css">
+    <link rel="stylesheet" href="{{ ctx.css_file_path | as_relative_to(ctx.output_file_path) }}" type="text/css">
+    <link rel="icon" type="{{ ctx.favicon_path | mime_type }}" href="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
+    <link rel="canonical" href="{{ ctx.request_url }}">
 </head>
 <body>
     {% block header %}
