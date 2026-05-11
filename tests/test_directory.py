@@ -48,3 +48,19 @@ def collect_meta(subtitles_dir: pathlib.Path) -> list[KitsuDirectoryMeta]:
 def test_dir_meta_sort_key(entries: list[KitsuDirectoryMeta], original_name: str) -> None:
     group = DuplicatesGroup.from_list(entries)
     assert group.original.name == original_name
+
+
+@pytest.mark.parametrize(
+    "input_string, expected_count",
+    [
+        ("Setsuen Chase", 12),
+        ("雪煙チェイス", 0),
+        ("SPY×FAMILY", 9),
+        ("", 0),
+        ("abc123XYZ", 6),
+    ],
+)
+def test_count_ascii_letters(input_string: str, expected_count: int) -> None:
+    assert count_ascii_letters(input_string) == expected_count
+
+
