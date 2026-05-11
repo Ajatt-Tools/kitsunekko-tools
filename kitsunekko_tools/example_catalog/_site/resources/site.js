@@ -429,8 +429,13 @@
         }
     }
 
+    function remove_no_js_elements() {
+        document.querySelectorAll(".no-js").forEach(el => el.classList.remove("no-js"));
+        document.querySelectorAll(".no-js-msg").forEach(el => el.remove());
+    }
+
     function main() {
-        document.querySelector("main.no-js")?.classList.remove("no-js");
+        remove_no_js_elements();
         adjustModTimeColumnNameToLocalTimeZone();
         adjustTableRowsToLocalTimeZone();
         addSortingListeners();
