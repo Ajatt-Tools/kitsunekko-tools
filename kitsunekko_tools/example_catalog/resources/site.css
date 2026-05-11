@@ -423,7 +423,7 @@ input[type="radio"].filter_by_type_input {
 
 /* Hide download controls when JavaScript is disabled. */
 
-.noscript-message {
+.no-js-msg {
     display: none;
     font-style: italic;
 }
@@ -433,7 +433,7 @@ input[type="radio"].filter_by_type_input {
     .file-checkbox {
         display: none;
     }
-    .noscript-message {
+    .no-js-msg {
         display: block;
     }
 }
