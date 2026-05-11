@@ -44,11 +44,6 @@ def test_name_strip_insignificant_chars(s1: str, s2: str) -> None:
     assert name_strip_insignificant_chars(s1) == name_strip_insignificant_chars(s2)
 
 
-def mk_real_ignore_entry(*, name: str, st_size: int, last_modified: str) -> IgnoreFileEntry:
-    """Create an IgnoreFileEntry from real API data."""
-    return IgnoreFileEntry(name=name, last_modified=parse_api_time(last_modified), st_size=st_size)
-
-
 # A subset of a real ignore list, already in expected sorted order.
 OSHI_NO_KO_IGNORE_LIST_SORTED = [
     mk_real_ignore_entry(

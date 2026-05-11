@@ -41,3 +41,8 @@ def mk_ignore_entry(*, name: str, st_size: int = 100, year_: int = 2024) -> Igno
     return IgnoreFileEntry(name=name, last_modified=year(year_), st_size=st_size)
 
 
+def mk_real_ignore_entry(*, name: str, st_size: int, last_modified: str) -> IgnoreFileEntry:
+    """Create an IgnoreFileEntry from real API data."""
+    return IgnoreFileEntry(name=name, last_modified=parse_api_time(last_modified), st_size=st_size)
+
+
