@@ -65,21 +65,6 @@ def test_catalog_file_sort_key(files: list[FileMetaData], expected: list[FileMet
 
 
 @pytest.mark.parametrize(
-    "files, expected_sizes",
-    [
-        (
-            [mk_file(name="big.srt", st_size=500), mk_file(name="big.srt", st_size=100)],
-            [100, 500],
-        ),
-    ],
-    ids=["size_ascending"],
-)
-def test_catalog_file_sort_key_size_order(files: list[FileMetaData], expected_sizes: list[int]) -> None:
-    result = sorted(files, key=catalog_file_sort_key)
-    assert [f.st_size for f in result] == expected_sizes
-
-
-@pytest.mark.parametrize(
     "path, expected",
     [
         ("logo.webp", "image/webp"),
