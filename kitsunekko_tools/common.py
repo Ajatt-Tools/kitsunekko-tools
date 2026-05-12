@@ -4,6 +4,7 @@
 import abc
 import dataclasses
 import datetime
+import functools
 import re
 
 from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
@@ -52,5 +53,7 @@ def max_datetime(t1: datetime.datetime, t2: datetime.datetime) -> datetime.datet
     return min(datetime_now_utc(), max(t1, t2))
 
 
+@functools.cache
 def epoch_datetime() -> datetime.datetime:
+    """Return the Unix epoch as a timezone-aware UTC datetime. Cached because the value never changes."""
     return datetime.datetime.fromtimestamp(0, tz=datetime.UTC)
