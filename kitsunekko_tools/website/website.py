@@ -143,6 +143,8 @@ def catalog_file_sort_key(file: FileMetaData) -> tuple[int, float, str, int]:
 
 
 class SiteMapPage(typing.NamedTuple):
+    """A single URL entry in the sitemap."""
+
     file_path: pathlib.Path
     last_modified: datetime.datetime
 
