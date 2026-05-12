@@ -161,18 +161,18 @@ def collect_sitemap_urls(
     Entry pages use the entry's own last-modified date when available,
     falling back to the build date for entries without metadata.
     """
-    index_pages = [
+    index_pages = (
         SiteMapPage(file_path=file_path, last_modified=build_date)
         for file_path in (paths.index_file_path, paths.drama_index_file_path)
-    ]
-    entry_pages = [
+    )
+    entry_pages = (
         SiteMapPage(
             file_path=entry.site_path_to_html_file,
             last_modified=entry.meta.last_modified if entry.meta else build_date,
         )
         for entry in entries
-    ]
-    return [*index_pages, *entry_pages]
+    )
+    return tuple((*index_pages, *entry_pages))
 
 
 class WebSiteBuilder:
