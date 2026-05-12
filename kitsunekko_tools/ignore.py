@@ -9,7 +9,7 @@ import typing
 from kitsunekko_tools.api_access.root_directory import format_api_time, parse_api_time
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException, max_datetime
 from kitsunekko_tools.config import Config, KitsuConfig
-from kitsunekko_tools.consts import IGNORE_FILENAME
+from kitsunekko_tools.consts import IGNORE_FILENAME, TRASH_DIR_NAME
 from kitsunekko_tools.filesystem import (
     get_tsv_reader,
     get_tsv_writer,
@@ -51,6 +51,9 @@ class IgnoreFileEntry:
 @dataclasses.dataclass(frozen=True)
 class FileMetaData(IgnoreFileEntry):
     path: pathlib.Path
+
+    def is_trashed(self) -> bool:
+        return self.path.parent.name == TRASH_DIR_NAME
 
 
 def get_modification_time(file_path: pathlib.Path) -> datetime.datetime:

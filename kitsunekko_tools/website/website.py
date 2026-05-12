@@ -128,7 +128,8 @@ def mk_file_ext_groups(entry: LocalDirectoryEntry, cfg: KitsuConfig) -> list[Fil
 
 
 def catalog_file_sort_key(file: FileMetaData) -> tuple[int, float, str, int]:
-    """Sort subtitle files within a directory entry on the website.
+    """
+    Sort subtitle files within a directory entry on the website.
 
     Used by the website builder to order subtitle files shown on each entry page.
 
@@ -137,10 +138,8 @@ def catalog_file_sort_key(file: FileMetaData) -> tuple[int, float, str, int]:
 
     Negated timestamp: Newest modification date first.
     """
-    if file.path.parent.name == TRASH_DIR_NAME:
-        # place trashed files at the end of a file list.
-        return 1, -file.last_modified.timestamp(), file.name, file.st_size
-    return 0, -file.last_modified.timestamp(), file.name, file.st_size
+    # place trashed files at the end of a file list.
+    return int(file.is_trashed()), -file.last_modified.timestamp(), file.name, file.st_size
 
 
 class SiteMapPage(typing.NamedTuple):
