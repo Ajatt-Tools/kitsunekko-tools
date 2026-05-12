@@ -14,6 +14,8 @@ INDEX_TEMPLATE_NAME = "index.html"
 NOT_FOUND_TEMPLATE_NAME = "not_found.html"
 DRAMA_INDEX_TEMPLATE_NAME = "drama.html"
 ENTRY_TEMPLATE_NAME = "entry.html"
+SITEMAP_TEMPLATE_NAME = "sitemap.xml"
+ROBOTS_TEMPLATE_NAME = "robots.txt"
 SITE_BUILD_LOCATION_NAME = "_site"
 TEMPLATES_DIR_NAME = "templates"
 RESOURCES_DIR_NAME = "resources"
@@ -31,6 +33,8 @@ class WebSiteBuilderPaths:
     index_file_path: pathlib.Path
     not_found_file_path: pathlib.Path
     drama_index_file_path: pathlib.Path
+    sitemap_file_path: pathlib.Path
+    robots_file_path: pathlib.Path
     site_destinations: dict[EntryType, pathlib.Path]
 
     @classmethod
@@ -45,6 +49,8 @@ class WebSiteBuilderPaths:
             index_file_path=site_dir_path / INDEX_TEMPLATE_NAME,
             not_found_file_path=site_dir_path / NOT_FOUND_TEMPLATE_NAME,
             drama_index_file_path=site_dir_path / DRAMA_INDEX_TEMPLATE_NAME,
+            sitemap_file_path=site_dir_path / SITEMAP_TEMPLATE_NAME,
+            robots_file_path=site_dir_path / ROBOTS_TEMPLATE_NAME,
             site_destinations={entry_type: site_dir_path.joinpath(entry_type.name) for entry_type in EntryType},
         )
 

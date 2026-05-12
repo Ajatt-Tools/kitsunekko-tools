@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: {{ paths.sitemap_file_path | as_full_url }}

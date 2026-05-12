@@ -2,13 +2,15 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import concurrent.futures
 import dataclasses
+import datetime
 import multiprocessing
 import pathlib
 import shutil
+import typing
 from collections.abc import Iterable
 from typing import Self
 
-from kitsunekko_tools.common import epoch_datetime
+from kitsunekko_tools.common import datetime_now_utc, epoch_datetime
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import (
     BUNDLED_RESOURCES_DIR,
@@ -28,6 +30,8 @@ from kitsunekko_tools.website.context import (
     INDEX_TEMPLATE_NAME,
     NOT_FOUND_TEMPLATE_NAME,
     RESOURCES_DIR_NAME,
+    ROBOTS_TEMPLATE_NAME,
+    SITEMAP_TEMPLATE_NAME,
     WebSiteBuilderPaths,
     mk_context,
 )
@@ -139,6 +143,11 @@ def catalog_file_sort_key(file: FileMetaData) -> tuple[int, float, str, int]:
     return 0, -file.last_modified.timestamp(), file.name, file.st_size
 
 
+class SiteMapPage(typing.NamedTuple):
+    file_path: pathlib.Path
+    last_modified: datetime.datetime
+
+
 class WebSiteBuilder:
     _cfg: KitsuConfig
 
@@ -166,6 +175,8 @@ class WebSiteBuilder:
         self.generate_index_page(self._paths.drama_index_file_path, [entry for entry in entries if entry.is_drama])
         self.generate_entry_pages(entries)
         self.generate_not_found_page()
+        self.generate_sitemap(entries)
+        self.generate_robots_txt()
 
     def generate_index_page(
         self,
@@ -190,6 +201,47 @@ class WebSiteBuilder:
                 context=mk_context(self._cfg, self._paths, self._paths.not_found_file_path),
                 template_env=self._tmpl_holder.template_env,
             ),
+            encoding="utf-8",
+        )
+
+    def generate_robots_txt(self) -> None:
+        """Generate robots.txt allowing all crawlers and pointing to sitemap."""
+        print(f"Rebuilding: {self._paths.robots_file_path.name}")
+        self._paths.robots_file_path.write_text(
+            render_template(
+                ROBOTS_TEMPLATE_NAME,
+                context=mk_context(self._cfg, self._paths, self._paths.robots_file_path),
+                template_env=self._tmpl_holder.template_env,
+            ),
+            encoding="utf-8",
+        )
+
+    def generate_sitemap(self, entries: list[LocalDirectoryEntry]) -> None:
+        """Generate sitemap.xml with all index and entry page URLs."""
+        print(f"Rebuilding: {self._paths.sitemap_file_path.name}")
+        build_date = datetime_now_utc()
+        sitemap_urls: list[SiteMapPage] = []
+
+        for page_path in (self._paths.index_file_path, self._paths.drama_index_file_path):
+            sitemap_urls.append(
+                SiteMapPage(
+                    file_path=page_path,
+                    last_modified=build_date,
+                )
+            )
+
+        for entry in entries:
+            sitemap_urls.append(
+                SiteMapPage(
+                    file_path=entry.site_path_to_html_file,
+                    last_modified=entry.meta.last_modified if entry.meta else build_date,
+                )
+            )
+
+        context = mk_context(self._cfg, self._paths, self._paths.sitemap_file_path)
+        context.ctx.sitemap_urls = sitemap_urls
+        self._paths.sitemap_file_path.write_text(
+            render_template(SITEMAP_TEMPLATE_NAME, context=context, template_env=self._tmpl_holder.template_env),
             encoding="utf-8",
         )
 
