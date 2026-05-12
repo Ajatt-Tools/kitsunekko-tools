@@ -7,7 +7,7 @@ import multiprocessing
 import pathlib
 import shutil
 import typing
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import Self
 
 from kitsunekko_tools.common import datetime_now_utc, epoch_datetime
@@ -149,6 +149,32 @@ class SiteMapPage(typing.NamedTuple):
     last_modified: datetime.datetime
 
 
+def collect_sitemap_urls(
+    entries: Sequence[LocalDirectoryEntry],
+    paths: WebSiteBuilderPaths,
+    build_date: datetime.datetime,
+) -> Sequence[SiteMapPage]:
+    """
+    Collect all pages to include in the sitemap.
+
+    Index pages use the current build date as their last-modified time.
+    Entry pages use the entry's own last-modified date when available,
+    falling back to the build date for entries without metadata.
+    """
+    index_pages = [
+        SiteMapPage(file_path=file_path, last_modified=build_date)
+        for file_path in (paths.index_file_path, paths.drama_index_file_path)
+    ]
+    entry_pages = [
+        SiteMapPage(
+            file_path=entry.site_path_to_html_file,
+            last_modified=entry.meta.last_modified if entry.meta else build_date,
+        )
+        for entry in entries
+    ]
+    return [*index_pages, *entry_pages]
+
+
 class WebSiteBuilder:
     _cfg: KitsuConfig
 
@@ -220,27 +246,8 @@ class WebSiteBuilder:
     def generate_sitemap(self, entries: list[LocalDirectoryEntry]) -> None:
         """Generate sitemap.xml with all index and entry page URLs."""
         print(f"Rebuilding: {self._paths.sitemap_file_path.name}")
-        build_date = datetime_now_utc()
-        sitemap_urls: list[SiteMapPage] = []
-
-        for page_path in (self._paths.index_file_path, self._paths.drama_index_file_path):
-            sitemap_urls.append(
-                SiteMapPage(
-                    file_path=page_path,
-                    last_modified=build_date,
-                )
-            )
-
-        for entry in entries:
-            sitemap_urls.append(
-                SiteMapPage(
-                    file_path=entry.site_path_to_html_file,
-                    last_modified=entry.meta.last_modified if entry.meta else build_date,
-                )
-            )
-
         context = mk_context(self._cfg, self._paths, self._paths.sitemap_file_path)
-        context.ctx.sitemap_urls = sitemap_urls
+        context.ctx.sitemap_urls = collect_sitemap_urls(entries, self._paths, build_date=datetime_now_utc())
         self._paths.sitemap_file_path.write_text(
             render_template(SITEMAP_TEMPLATE_NAME, context=context, template_env=self._tmpl_holder.template_env),
             encoding="utf-8",
