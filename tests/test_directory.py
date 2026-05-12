@@ -64,3 +64,37 @@ def test_count_ascii_letters(input_string: str, expected_count: int) -> None:
     assert count_ascii_letters(input_string) == expected_count
 
 
+@pytest.mark.parametrize(
+    "entries, expected_first_id",
+    [
+        # Newer timestamp wins.
+        (
+            [
+                make_api_entry(entry_id=1, last_modified=datetime.datetime(2026, 1, 2, tzinfo=datetime.UTC)),
+                make_api_entry(entry_id=2, last_modified=datetime.datetime(2026, 1, 4, tzinfo=datetime.UTC)),
+                make_api_entry(entry_id=3, last_modified=datetime.datetime(2026, 1, 7, tzinfo=datetime.UTC)),
+                make_api_entry(entry_id=4, last_modified=datetime.datetime(2026, 1, 12, tzinfo=datetime.UTC)),
+                make_api_entry(entry_id=5, last_modified=datetime.datetime(2026, 1, 6, tzinfo=datetime.UTC)),
+            ],
+            4,
+        ),
+        # Same timestamp, more ASCII letters wins.
+        (
+            [
+                make_api_entry(entry_id=1, name="MoreASCII"),
+                make_api_entry(entry_id=2, name="日本語"),
+                make_api_entry(entry_id=3, name="nihongo title"),
+                make_api_entry(entry_id=4, name="片言"),
+            ],
+            3,
+        ),
+    ],
+)
+def test_dir_meta_sort_key_ordering(
+    entries: Sequence[KitsuDirectoryMeta],
+    expected_first_id: int,
+) -> None:
+    sorted_entries = sorted(entries, key=dir_meta_sort_key)
+    assert sorted_entries[0].entry_id == expected_first_id
+
+

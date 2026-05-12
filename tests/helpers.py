@@ -69,6 +69,21 @@ def mk_file(*, name: str, year_: int = 2024, st_size: int = 100, trashed: bool =
     )
 
 
+def make_api_entry(
+    *,
+    entry_id: int = 1,
+    name: str = "Test",
+    entry_type: EntryType = EntryType.anime_tv,
+    last_modified: datetime.datetime = datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC),
+) -> KitsuDirectoryMeta:
+    """Create a KitsuDirectoryMeta for testing."""
+    return KitsuDirectoryMeta(
+        entry_id=KitsunekkoId(entry_id),
+        name=name,
+        entry_type=entry_type,
+        last_modified=last_modified,
+        dir_path=pathlib.Path(f"/tmp/{name}"),
+    )
 
 
 # A subset of a real ignore list, already in expected sorted order.
