@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import string
 import typing
+from collections.abc import Sequence
 
 from kitsunekko_tools.api_access.directory_entry import (
     keep_removed_values,
@@ -167,7 +168,7 @@ class DuplicatesGroup(typing.NamedTuple):
     copies: list[KitsuDirectoryMeta]
 
     @classmethod
-    def from_list(cls, entries: list[KitsuDirectoryMeta]) -> typing.Self:
+    def from_list(cls, entries: Sequence[KitsuDirectoryMeta]) -> typing.Self:
         if len(entries) < 2:
             raise KitsuError("a group of duplicates should contain at least two files")
         entries = sorted(entries, key=dir_meta_sort_key)
