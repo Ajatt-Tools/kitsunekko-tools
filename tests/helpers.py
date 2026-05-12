@@ -46,7 +46,7 @@ def mk_real_ignore_entry(*, name: str, st_size: int, last_modified: str) -> Igno
     return IgnoreFileEntry(name=name, last_modified=parse_api_time(last_modified), st_size=st_size)
 
 
-def mk_entry(*, name: str, year_: int = 0, has_meta: bool = True) -> LocalDirectoryEntry:
+def mk_entry(*, name: str, year_: int = 2024, has_meta: bool = True) -> LocalDirectoryEntry:
     """Create a LocalDirectoryEntry for testing."""
     meta = mk_kitsu_meta(name=name, year_=year_) if has_meta else None
     return LocalDirectoryEntry(
