@@ -14,8 +14,14 @@ from kitsunekko_tools.api_access.root_directory import (
     iter_catalog_directories,
 )
 from kitsunekko_tools.consts import BUNDLED_SUBTITLES_DIR, INFO_FILENAME
+from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.local_state import KitsuDirectoryMeta
-from kitsunekko_tools.sanitize import DuplicatesGroup
+from kitsunekko_tools.sanitize import (
+    DuplicatesGroup,
+    count_ascii_letters,
+    dir_meta_sort_key,
+)
+from tests.helpers import make_api_entry
 from tests.test_parser import DATA_DIR
 
 
@@ -96,5 +102,3 @@ def test_dir_meta_sort_key_ordering(
 ) -> None:
     sorted_entries = sorted(entries, key=dir_meta_sort_key)
     assert sorted_entries[0].entry_id == expected_first_id
-
-
