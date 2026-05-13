@@ -109,3 +109,26 @@ def test_duplicates_group_requires_at_least_two_entries() -> None:
     """DuplicatesGroup.from_list must raise KitsuError when given fewer than two entries."""
     with pytest.raises(KitsuError):
         DuplicatesGroup.from_list([make_api_entry(entry_id=1)])
+
+
+@pytest.mark.parametrize(
+    "entries, expected_first_id",
+    [
+        # Same timestamp and same ASCII count: alphabetical name tiebreaker.
+        (
+            [
+                make_api_entry(entry_id=2024, name="Zebra Show"),
+                make_api_entry(entry_id=1945, name="Alpha Show"),
+            ],
+            1945,
+        ),
+    ],
+    ids=["name_tiebreaker"],
+)
+def test_dir_meta_sort_key_name_tiebreaker(
+    entries: Sequence[KitsuDirectoryMeta],
+    expected_first_id: int,
+) -> None:
+    """When timestamp and ASCII count are equal, the alphabetically first name wins."""
+    sorted_entries = sorted(entries, key=dir_meta_sort_key)
+    assert sorted_entries[0].entry_id == expected_first_id
