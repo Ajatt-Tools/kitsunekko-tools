@@ -151,3 +151,23 @@ def test_entry_sort_key_tiebreaker(entries: list[LocalDirectoryEntry], expected_
     first = result[0]
     actual_name = first.meta.name if first.meta else first.path_to_dir.name
     assert actual_name == expected_first_name
+
+
+@pytest.mark.parametrize(
+    "files, expected_first_name",
+    [
+        # Trashed files sorted among themselves: newest trashed comes before older trashed.
+        (
+            [
+                mk_file(name="old_trash.srt", year_=2020, trashed=True),
+                mk_file(name="new_trash.srt", year_=2025, trashed=True),
+            ],
+            "new_trash.srt",
+        ),
+    ],
+    ids=["trashed_newest_first"],
+)
+def test_catalog_file_sort_key_trashed_ordering(files: list[FileMetaData], expected_first_name: str) -> None:
+    """Among trashed files the most recently modified one still appears first."""
+    result = sorted(files, key=catalog_file_sort_key)
+    assert result[0].name == expected_first_name
