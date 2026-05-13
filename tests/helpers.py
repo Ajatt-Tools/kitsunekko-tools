@@ -8,6 +8,7 @@ from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.ignore import FileMetaData, IgnoreFileEntry
 from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.scrapper.types import NoMetaDirectoryEntry
+from kitsunekko_tools.website.context import WebSiteBuilderPaths
 from kitsunekko_tools.website.website import LocalDirectoryEntry
 
 
@@ -139,3 +140,20 @@ OSHI_NO_KO_IGNORE_LIST_SORTED = [
         last_modified="2026-04-02T01:21:28.410030Z",
     ),
 ]
+
+
+def make_paths(tmp_path: pathlib.Path) -> WebSiteBuilderPaths:
+    """Build a minimal WebSiteBuilderPaths rooted at tmp_path."""
+    site = tmp_path / "_site"
+    return WebSiteBuilderPaths(
+        work_root=tmp_path,
+        site_dir_path=site,
+        templates_dir_path=tmp_path / "templates",
+        resources_dir_path=tmp_path / "resources",
+        index_file_path=site / "index.html",
+        not_found_file_path=site / "not_found.html",
+        drama_index_file_path=site / "drama.html",
+        sitemap_file_path=site / "sitemap.xml",
+        robots_file_path=site / "robots.txt",
+        site_destinations={},
+    )

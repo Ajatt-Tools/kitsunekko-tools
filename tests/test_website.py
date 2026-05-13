@@ -1,6 +1,5 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-import datetime
 import pathlib
 
 import pytest
@@ -11,9 +10,10 @@ from kitsunekko_tools.website.templates import mime_type_filter
 from kitsunekko_tools.website.website import (
     LocalDirectoryEntry,
     catalog_file_sort_key,
+    collect_sitemap_urls,
     entry_sort_key,
 )
-from tests.helpers import mk_entry, mk_file
+from tests.helpers import make_paths, mk_entry, mk_file, year
 
 
 @pytest.mark.parametrize(
@@ -79,3 +79,53 @@ def test_catalog_file_sort_key(files: list[FileMetaData], expected: list[FileMet
 )
 def test_mime_type_filter(path: pathlib.Path | str, expected: str) -> None:
     assert mime_type_filter(path) == expected
+
+
+@pytest.mark.parametrize(
+    "entries, url_len",
+    [
+        (
+            [],
+            2,
+        ),
+        (
+            [
+                mk_entry(name="My Show", year_=2024),
+            ],
+            3,
+        ),
+        (
+            [
+                mk_entry(name="Orphan Dir", has_meta=False),
+            ],
+            3,
+        ),
+        (
+            [mk_entry(name=f"Show {i}", year_=2024) for i in range(5)],
+            7,
+        ),
+    ],
+    ids=["empty", "one show", "orphan", "many"],
+)
+def test_collect_sitemap_urls_index_pages_use_build_date(
+    tmp_path: pathlib.Path, entries: list[LocalDirectoryEntry], url_len: int
+) -> None:
+    """
+    Index pages always receive the build date, not an entry date.
+    Entry pages with metadata use the entry's own last_modified date.
+    Entry pages without metadata fall back to the build date.
+    Total URL count equals 2 index pages plus number of entries.
+    """
+    paths = make_paths(tmp_path)
+    build_date = year(2026)
+    urls = collect_sitemap_urls(entries, paths, build_date)
+    assert len(urls) == url_len
+    assert all(u.last_modified == build_date for u in urls[:2])
+    assert urls[0].file_path == paths.index_file_path
+    assert urls[1].file_path == paths.drama_index_file_path
+    for collected, reference in zip(urls[2:], entries):
+        assert collected.file_path == reference.site_path_to_html_file
+        if reference.meta is not None:
+            assert collected.last_modified == reference.meta.last_modified
+        else:
+            assert collected.last_modified == build_date
