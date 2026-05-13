@@ -51,15 +51,30 @@ def test_name_strip_insignificant_chars(s1: str, s2: str) -> None:
     [
         (
             [mk_ignore_entry(name="beta.srt"), mk_ignore_entry(name="alpha.srt")],
-            [mk_ignore_entry(name="alpha.srt"), mk_ignore_entry(name="beta.srt")],
+            [
+                mk_ignore_entry(name="alpha.srt"),
+                mk_ignore_entry(name="beta.srt"),
+            ],
         ),
         (
-            [mk_ignore_entry(name="same.srt", st_size=200), mk_ignore_entry(name="same.srt", st_size=100)],
-            [mk_ignore_entry(name="same.srt", st_size=100), mk_ignore_entry(name="same.srt", st_size=200)],
+            [
+                mk_ignore_entry(name="same.srt", st_size=200),
+                mk_ignore_entry(name="same.srt", st_size=100),
+            ],
+            [
+                mk_ignore_entry(name="same.srt", st_size=100),
+                mk_ignore_entry(name="same.srt", st_size=200),
+            ],
         ),
         (
-            [mk_ignore_entry(name="same.srt", year_=2025), mk_ignore_entry(name="same.srt", year_=2023)],
-            [mk_ignore_entry(name="same.srt", year_=2023), mk_ignore_entry(name="same.srt", year_=2025)],
+            [
+                mk_ignore_entry(name="same.srt", year_=2025),
+                mk_ignore_entry(name="same.srt", year_=2023),
+            ],
+            [
+                mk_ignore_entry(name="same.srt", year_=2023),
+                mk_ignore_entry(name="same.srt", year_=2025),
+            ],
         ),
         (
             # Shuffled entries from a real ignore list example.
@@ -78,15 +93,24 @@ def test_pattern_sort_key(entries: list[IgnoreFileEntry], expected_order: list) 
     "entries, expected_best_name",
     [
         (
-            [mk_no_meta(name="No Meta", year_=2025), mk_kitsu_meta(name="Has Meta", year_=2020)],
+            [
+                mk_no_meta(name="No Meta", year_=2025),
+                mk_kitsu_meta(name="Has Meta", year_=2020),
+            ],
             "Has Meta",
         ),
         (
-            [mk_kitsu_meta(name="Older Show", year_=2020), mk_kitsu_meta(name="Newer Show", year_=2025)],
+            [
+                mk_kitsu_meta(name="Older Show", year_=2020),
+                mk_kitsu_meta(name="Newer Show", year_=2025),
+            ],
             "Newer Show",
         ),
         (
-            [mk_no_meta(name="Older Orphan", year_=2020), mk_no_meta(name="Newer Orphan", year_=2025)],
+            [
+                mk_no_meta(name="Older Orphan", year_=2020),
+                mk_no_meta(name="Newer Orphan", year_=2025),
+            ],
             "Newer Orphan",
         ),
     ],
