@@ -5,7 +5,7 @@
 [![Support](https://img.shields.io/badge/support-developer-orange?style=for-the-badge&logo=Patreon&logoColor=orange)](https://ajatt.top/blog/donating-to-tatsumoto.html)
 
 A set of scripts for creating a
-local [kitsunekko](http://kitsunekko.net/dirlist.php?dir=subtitles/japanese/&sort=date&order=desc)
+local [kitsunekko](https://kitsunekko.net/)
 mirror.
 
 The main benefit of having all subtitles saved locally
