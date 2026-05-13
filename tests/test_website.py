@@ -129,3 +129,25 @@ def test_collect_sitemap_urls_index_pages_use_build_date(
             assert collected.last_modified == reference.meta.last_modified
         else:
             assert collected.last_modified == build_date
+
+
+@pytest.mark.parametrize(
+    "entries, expected_first_name",
+    [
+        # Same timestamp: alphabetical tiebreaker by meta.name.
+        (
+            [
+                mk_entry(name="Zebra Show", year_=2024),
+                mk_entry(name="Alpha Show", year_=2024),
+            ],
+            "Alpha Show",
+        ),
+    ],
+    ids=["same_timestamp_alphabetical"],
+)
+def test_entry_sort_key_tiebreaker(entries: list[LocalDirectoryEntry], expected_first_name: str) -> None:
+    """Among entries with identical timestamps the alphabetically first name wins."""
+    result = sorted(entries, key=entry_sort_key)
+    first = result[0]
+    actual_name = first.meta.name if first.meta else first.path_to_dir.name
+    assert actual_name == expected_first_name
