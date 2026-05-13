@@ -1,7 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import datetime
-import pathlib
 import random
 
 import pytest
@@ -94,5 +93,33 @@ def test_pattern_sort_key(entries: list[IgnoreFileEntry], expected_order: list) 
     ids=["meta_over_no_meta", "newer_meta_wins", "newer_no_meta_wins"],
 )
 def test_local_dir_sort_key(entries: list, expected_best_name: str) -> None:
+    best = max(entries, key=local_dir_sort_key)
+    assert best.name == expected_best_name
+
+
+@pytest.mark.parametrize(
+    "entries, expected_best_name",
+    [
+        (
+            [
+                # Same type and timestamp: alphabetically last name wins (max picks it).
+                mk_kitsu_meta(name="Alpha Show", year_=2024),
+                mk_kitsu_meta(name="Zebra Show", year_=2024),
+            ],
+            "Zebra Show",
+        ),
+        (
+            # As previous, but no meta.
+            [
+                mk_no_meta(name="Alpha Orphan", year_=2024),
+                mk_no_meta(name="Zebra Orphan", year_=2024),
+            ],
+            "Zebra Orphan",
+        ),
+    ],
+    ids=["meta_name_tiebreaker", "no_meta_name_tiebreaker"],
+)
+def test_local_dir_sort_key_name_tiebreaker(entries: list, expected_best_name: str) -> None:
+    """When type and timestamp are equal, the name is used as a deterministic tiebreaker."""
     best = max(entries, key=local_dir_sort_key)
     assert best.name == expected_best_name
