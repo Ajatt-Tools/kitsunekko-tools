@@ -13,6 +13,7 @@ from kitsunekko_tools.api_access.root_directory import (
     ApiDirectoryEntry,
     iter_catalog_directories,
 )
+from kitsunekko_tools.common import KitsuError
 from kitsunekko_tools.consts import BUNDLED_SUBTITLES_DIR, INFO_FILENAME
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.local_state import KitsuDirectoryMeta
@@ -102,3 +103,9 @@ def test_dir_meta_sort_key_ordering(
 ) -> None:
     sorted_entries = sorted(entries, key=dir_meta_sort_key)
     assert sorted_entries[0].entry_id == expected_first_id
+
+
+def test_duplicates_group_requires_at_least_two_entries() -> None:
+    """DuplicatesGroup.from_list must raise KitsuError when given fewer than two entries."""
+    with pytest.raises(KitsuError):
+        DuplicatesGroup.from_list([make_api_entry(entry_id=1)])
