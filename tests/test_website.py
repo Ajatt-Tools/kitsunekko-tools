@@ -1,14 +1,25 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import datetime
 import pathlib
+from collections.abc import Sequence
+import xml.etree.ElementTree as ET
 
 import pytest
 
-from kitsunekko_tools.consts import FALLBACK_MIME_TYPE
+from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import (
+    ARCHIVE_FILE_TYPES,
+    FALLBACK_MIME_TYPE,
+    SITEMAP_NS,
+    SUBTITLE_FILE_TYPES,
+)
+from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.ignore import FileMetaData
 from kitsunekko_tools.website.templates import mime_type_filter
 from kitsunekko_tools.website.website import (
     LocalDirectoryEntry,
+    WebSiteBuilder,
     catalog_file_sort_key,
     collect_sitemap_urls,
     entry_sort_key,
@@ -145,3 +156,140 @@ def test_collect_sitemap_urls_index_pages_use_build_date(
             assert collected.last_modified == build_date
 
 
+@pytest.fixture
+def tmp_site_builder(tmp_path: pathlib.Path):
+    """Create a WebSiteBuilder with a temporary directory structure."""
+    # Create directory structure
+    dest = tmp_path / "subtitles"
+    dest.mkdir()
+    for entry_type in EntryType:
+        dest.joinpath(entry_type.name).mkdir()
+
+    config = KitsuConfig(
+        destination=dest,
+        skip_older=datetime.timedelta(days=30),
+        allowed_file_types=frozenset([*SUBTITLE_FILE_TYPES, *ARCHIVE_FILE_TYPES]),
+    )
+
+    builder = WebSiteBuilder(config)
+    builder._paths.site_dir_path.mkdir(parents=True, exist_ok=True)
+    builder.copy_site_resources()
+
+    return builder
+
+
+def mk_site_entry(
+    builder: WebSiteBuilder, *, name: str, year_: int = 2024, has_meta: bool = True
+) -> LocalDirectoryEntry:
+    """Create a LocalDirectoryEntry with a path inside the site directory."""
+    entry = mk_entry(name=name, year_=year_, has_meta=has_meta)
+    # Override site_path_to_html_file to be inside the actual site directory.
+    site_path = builder._paths.site_dir_path / "anime_tv" / f"{name.lower().replace(' ', '-')}.html"
+    site_path.parent.mkdir(parents=True, exist_ok=True)
+    return LocalDirectoryEntry(
+        meta=entry.meta,
+        path_to_dir=entry.path_to_dir,
+        files_in_dir=entry.files_in_dir,
+        site_path_to_html_file=site_path,
+        is_drama=entry.is_drama,
+    )
+
+
+def test_generate_robots_txt_creates_file(tmp_site_builder) -> None:
+    """Verify robots.txt is created with correct content."""
+    tmp_site_builder.generate_robots_txt()
+    robots_path = tmp_site_builder._paths.robots_file_path
+
+    assert robots_path.exists()
+    content = robots_path.read_text(encoding="utf-8")
+    assert content.startswith("User-agent: *\nAllow: /\n")
+    assert "Sitemap:" in content
+
+
+def _generate_sitemap_content(tmp_site_builder, entry_names: Sequence[str]) -> str:
+    """Generate a sitemap and return its text content."""
+    entries = [mk_site_entry(tmp_site_builder, name=name, year_=2024) for name in entry_names]
+    tmp_site_builder.generate_sitemap(entries)
+    sitemap_path = tmp_site_builder._paths.sitemap_file_path
+    assert sitemap_path.exists()
+    return sitemap_path.read_text(encoding="utf-8")
+
+
+def _ns(tag: str) -> str:
+    return f"{{{SITEMAP_NS}}}{tag}"
+
+
+def _sitemap_locs(root: ET.Element) -> list[str]:
+    """Extract all <loc> text from a sitemap root element."""
+    return [
+        c.text
+        for url_elem in root
+        for c in url_elem
+        if c.tag == _ns("loc") and c.text
+    ]
+
+
+def _sitemap_filenames(root: ET.Element) -> list[str]:
+    """Extract all filenames from <loc> elements."""
+    return [
+        pathlib.Path(x).name
+        for x in _sitemap_locs(root)
+    ]
+
+
+@pytest.mark.parametrize(
+    "entry_names, expected_substrings",
+    [
+        ([], ["index.html", "drama.html"]),
+        (["My Show"], ["my-show.html"]),
+        (["Another Show"], ["another-show.html"]),
+        (["My Show", "Another Show"], ["my-show.html", "another-show.html"]),
+    ],
+    ids=["index_pages", "entry_my_show", "entry_another_show", "both_entries"],
+)
+def test_sitemap_page_presence(
+    tmp_site_builder,
+    entry_names: list[str],
+    expected_substrings: list[str],
+) -> None:
+    """Verify that expected URLs appear in the sitemap's <loc> elements."""
+    content = _generate_sitemap_content(tmp_site_builder, entry_names)
+    root = ET.fromstring(content)
+    found = frozenset(_sitemap_filenames(root))
+    always_present = frozenset(["index.html", "drama.html"])
+    expected = frozenset(expected_substrings) | always_present
+    assert expected == found
+
+
+def test_sitemap_excludes_not_found(tmp_site_builder) -> None:
+    """Verify not_found.html is NOT in sitemap."""
+    content = _generate_sitemap_content(tmp_site_builder, ())
+    root = ET.fromstring(content)
+    filenames = _sitemap_filenames(root)
+    assert "not_found.html" not in filenames
+
+
+
+def test_sitemap_structure(tmp_site_builder) -> None:
+    """Parse the sitemap as XML and validate protocol compliance."""
+    content = _generate_sitemap_content(tmp_site_builder, ("Test Show",))
+
+    root = ET.fromstring(content)
+
+    assert root.tag == _ns("urlset")
+    assert len(root) > 0
+
+    for url_elem in root:
+        assert url_elem.tag == _ns("url")
+
+        locs = [c for c in url_elem if c.tag == _ns("loc")]
+        assert len(locs) == 1, f"<url> must have exactly one <loc>, found {len(locs)}"
+        loc = locs[0]
+        assert loc.text, "<loc> must be non-empty"
+        assert loc.text.startswith("https://"), f"<loc> must be https: {loc.text}"
+
+        lastmods = [c for c in url_elem if c.tag == _ns("lastmod")]
+        assert len(lastmods) == 1, f"<url> must have exactly one <lastmod>, found {len(lastmods)}"
+        lastmod = lastmods[0]
+        assert lastmod.text, "<lastmod> must be non-empty"
+        assert datetime.date.fromisoformat(lastmod.text).year > 2000
