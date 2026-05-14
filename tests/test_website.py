@@ -31,8 +31,12 @@ from tests.helpers import make_paths, mk_entry, mk_file, year
             [mk_entry(name="Zeta Dir", has_meta=False), mk_entry(name="Alpha Dir", has_meta=False)],
             "Alpha Dir",
         ),
+        (
+            [mk_entry(name="Zebra Show", year_=2024), mk_entry(name="Alpha Show", year_=2024)],
+            "Alpha Show",
+        ),
     ],
-    ids=["newest_first", "meta_before_no_meta", "no_meta_alphabetical"],
+    ids=["newest_first", "meta_before_no_meta", "no_meta_alphabetical", "same_timestamp_alphabetical"],
 )
 def test_entry_sort_key(entries: list[LocalDirectoryEntry], expected_first_name: str) -> None:
     result = sorted(entries, key=entry_sort_key)
