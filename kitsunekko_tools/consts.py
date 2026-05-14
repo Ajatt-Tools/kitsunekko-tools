@@ -26,4 +26,7 @@ assert BUNDLED_SUBTITLES_DIR.is_dir()
 # Matches the IANA fallback for "unknown binary" content.
 FALLBACK_MIME_TYPE = "application/octet-stream"
 
+# Sitemap namespace used in the sitemap Jinja template.
+SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
 __all__ = [name for name in globals() if name.isupper()]

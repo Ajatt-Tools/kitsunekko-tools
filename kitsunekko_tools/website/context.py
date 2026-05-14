@@ -7,6 +7,7 @@ from types import SimpleNamespace
 
 from kitsunekko_tools.common import datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import SITEMAP_NS
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 
@@ -88,5 +89,7 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
             date_now=now,
             # Entry types
             EntryType=EntryType,
+            # Sitemap namespace
+            sitemap_ns=SITEMAP_NS,
         ),
     )
