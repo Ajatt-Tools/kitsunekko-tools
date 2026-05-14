@@ -149,7 +149,7 @@ class KitsuConfig:
 
         instance = cls(**data)
         if "dirlst.php?dir=" not in instance.download_root:
-            raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
+            raise ConfigFileInvalidError(f"Download root '{instance.download_root}' doesn't appear to be a valid kitsunekko URL.")
         return dataclasses.replace(
             instance,
             proxy=instance.proxy or None,  # coerce proxy to null if it's empty
