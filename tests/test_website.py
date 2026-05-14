@@ -60,8 +60,18 @@ def test_entry_sort_key(entries: list[LocalDirectoryEntry], expected_first_name:
             [mk_file(name="big.srt", st_size=500), mk_file(name="big.srt", st_size=100)],
             [mk_file(name="big.srt", st_size=100), mk_file(name="big.srt", st_size=500)],
         ),
+        (
+            [
+                mk_file(name="old_trash.srt", year_=2020, trashed=True),
+                mk_file(name="new_trash.srt", year_=2025, trashed=True),
+            ],
+            [
+                mk_file(name="new_trash.srt", year_=2025, trashed=True),
+                mk_file(name="old_trash.srt", year_=2020, trashed=True),
+            ],
+        ),
     ],
-    ids=["trashed_last", "newest_first", "size_tiebreaker"],
+    ids=["trashed_last", "newest_first", "size_tiebreaker", "trashed_newest_first"],
 )
 def test_catalog_file_sort_key(files: list[FileMetaData], expected: list[FileMetaData]) -> None:
     result = sorted(files, key=catalog_file_sort_key)
