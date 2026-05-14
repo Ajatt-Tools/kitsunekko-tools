@@ -110,7 +110,7 @@ class KitsuConfig:
     skip_older: datetime.timedelta  # E.g. 30 days
     allowed_file_types: frozenset[str]  # E.g. ['ssa', 'ass', 'srt']
     proxy: str | None = "socks5://127.0.0.1:9050"
-    download_root: str = "https://kitsunekko.net/dirlist.php?dir=subtitles/japanese/"  # scrap target
+    download_root: str = "https://kitsunekko.net/dirlst.php?dir=subtitles%2Fjapanese%2F"  # scrap target
     timeout: int = 120
     api_url: str = "https://kitsunekko.net"  # URL of a subtitle server. Normally looks like 'https://example.com'.
     api_key: str = ""  # API key of the subtitle server
@@ -148,7 +148,7 @@ class KitsuConfig:
             data["allowed_file_types"] = instance.allowed_file_types
 
         instance = cls(**data)
-        if "dirlist.php?dir=" not in instance.download_root:
+        if "dirlst.php?dir=" not in instance.download_root:
             raise ConfigFileInvalidError("Download root doesn't appear to be a valid kitsunekko URL.")
         return dataclasses.replace(
             instance,

@@ -26,10 +26,11 @@ def datetime_from_str(mod_timestamp: str) -> datetime.datetime:
 
 RE_FLAGS = re.IGNORECASE
 
-# <tr><td colspan="2"><a href="/dirlist.php?dir=subtitles%2Fjapanese%2FMushoku+Tensei%3A+Isekai+Ittara+Honki+Dasu%2F" class=""><strong>Mushoku Tensei: Isekai Ittara Honki Dasu</strong> </a></td> <td class="tdright" title="Dec 03 2023 05:13:17 AM" > 4&nbsp;months </td></tr>
-# <tr><td colspan="2"><a href="/dirlist.php?dir=subtitles%2Fjapanese%2FSousou+no+Frieren%2F" class=""><strong>Sousou no Frieren</strong> </a></td> <td class="tdright" title="Apr 14 2024 06:23:19 PM" > 1&nbsp;week </td></tr>
+# <tr><td colspan="2"><a href="/dirlst.php?dir=subtitles%2Fjapanese%2FMushoku+Tensei%3A+Isekai+Ittara+Honki+Dasu%2F" class=""><strong>Mushoku Tensei: Isekai Ittara Honki Dasu</strong> </a></td> <td class="tdright" title="Dec 03 2023 05:13:17 AM" > 4&nbsp;months </td></tr>
+# <tr><td colspan="2"><a href="/dirlst.php?dir=subtitles%2Fjapanese%2FSousou+no+Frieren%2F" class=""><strong>Sousou no Frieren</strong> </a></td> <td class="tdright" title="Apr 14 2024 06:23:19 PM" > 1&nbsp;week </td></tr>
+# <tr><td colspan="2"><a href="/dirlst.php?dir=subtitles%2Fjapanese%2F180+Byou+de+Kimi+no+Mimi+o+Shiawase+ni+Dekiru+ka%3F%2F" class=""><strong>180 Byou de Kimi no Mimi o Shiawase ni Dekiru ka?</strong> </a></td> <td class="tdright" title="Jan 02 2022 06:09:36 PM" > 4&nbsp;years </td></tr>
 RE_SUBTITLE_DIR = re.compile(
-    r'<a href="/?(?P<abs_path>dirlist.php\?dir=[^"\']+)"[^<>]*>\s*<strong>\s*(?P<show_name>.+?)\s*</strong>\s*</a>.*<td class="tdright" title="(?P<mod_timestamp>[^<>"]+)"\s*>',
+    r'<a href="/?(?P<abs_path>dirlst.php\?dir=[^"\']+)"[^<>]*>\s*<strong>\s*(?P<show_name>.+?)\s*</strong>\s*</a>.*<td class="tdright" title="(?P<mod_timestamp>[^<>"]+)"\s*>',
     flags=RE_FLAGS,
 )
 
