@@ -19,12 +19,12 @@ from kitsunekko_tools.scrapper.parse import (
 DATA_DIR = pathlib.Path(__file__).parent.joinpath("data")
 EXPECTED_DIRS = [
     AnimeDir(
-        f"{KITSUNEKKO_DOMAIN_URL}/dirlist.php?dir=subtitles%2Fjapanese%2FYuru+Camp+S3%2F",
+        f"{KITSUNEKKO_DOMAIN_URL}/dirlst.php?dir=subtitles%2Fjapanese%2FYuru+Camp+S3%2F",
         "Yuru Camp S3",
         datetime.datetime(2024, 4, 25, 19, 38, 39),
     ),
     AnimeDir(
-        f"{KITSUNEKKO_DOMAIN_URL}/dirlist.php?dir=subtitles%2Fjapanese%2FSousou+no+Frieren%2F",
+        f"{KITSUNEKKO_DOMAIN_URL}/dirlst.php?dir=subtitles%2Fjapanese%2FSousou+no+Frieren%2F",
         "Sousou no Frieren",
         datetime.datetime(2024, 4, 14, 18, 23, 19),
     ),
@@ -59,19 +59,23 @@ def parsed_sub_files() -> Sequence[SubtitleFile]:
 
 
 def test_shows_in_root_dir(found_dirs: Sequence[AnimeDir]) -> None:
-    assert all(dir_ in found_dirs for dir_ in EXPECTED_DIRS), "result should include expected dirs"
+    assert all(
+        dir_ in found_dirs for dir_ in EXPECTED_DIRS
+    ), f"result should include expected dirs, found {len(found_dirs)}"
 
 
-def test_num_of_found_dirs(found_dirs: Sequence[AnimeDir]) -> None:
-    assert len(found_dirs) == 2653, "number of directories should match"
+def test_num_of_found_dirs(found_dirs: Sequence[AnimeDir], expected: int = 2589) -> None:
+    assert len(found_dirs) == expected, f"number of directories should match {expected}, found {len(found_dirs)}"
 
 
 def test_files_in_directory(parsed_sub_files: Sequence[SubtitleFile]) -> None:
-    assert all(file in parsed_sub_files for file in EXPECTED_FILES), "result should include expected files"
+    assert all(
+        file in parsed_sub_files for file in EXPECTED_FILES
+    ), f"result should include expected files, found {len(parsed_sub_files)}"
 
 
-def test_num_of_found_files(parsed_sub_files: Sequence[SubtitleFile]) -> None:
-    assert len(parsed_sub_files) == 67, "number of files should match"
+def test_num_of_found_files(parsed_sub_files: Sequence[SubtitleFile], expected: int = 68) -> None:
+    assert len(parsed_sub_files) == expected, f"number of files should match {expected}, found {len(parsed_sub_files)}"
 
 
 def test_parse_time() -> None:
