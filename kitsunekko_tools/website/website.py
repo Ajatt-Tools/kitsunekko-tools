@@ -172,7 +172,7 @@ def collect_sitemap_urls(
         )
         for entry in entries
     )
-    return tuple((*index_pages, *entry_pages))
+    return (*index_pages, *entry_pages)
 
 
 class WebSiteBuilder:
