@@ -2,5 +2,5 @@
 
 if [[ -f ktools.toml ]]; then
 	rm -rf -- _site
-	ktools build -c ktools.toml
+	hatch run ktools build -c ktools.toml
 fi
