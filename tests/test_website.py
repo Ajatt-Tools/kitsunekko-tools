@@ -4,6 +4,7 @@ import datetime
 import pathlib
 import xml.etree.ElementTree as ET
 from collections.abc import Sequence
+from typing import NamedTuple
 
 import pytest
 
@@ -157,7 +158,7 @@ def test_collect_sitemap_urls_index_pages_use_build_date(
 
 
 @pytest.fixture
-def tmp_site_builder(tmp_path: pathlib.Path):
+def tmp_site_builder(tmp_path: pathlib.Path) -> WebSiteBuilder:
     """Create a WebSiteBuilder with a temporary directory structure."""
     # Create directory structure
     dest = tmp_path / "subtitles"
@@ -195,7 +196,7 @@ def mk_site_entry(
     )
 
 
-def test_generate_robots_txt_creates_file(tmp_site_builder) -> None:
+def test_generate_robots_txt_creates_file(tmp_site_builder: WebSiteBuilder) -> None:
     """Verify robots.txt is created with correct content."""
     tmp_site_builder.generate_robots_txt()
     robots_path = tmp_site_builder._paths.robots_file_path
@@ -206,9 +207,18 @@ def test_generate_robots_txt_creates_file(tmp_site_builder) -> None:
     assert "Sitemap:" in content
 
 
-def _generate_sitemap_content(tmp_site_builder, entry_names: Sequence[str]) -> str:
+class EntrySpec(NamedTuple):
+    """Lightweight specification for a sitemap test entry."""
+
+    name: str
+    has_meta: bool = True
+
+
+def _generate_sitemap_content(tmp_site_builder: WebSiteBuilder, entries_spec: Sequence[EntrySpec]) -> str:
     """Generate a sitemap and return its text content."""
-    entries = [mk_site_entry(tmp_site_builder, name=name, year_=2024) for name in entry_names]
+    entries = [
+        mk_site_entry(tmp_site_builder, name=spec.name, year_=2024, has_meta=spec.has_meta) for spec in entries_spec
+    ]
     tmp_site_builder.generate_sitemap(entries)
     sitemap_path = tmp_site_builder._paths.sitemap_file_path
     assert sitemap_path.exists()
@@ -233,37 +243,45 @@ ALWAYS_PRESENT = frozenset(["index.html", "drama.html"])
 
 
 @pytest.mark.parametrize(
-    "entry_names, expected_substrings",
+    "entries_spec, expected_substrings",
     [
         ([], ["index.html", "drama.html"]),
-        (["My Show"], ["my-show.html"]),
-        (["Another Show"], ["another-show.html"]),
-        (["My Show", "Another Show"], ["my-show.html", "another-show.html"]),
+        ([EntrySpec("My Show")], ["my-show.html"]),
+        ([EntrySpec("Another Show")], ["another-show.html"]),
+        ([EntrySpec("My Show"), EntrySpec("Another Show")], ["my-show.html", "another-show.html"]),
+        ([EntrySpec("Orphan", has_meta=False)], ["orphan.html"]),
     ],
-    ids=["index_pages", "entry_my_show", "entry_another_show", "both_entries"],
+    ids=["index_pages", "entry_my_show", "entry_another_show", "both_entries", "orphan_entry"],
 )
 def test_sitemap_page_presence(
-    tmp_site_builder,
-    entry_names: list[str],
+    tmp_site_builder: WebSiteBuilder,
+    entries_spec: list[EntrySpec],
     expected_substrings: list[str],
 ) -> None:
     """Verify that expected URLs appear in the sitemap's <loc> elements."""
-    content = _generate_sitemap_content(tmp_site_builder, entry_names)
+    content = _generate_sitemap_content(tmp_site_builder, entries_spec)
     root = ET.fromstring(content)
     assert ALWAYS_PRESENT.union(expected_substrings) == frozenset(_sitemap_filenames(root))
 
 
-def test_sitemap_excludes_not_found(tmp_site_builder) -> None:
-    """Verify not_found.html is NOT in sitemap."""
+def test_sitemap_excludes_not_found(tmp_site_builder: WebSiteBuilder) -> None:
+    """Verify not_found.html is NOT in the sitemap."""
     content = _generate_sitemap_content(tmp_site_builder, ())
     root = ET.fromstring(content)
-    filenames = _sitemap_filenames(root)
-    assert "not_found.html" not in filenames
+    assert "not_found.html" not in _sitemap_filenames(root)
 
 
-def test_sitemap_structure(tmp_site_builder) -> None:
+@pytest.mark.parametrize(
+    "entry_spec",
+    [
+        EntrySpec("Test Show"),
+        EntrySpec("Orphan", has_meta=False),
+    ],
+    ids=["with_meta", "orphan"],
+)
+def test_sitemap_structure(tmp_site_builder: WebSiteBuilder, entry_spec: EntrySpec) -> None:
     """Parse the sitemap as XML and validate protocol compliance."""
-    content = _generate_sitemap_content(tmp_site_builder, ("Test Show",))
+    content = _generate_sitemap_content(tmp_site_builder, (entry_spec,))
 
     root = ET.fromstring(content)
 
