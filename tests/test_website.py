@@ -221,20 +221,15 @@ def _ns(tag: str) -> str:
 
 def _sitemap_locs(root: ET.Element) -> list[str]:
     """Extract all <loc> text from a sitemap root element."""
-    return [
-        c.text
-        for url_elem in root
-        for c in url_elem
-        if c.tag == _ns("loc") and c.text
-    ]
+    return [str(loc.text) for url_elem in root for loc in url_elem if loc.tag == _ns("loc") and loc.text]
 
 
 def _sitemap_filenames(root: ET.Element) -> list[str]:
     """Extract all filenames from <loc> elements."""
-    return [
-        pathlib.Path(x).name
-        for x in _sitemap_locs(root)
-    ]
+    return [pathlib.Path(x).name for x in _sitemap_locs(root)]
+
+
+ALWAYS_PRESENT = frozenset(["index.html", "drama.html"])
 
 
 @pytest.mark.parametrize(
@@ -255,10 +250,7 @@ def test_sitemap_page_presence(
     """Verify that expected URLs appear in the sitemap's <loc> elements."""
     content = _generate_sitemap_content(tmp_site_builder, entry_names)
     root = ET.fromstring(content)
-    found = frozenset(_sitemap_filenames(root))
-    always_present = frozenset(["index.html", "drama.html"])
-    expected = frozenset(expected_substrings) | always_present
-    assert expected == found
+    assert ALWAYS_PRESENT.union(expected_substrings) == frozenset(_sitemap_filenames(root))
 
 
 def test_sitemap_excludes_not_found(tmp_site_builder) -> None:
@@ -267,7 +259,6 @@ def test_sitemap_excludes_not_found(tmp_site_builder) -> None:
     root = ET.fromstring(content)
     filenames = _sitemap_filenames(root)
     assert "not_found.html" not in filenames
-
 
 
 def test_sitemap_structure(tmp_site_builder) -> None:
