@@ -4,6 +4,7 @@
 import dataclasses
 import datetime
 import typing
+from collections.abc import Iterable, Sequence
 
 from kitsunekko_tools.api_access.root_directory import parse_api_time
 from kitsunekko_tools.common import datetime_now_utc, fs_name_strip
@@ -36,7 +37,7 @@ class ApiFileEntry:
         )
 
 
-def iter_directory_files(json_response: typing.Sequence[ApiFileDict]) -> typing.Iterable[ApiFileEntry]:
+def iter_directory_files(json_response: Sequence[ApiFileDict]) -> Iterable[ApiFileEntry]:
     for item in json_response:
         yield ApiFileEntry.from_api_json(item)
 

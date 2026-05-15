@@ -1,13 +1,11 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import csv
-import functools
 import io
 import pathlib
 import shutil
-import typing
 import zipfile
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 
 from beartype import beartype
 
@@ -17,7 +15,7 @@ from kitsunekko_tools.consts import ARCHIVE_FILE_TYPES, SUBTITLE_FILE_TYPES
 
 
 @beartype
-def get_tsv_reader(f: io.TextIOWrapper, fieldnames: typing.Sequence[str] | None = None) -> csv.DictReader:
+def get_tsv_reader(f: io.TextIOWrapper, fieldnames: Sequence[str] | None = None) -> csv.DictReader:
     return csv.DictReader(
         f,
         fieldnames=fieldnames,
@@ -28,7 +26,7 @@ def get_tsv_reader(f: io.TextIOWrapper, fieldnames: typing.Sequence[str] | None 
 
 
 @beartype
-def get_tsv_writer(of: io.TextIOWrapper, fieldnames: typing.Sequence[str]) -> csv.DictWriter:
+def get_tsv_writer(of: io.TextIOWrapper, fieldnames: Sequence[str]) -> csv.DictWriter:
     return csv.DictWriter(
         of,
         fieldnames=fieldnames,

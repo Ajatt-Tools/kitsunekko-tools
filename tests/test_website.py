@@ -2,8 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import datetime
 import pathlib
-from collections.abc import Sequence
 import xml.etree.ElementTree as ET
+from collections.abc import Sequence
 
 import pytest
 

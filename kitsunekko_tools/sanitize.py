@@ -181,7 +181,7 @@ class MergeSameId:
     def __init__(self, config: KitsuConfig) -> None:
         self._cfg = config
 
-    def _collect_directories_with_same_id(self) -> typing.Sequence[DuplicatesGroup]:
+    def _collect_directories_with_same_id(self) -> Sequence[DuplicatesGroup]:
         """
         Find directories that have a .kitsuinfo.json file and matching entry_id.
         Returns a list of groups.

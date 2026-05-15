@@ -6,7 +6,7 @@ import dataclasses
 import datetime
 import enum
 import typing
-from collections.abc import Coroutine
+from collections.abc import Coroutine, Iterable, Sequence
 
 import httpx
 
@@ -75,9 +75,7 @@ class ApiRateLimitedError(ApiBadStatusError):
         return f"rate limited. remaining time {self.rate_limit.reset_after}."
 
 
-def api_make_payload(
-    directory: KitsuDirectoryEntry, found_files: typing.Iterable[ApiFileEntry]
-) -> DownloadSubtitlesList:
+def api_make_payload(directory: KitsuDirectoryEntry, found_files: Iterable[ApiFileEntry]) -> DownloadSubtitlesList:
     return DownloadSubtitlesList(
         to_download=[
             KitsuSubtitleDownload(
@@ -102,7 +100,7 @@ def handle_response_status(response: httpx.Response):
             raise ApiBadStatusError(status)
 
 
-async def get_directory_files(client: httpx.AsyncClient, details_url: str) -> typing.Sequence[ApiFileEntry]:
+async def get_directory_files(client: httpx.AsyncClient, details_url: str) -> Sequence[ApiFileEntry]:
     try:
         r = await client.get(details_url)
     except Exception as e:
@@ -112,7 +110,7 @@ async def get_directory_files(client: httpx.AsyncClient, details_url: str) -> ty
         return [*iter_directory_files(r.json())]
 
 
-async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing.Sequence[ApiDirectoryEntry]:
+async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> Sequence[ApiDirectoryEntry]:
     try:
         r = await client.get(search_url)
     except Exception as e:
@@ -123,7 +121,7 @@ async def get_catalog_dirs(client: httpx.AsyncClient, search_url: str) -> typing
         return sorted(iter_catalog_directories(r.json()), key=dir_meta_sort_key)
 
 
-def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: typing.Sequence[ApiFileEntry]) -> None:
+def trash_files_missing_on_remote(directory: KitsuDirectoryEntry, remote_files: Sequence[ApiFileEntry]) -> None:
     all_names = {
         entry.name for entry in directory.dir_path.iterdir() if entry.is_file() and entry.name not in SKIP_FILES
     }

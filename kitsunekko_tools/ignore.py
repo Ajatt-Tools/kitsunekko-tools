@@ -5,6 +5,7 @@ import dataclasses
 import datetime
 import pathlib
 import typing
+from collections.abc import Iterable
 
 from kitsunekko_tools.api_access.root_directory import format_api_time, parse_api_time
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, KitsuException, max_datetime
@@ -119,7 +120,7 @@ class IgnoreTSVForDir:
     def is_matching(self, file_path: pathlib.Path) -> bool:
         return file_path.name in self._patterns
 
-    def patterns(self) -> typing.Iterable[IgnoreFileEntry]:
+    def patterns(self) -> Iterable[IgnoreFileEntry]:
         """
         Return all known ignore patterns.
         """

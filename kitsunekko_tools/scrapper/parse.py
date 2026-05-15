@@ -7,6 +7,7 @@ import pathlib
 import re
 import typing
 import urllib.parse
+from collections.abc import Iterable
 from zoneinfo import ZoneInfo
 
 from kitsunekko_tools.common import datetime_now_utc, fs_name_strip
@@ -46,7 +47,7 @@ def sanitize_name(title: str) -> str:
     return fs_name_strip(urllib.parse.unquote(title))
 
 
-def find_all_subtitle_dirs(html_text: str) -> typing.Iterable[AnimeDir]:
+def find_all_subtitle_dirs(html_text: str) -> Iterable[AnimeDir]:
     for match in re.finditer(RE_SUBTITLE_DIR, html_text):
         yield AnimeDir(
             url=f"{KITSUNEKKO_DOMAIN_URL}/{match.group('abs_path')}",
@@ -56,7 +57,7 @@ def find_all_subtitle_dirs(html_text: str) -> typing.Iterable[AnimeDir]:
         )
 
 
-def find_all_subtitle_files(html_text: str) -> typing.Iterable[SubtitleFile]:
+def find_all_subtitle_files(html_text: str) -> Iterable[SubtitleFile]:
     for match in re.finditer(RE_SUBTITLE_FILE, html_text):
         show_name, file_name = match.group("abs_path").split("/")[-2:]
         yield SubtitleFile(

@@ -6,7 +6,7 @@ import datetime
 import json
 import pathlib
 import typing
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from pprint import pprint
 
 from kitsunekko_tools.common import fs_name_strip
@@ -110,7 +110,7 @@ class ApiDirectoryEntry(DirectoryMetaProtocol):
         return dataclasses.replace(self, last_modified=mod_time)
 
 
-def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> typing.Iterable[ApiDirectoryEntry]:
+def iter_catalog_directories(json_response: Sequence[ApiDirectoryDict]) -> Iterable[ApiDirectoryEntry]:
     for item in json_response:
         yield ApiDirectoryEntry.from_api_json(item)
 

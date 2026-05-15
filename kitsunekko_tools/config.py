@@ -10,6 +10,7 @@ import os.path
 import pathlib
 import tomllib
 import typing
+from collections.abc import Sequence
 
 from beartype.door import die_if_unbearable
 
@@ -38,7 +39,7 @@ def get_xdg_config_dir() -> pathlib.Path:
 
 
 @functools.cache
-def config_locations() -> typing.Sequence[pathlib.Path]:
+def config_locations() -> Sequence[pathlib.Path]:
     return (
         get_xdg_config_dir() / PROG_NAME / SETTINGS_FILE_NAME,
         pathlib.Path.home() / SETTINGS_FILE_NAME,
@@ -149,7 +150,9 @@ class KitsuConfig:
 
         instance = cls(**data)
         if "dirlst.php?dir=" not in instance.download_root:
-            raise ConfigFileInvalidError(f"Download root '{instance.download_root}' doesn't appear to be a valid kitsunekko URL.")
+            raise ConfigFileInvalidError(
+                f"Download root '{instance.download_root}' doesn't appear to be a valid kitsunekko URL."
+            )
         return dataclasses.replace(
             instance,
             proxy=instance.proxy or None,  # coerce proxy to null if it's empty

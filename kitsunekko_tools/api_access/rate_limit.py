@@ -3,6 +3,7 @@
 import asyncio
 import time
 import typing
+from collections.abc import Mapping
 
 from httpx import Headers
 
@@ -34,7 +35,7 @@ class RateLimit(typing.NamedTuple):
     reset_after: float | int = 0
 
     @classmethod
-    def from_headers(cls, headers: Headers) -> typing.Self:
+    def from_headers(cls, headers: Mapping[str, str]) -> typing.Self:
         return cls(
             **{
                 header_key_to_field_name(key): parse_num(value)
