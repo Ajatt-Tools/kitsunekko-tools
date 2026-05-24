@@ -22,11 +22,11 @@
     {% block extra_scripts %}{% endblock %}
 
     <!-- scripts -->
-    <script defer src="{{ ctx.site_blog_url }}/res/blog.js"></script>
+    <script defer src="{{ join_url(ctx.site_blog_url, "res/blog.js") }}"></script>
     <script defer src="{{ ctx.js_file_path | as_relative_to(ctx.output_file_path) }}"></script>
 
     <!-- links -->
-    <link rel="stylesheet" href="{{ ctx.site_blog_url }}/res/blog.css" type="text/css">
+    <link rel="stylesheet" href="{{ join_url(ctx.site_blog_url, "res/blog.css") }}" type="text/css">
     <link rel="stylesheet" href="{{ ctx.css_file_path | as_relative_to(ctx.output_file_path) }}" type="text/css">
     <link rel="icon" type="{{ ctx.favicon_path | mime_type }}" href="{{ ctx.favicon_path | as_relative_to(ctx.output_file_path) }}">
     <link rel="canonical" href="{{ ctx.request_url }}">
@@ -46,11 +46,11 @@
             <a href="{{ cfg.repo_github_url }}" title="Repository on GitHub" target="_blank" rel="noopener noreferrer nofollow">GitHub</a>
 
             <!-- Other site links -->
-            <a href="{{ ctx.site_blog_url }}/table-of-contents.html" class="guide_link">Guide</a>
-            <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>
-            <a href="{{ ctx.site_blog_url }}/tag_faq.html">FAQ</a>
-            <a href="{{ ctx.site_blog_url }}/donating-to-tatsumoto.html">Donate</a>
-            <a href="{{ ctx.site_blog_url }}/join-our-community.html" class="important">Join chat</a>
+            <a href="{{ join_url(ctx.site_blog_url, "table-of-contents.html") }}" class="guide_link">Guide</a>
+            <a href="{{ join_url(ctx.site_blog_url, "resources.html") }}">Resources</a>
+            <a href="{{ join_url(ctx.site_blog_url, "tag_faq.html") }}">FAQ</a>
+            <a href="{{ join_url(ctx.site_blog_url, "donating-to-tatsumoto.html") }}">Donate</a>
+            <a href="{{ join_url(ctx.site_blog_url, "join-our-community.html") }}" class="important">Join chat</a>
         </nav>
         <label class="menu-btn" for="menu-btn"><span class="menu-icon hamburger"></span></label>
     </header>
@@ -68,18 +68,18 @@
             <a href="{{ paths.index_file_path | as_relative_to(ctx.output_file_path) }}" title="Anime subtitles">Anime subs</a>
             <a href="{{ paths.drama_index_file_path | as_relative_to(ctx.output_file_path) }}" title="Drama subtitles">Drama subs</a>
             <!-- Other site links -->
-            <a href="{{ ctx.site_blog_url }}/table-of-contents.html">Guide</a>
-            <a href="{{ ctx.site_blog_url }}/our-immersion-learning-toolset.html">Tools</a>
-            <a href="{{ ctx.site_blog_url }}/resources.html">Resources</a>
-            <a href="{{ ctx.site_blog_url }}/ankidrone-decks.html">Decks</a>
-            <a href="{{ ctx.site_blog_url }}/tag_dictionaries.html">Dictionaries</a>
-            <a href="{{ ctx.site_blog_url }}/tag_faq.html">FAQ</a>
+            <a href="{{ join_url(ctx.site_blog_url, "table-of-contents.html") }}">Guide</a>
+            <a href="{{ join_url(ctx.site_blog_url, "our-immersion-learning-toolset.html") }}">Tools</a>
+            <a href="{{ join_url(ctx.site_blog_url, "resources.html") }}">Resources</a>
+            <a href="{{ join_url(ctx.site_blog_url, "ankidrone-decks.html") }}">Decks</a>
+            <a href="{{ join_url(ctx.site_blog_url, "tag_dictionaries.html") }}">Dictionaries</a>
+            <a href="{{ join_url(ctx.site_blog_url, "tag_faq.html") }}">FAQ</a>
         </div>
         <hr>
 
         <div class="important-links">
-            <a href="{{ ctx.site_blog_url }}/donating-to-tatsumoto.html">Donate</a>
-            <a href="{{ ctx.site_blog_url }}/join-our-community.html">Join chat</a>
+            <a href="{{ join_url(ctx.site_blog_url, "donating-to-tatsumoto.html") }}">Donate</a>
+            <a href="{{ join_url(ctx.site_blog_url, "join-our-community.html") }}">Join chat</a>
         </div>
     </div>
 
