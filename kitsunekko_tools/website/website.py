@@ -82,7 +82,12 @@ def make_search_link(is_anime: bool, query: str) -> EntryExternalSearchLink:
         return EntryExternalSearchLink(url=f"https://mydramalist.com/search?q={query}", text="Search MDL")
 
 
-def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[float, str]:
+class EntrySortTuple(typing.NamedTuple):
+    timestamp_reversed: float
+    directory_name: str
+
+
+def entry_sort_key(entry: LocalDirectoryEntry) -> EntrySortTuple:
     """Sort directory entries for the website index page, newest first.
 
     Used by WebSiteBuilder to order all entries on the index pages.
@@ -93,8 +98,8 @@ def entry_sort_key(entry: LocalDirectoryEntry) -> tuple[float, str]:
     2. Directory name as an alphabetical tiebreaker.
     """
     if entry.meta:
-        return -entry.meta.last_modified.timestamp(), entry.meta.name
-    return -epoch_datetime().timestamp(), entry.path_to_dir.name
+        return EntrySortTuple(-entry.meta.last_modified.timestamp(), entry.meta.name)
+    return EntrySortTuple(-epoch_datetime().timestamp(), entry.path_to_dir.name)
 
 
 def mk_shell_compatible_url_list(files: list[FileMetaData], cfg: KitsuConfig) -> str:
