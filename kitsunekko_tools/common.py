@@ -57,3 +57,22 @@ def max_datetime(t1: datetime.datetime, t2: datetime.datetime) -> datetime.datet
 def epoch_datetime() -> datetime.datetime:
     """Return the Unix epoch as a timezone-aware UTC datetime. Cached because the value never changes."""
     return datetime.datetime.fromtimestamp(0, tz=datetime.UTC)
+
+
+def join_url(*parts: str) -> str:
+    """Join URL path segments, handling trailing and leading slashes.
+
+    Preserves the protocol prefix of the first part (e.g., https://).
+    Strips leading and trailing slashes from subsequent parts before joining.
+    """
+    if not parts:
+        return ""
+    first, *rest = parts
+    first = first.rstrip(r"\/ ")
+    parts = [first, *(segment.strip(r"\/ ") for segment in rest)]
+    return "/".join(filter(bool, parts))
+
+
+def no_trailing_slash(url: str) -> str:
+    """Strip trailing slashes and backslashes from a URL."""
+    return url.rstrip(r"\/ ")

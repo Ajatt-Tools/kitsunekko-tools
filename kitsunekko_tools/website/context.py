@@ -5,12 +5,11 @@ import datetime
 import pathlib
 from types import SimpleNamespace
 
-from kitsunekko_tools.common import datetime_now_utc
+from kitsunekko_tools.common import datetime_now_utc, no_trailing_slash
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import PROG_GITHUB_URL, SITEMAP_NS
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
-from kitsunekko_tools.website.templates import no_trailing_slash
 
 INDEX_TEMPLATE_NAME = "index.html"
 NOT_FOUND_TEMPLATE_NAME = "not_found.html"

@@ -6,8 +6,7 @@ from collections.abc import Iterable
 
 from beartype import beartype
 
-from kitsunekko_tools.common import KitsuError
-from kitsunekko_tools.website.templates import no_trailing_slash
+from kitsunekko_tools.common import KitsuError, join_url
 
 
 @beartype
@@ -78,8 +77,8 @@ def full_site_url_to_resource(global_url: str, site_dir: pathlib.Path, file_path
     from the site directory to the post file.
     """
     # Convert to relative path from site directory
-    relative_path = str(file_path.resolve().relative_to(site_dir))
+    relative_path: pathlib.Path = file_path.resolve().relative_to(site_dir)
     # Return the URL by joining the global URL with the relative path
-    if relative_path.startswith("/"):
-        raise KitsuError("relative path can't start with a slash.")
-    return f"{no_trailing_slash(global_url)}/{urllib.parse.quote(relative_path)}"
+    if relative_path.is_absolute():
+        raise KitsuError(f"not a relative path: {relative_path}")
+    return join_url(global_url, *(urllib.parse.quote(part) for part in relative_path.parts))

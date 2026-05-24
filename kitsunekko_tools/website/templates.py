@@ -11,6 +11,7 @@ import jinja2
 from beartype import beartype
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from kitsunekko_tools.common import KitsuError, join_url, no_trailing_slash
 from kitsunekko_tools.consts import FALLBACK_MIME_TYPE
 from kitsunekko_tools.website.context import SiteContext
 from kitsunekko_tools.website.filesystem import (
@@ -79,11 +80,6 @@ def mime_type_filter(path: pathlib.Path | str) -> str:
     """
     mime, _ = mimetypes.guess_type(pathlib.Path(path).name)
     return mime or FALLBACK_MIME_TYPE
-
-
-@beartype
-def no_trailing_slash(url: str) -> str:
-    return url.rstrip(r"\/")
 
 
 @beartype
@@ -177,6 +173,9 @@ class JinjaEnvHolder:
 
         # MIME-type detection (replaces BashBlog's `file --mime-type` call).
         env.filters["mime_type"] = mime_type_filter
+
+        # Global functions available in templates.
+        env.globals["join_url"] = join_url
 
         return env
 
