@@ -1,5 +1,6 @@
 import datetime
 import re
+import typing
 from collections.abc import Iterable
 
 from kitsunekko_tools.common import fs_name_strip
@@ -47,7 +48,13 @@ def build_lookup_dicts(config: KitsuConfig) -> dict[str, list[LocalDirectoryMeta
     return lookup_key_to_meta
 
 
-def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetime, str]:
+class LocalDirSortTuple(typing.NamedTuple):
+    priority: int
+    last_modified: datetime.datetime
+    directory_name: str
+
+
+def local_dir_sort_key(entry: LocalDirectoryMeta) -> LocalDirSortTuple:
     """
     Sort local directories to pick the best match for a remote directory name.
 
@@ -60,9 +67,9 @@ def local_dir_sort_key(entry: LocalDirectoryMeta) -> tuple[int, datetime.datetim
     """
     match entry:
         case KitsuDirectoryMeta():
-            return 1, entry.last_modified, entry.name
+            return LocalDirSortTuple(1, entry.last_modified, entry.name)
         case NoMetaDirectoryEntry():
-            return 0, entry.last_modified, entry.name
+            return LocalDirSortTuple(0, entry.last_modified, entry.name)
         case _:
             raise ValueError(f"unknown type: {type(entry)}")
 
