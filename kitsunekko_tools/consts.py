@@ -10,6 +10,7 @@ P = typing.Final[pathlib.Path]
 SS = typing.Final[Sequence[str]]
 
 PROG_NAME: S = "kitsunekko-tools"
+PROG_GITHUB_URL: S = "https://github.com/Ajatt-Tools/kitsunekko-tools"
 SETTINGS_FILE_NAME: S = f"{PROG_NAME}.toml"
 KITSUNEKKO_DOMAIN_URL: S = "https://kitsunekko.net"
 IGNORE_FILENAME: S = ".kitsuignore"

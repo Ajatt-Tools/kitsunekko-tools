@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from kitsunekko_tools.common import datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import SITEMAP_NS
+from kitsunekko_tools.consts import SITEMAP_NS, PROG_GITHUB_URL
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 
@@ -71,6 +71,8 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
         cfg=config,
         paths=paths,
         ctx=SimpleNamespace(
+            # GitHub URLs
+            prog_github_url=PROG_GITHUB_URL,
             # Paths
             output_file_path=output_file_path,
             site_dir_path=paths.site_dir_path,
