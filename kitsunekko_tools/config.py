@@ -122,6 +122,7 @@ class KitsuConfig:
         "https://raw.githubusercontent.com/Ajatt-Tools/kitsunekko-mirror/refs/heads/main/subtitles/"
     )
     git_subtitles_dir_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/"
+    repo_github_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/"
 
     @classmethod
     def default(cls) -> typing.Self:
