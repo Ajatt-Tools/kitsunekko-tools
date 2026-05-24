@@ -99,14 +99,14 @@ class JinjaEnvHolder:
         self._cfg = config
         self._templates_dir_path = templates_dir_path
         self._site_dir_path = site_dir_path
-        self._template_env = self.create_tmpl_env()
+        self._template_env = self._create_tmpl_env()
 
     @property
     def template_env(self) -> jinja2.Environment:
         return self._template_env
 
     @beartype
-    def create_tmpl_env(self) -> jinja2.Environment:
+    def _create_tmpl_env(self) -> jinja2.Environment:
         """Create a Jinja2 template environment."""
         env = Environment(
             loader=FileSystemLoader(self._templates_dir_path),
