@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from beartype import beartype
 
 from kitsunekko_tools.common import KitsuError
+from kitsunekko_tools.website.templates import no_trailing_slash
 
 
 @beartype
@@ -81,4 +82,4 @@ def full_site_url_to_resource(global_url: str, site_dir: pathlib.Path, file_path
     # Return the URL by joining the global URL with the relative path
     if relative_path.startswith("/"):
         raise KitsuError("relative path can't start with a slash.")
-    return f"{global_url.rstrip('/')}/{urllib.parse.quote(relative_path)}"
+    return f"{no_trailing_slash(global_url)}/{urllib.parse.quote(relative_path)}"

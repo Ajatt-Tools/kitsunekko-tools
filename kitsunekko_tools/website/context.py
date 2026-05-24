@@ -10,6 +10,7 @@ from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import PROG_GITHUB_URL, SITEMAP_NS
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
+from kitsunekko_tools.website.templates import no_trailing_slash
 
 INDEX_TEMPLATE_NAME = "index.html"
 NOT_FOUND_TEMPLATE_NAME = "not_found.html"
@@ -81,7 +82,7 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
             favicon_path=paths.site_dir_path / RESOURCES_DIR_NAME / FAVICON_FILE_NAME,
             # Return the URL by joining the global URL with the relative path
             request_url=full_site_url_to_resource(config.site_url, paths.site_dir_path, output_file_path),
-            site_blog_url=config.site_blog_url.rstrip("/"),
+            site_blog_url=no_trailing_slash(config.site_blog_url),
             # Dates
             current_year=now.year,
             date_now=now,

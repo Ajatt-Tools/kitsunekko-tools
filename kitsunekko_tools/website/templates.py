@@ -151,7 +151,7 @@ class JinjaEnvHolder:
             Make a URL like this: https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/ShowName
             """
             return full_site_url_to_resource(
-                global_url=self._cfg.git_subtitles_dir_url,
+                global_url=no_trailing_slash(self._cfg.git_subtitles_dir_url),
                 site_dir=self._cfg.destination,
                 file_path=path,
             )
