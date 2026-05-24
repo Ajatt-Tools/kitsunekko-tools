@@ -147,7 +147,13 @@ def count_ascii_letters(s: str) -> int:
     return sum(1 for ch in s if ch in ASCII_LETTERS)
 
 
-def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[float, int, str]:
+class DirMetaSortTuple(typing.NamedTuple):
+    timestamp_reversed: float
+    ascii_letter_count_reversed: int
+    directory_name: str
+
+
+def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> DirMetaSortTuple:
     """
     Sort API directory entries for deduplication and catalog display.
 
@@ -160,7 +166,7 @@ def dir_meta_sort_key(dir_meta: ApiDirectoryEntry) -> tuple[float, int, str]:
        Kitsunekko names can be Japanese or English. The English name is more filesystem-friendly and recognizable.
     3. The entry itself as a final tiebreaker for deterministic ordering.
     """
-    return -dir_meta.last_modified.timestamp(), -count_ascii_letters(dir_meta.name), dir_meta.name
+    return DirMetaSortTuple(-dir_meta.last_modified.timestamp(), -count_ascii_letters(dir_meta.name), dir_meta.name)
 
 
 class DuplicatesGroup(typing.NamedTuple):
