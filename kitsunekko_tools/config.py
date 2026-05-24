@@ -107,15 +107,18 @@ def convert_time_delta(skip_older: str | datetime.timedelta) -> datetime.timedel
 
 @dataclasses.dataclass(frozen=True)
 class KitsuConfig:
+    # Downloads
     destination: pathlib.Path  # E.g. "/mnt/archive/japanese/kitsunekko-mirror/subtitles"
     skip_older: datetime.timedelta  # E.g. 30 days
     allowed_file_types: frozenset[str]  # E.g. ['ssa', 'ass', 'srt']
     proxy: str | None = "socks5://127.0.0.1:9050"
     download_root: str = "https://kitsunekko.net/dirlst.php?dir=subtitles%2Fjapanese%2F"  # scrap target
     timeout: int = 120
+    # Downloads with API
     api_url: str = "https://kitsunekko.net"  # URL of a subtitle server. Normally looks like 'https://example.com'.
     api_key: str = ""  # API key of the subtitle server
     headers: dict[str, str] = dataclasses.field(default_factory=lambda: DEFAULT_HEADERS.copy())
+    # Catalog website
     site_url: str = "https://subtitles.ajatt.top/"  # for building the catalog.
     site_blog_url: str = "https://ajatt.top/blog/"
     raw_subtitles_dir_url: str = (
@@ -123,6 +126,11 @@ class KitsuConfig:
     )
     git_subtitles_dir_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/tree/main/subtitles/"
     repo_github_url: str = "https://github.com/Ajatt-Tools/kitsunekko-mirror/"
+    # Site metadata
+    site_description: str = "Japanese subtitles for Japanese anime, dramas, TV shows, and movies"
+    site_title: str = "Japanese subtitles - AJATT"
+    site_author: str = "Tatsumoto Ren"
+    site_keywords: str = "japanese, subtitles, anime, TV, dramas, AJATT"
 
     @classmethod
     def default(cls) -> typing.Self:

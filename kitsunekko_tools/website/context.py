@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from kitsunekko_tools.common import datetime_now_utc
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import SITEMAP_NS, PROG_GITHUB_URL
+from kitsunekko_tools.consts import PROG_GITHUB_URL, SITEMAP_NS
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 
@@ -82,10 +82,6 @@ def mk_context(config: KitsuConfig, paths: WebSiteBuilderPaths, output_file_path
             # Return the URL by joining the global URL with the relative path
             request_url=full_site_url_to_resource(config.site_url, paths.site_dir_path, output_file_path),
             site_blog_url=config.site_blog_url.rstrip("/"),
-            site_description="Japanese subtitles for Japanese anime, dramas, TV shows, and movies",
-            site_title="Japanese subtitles - AJATT",
-            site_author="Tatsumoto Ren",
-            site_keywords="japanese, subtitles, anime, TV, dramas, AJATT",
             # Dates
             current_year=now.year,
             date_now=now,
