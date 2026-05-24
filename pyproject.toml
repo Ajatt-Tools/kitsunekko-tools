@@ -40,6 +40,9 @@ path = "kitsunekko_tools/__version__.py"
 [tool.hatch.build.hooks.vcs]
 version-file = "kitsunekko_tools/__version__.py"
 
+[tool.hatch.build]
+exclude = ["kitsunekko_tools/example_catalog/_site"]
+
 [tool.black]
 line-length = 120
 target-version = ['py313']
