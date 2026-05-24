@@ -18,6 +18,7 @@ from kitsunekko_tools.consts import (
 )
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.ignore import FileMetaData
+from kitsunekko_tools.website.filesystem import full_site_url_to_resource
 from kitsunekko_tools.website.templates import mime_type_filter
 from kitsunekko_tools.website.website import (
     LocalDirectoryEntry,
@@ -326,5 +327,63 @@ def test_sitemap_structure(tmp_site_builder: WebSiteBuilder, entry_spec: EntrySp
         "empty",
     ],
 )
-def test_join_url(parts: tuple[str, ...], expected: str) -> None:
+def test_join_url(parts: Sequence[str], expected: str) -> None:
     assert join_url(*parts) == expected
+
+
+@pytest.mark.parametrize(
+    "global_url, relative_parts, expected",
+    [
+        # Normal cases
+        ("https://example.com", ("index.html",), "https://example.com/index.html"),
+        ("https://example.com", ("anime_tv", "show.html"), "https://example.com/anime_tv/show.html"),
+        ("https://example.com/", ("drama.html",), "https://example.com/drama.html"),
+        ("https://example.com", ("a", "b", "c", "d.html"), "https://example.com/a/b/c/d.html"),
+        # URL encoding: special characters
+        (
+            "https://example.com",
+            ("anime_tv", "[oshi-no-ko].html"),
+            "https://example.com/anime_tv/%5Boshi-no-ko%5D.html",
+        ),
+        (
+            "https://example.com",
+            ("drama_tv", "雪煙チェイス.html"),
+            "https://example.com/drama_tv/%E9%9B%AA%E7%85%99%E3%83%81%E3%82%A7%E3%82%A4%E3%82%B9.html",
+        ),
+        ("https://example.com", ("anime_tv", "spy×family.html"), "https://example.com/anime_tv/spy%C3%97family.html"),
+        # URL encoding: spaces
+        ("https://example.com", ("anime_tv", "my show.html"), "https://example.com/anime_tv/my%20show.html"),
+        ("https://example.com", ("Oshi no Ko", "file.srt"), "https://example.com/Oshi%20no%20Ko/file.srt"),
+    ],
+    ids=[
+        "root_file",
+        "nested_file",
+        "trailing_slash_url",
+        "deeply_nested",
+        "brackets_encoded",
+        "japanese_encoded",
+        "unicode_encoded",
+        "spaces_in_filename",
+        "spaces_in_directory",
+    ],
+)
+def test_full_site_url_to_resource(
+    tmp_path: pathlib.Path, global_url: str, relative_parts: Sequence[str], expected: str
+) -> None:
+    """Verify URL construction with proper encoding of path segments."""
+    site_dir = tmp_path / "site"
+    file_path = site_dir.joinpath(*relative_parts)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.touch()
+    assert full_site_url_to_resource(global_url, site_dir, file_path) == expected
+
+
+def test_full_site_url_to_resource_raises_on_unrelated_path(tmp_path: pathlib.Path) -> None:
+    """File not under site_dir raises ValueError from pathlib.relative_to()."""
+    site_dir = tmp_path / "site"
+    site_dir.mkdir()
+    other_file = tmp_path / "other" / "page.html"
+    other_file.parent.mkdir()
+    other_file.touch()
+    with pytest.raises(ValueError):
+        full_site_url_to_resource("https://example.com", site_dir, other_file)
