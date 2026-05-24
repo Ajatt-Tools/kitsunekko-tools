@@ -8,6 +8,7 @@ from typing import NamedTuple
 
 import pytest
 
+from kitsunekko_tools.common import join_url
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import (
     ARCHIVE_FILE_TYPES,
@@ -302,3 +303,28 @@ def test_sitemap_structure(tmp_site_builder: WebSiteBuilder, entry_spec: EntrySp
         lastmod = lastmods[0]
         assert lastmod.text, "<lastmod> must be non-empty"
         assert datetime.date.fromisoformat(lastmod.text).year > 2000
+
+
+@pytest.mark.parametrize(
+    "parts, expected",
+    [
+        (("https://ajatt.top/blog/", "page.html"), "https://ajatt.top/blog/page.html"),
+        (("https://ajatt.top/blog", "page.html"), "https://ajatt.top/blog/page.html"),
+        (("https://ajatt.top/blog/", "/page.html"), "https://ajatt.top/blog/page.html"),
+        (("https://ajatt.top/blog", "res/blog.css"), "https://ajatt.top/blog/res/blog.css"),
+        (("https://ajatt.top/blog", "res", "blog.css"), "https://ajatt.top/blog/res/blog.css"),
+        (("https://ajatt.top/blog/",), "https://ajatt.top/blog"),
+        ((), ""),
+    ],
+    ids=[
+        "trailing_slash",
+        "no_trailing_slash",
+        "leading_slash",
+        "path_segments_joined",
+        "path_segments",
+        "single_part",
+        "empty",
+    ],
+)
+def test_join_url(parts: tuple[str, ...], expected: str) -> None:
+    assert join_url(*parts) == expected
