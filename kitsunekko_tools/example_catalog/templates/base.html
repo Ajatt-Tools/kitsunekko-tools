@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <!-- title -->
-    <title>{% block title %}{{ ctx.site_title }}{% endblock %}</title>
+    <title>{% block title %}{{ cfg.site_title }}{% endblock %}</title>
 
     <!-- meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{ ctx.site_description }}">
-    <meta name="author" content="{{ ctx.site_author }}">
-    <meta name="keywords" content="{{ ctx.site_keywords }}">
+    <meta name="description" content="{{ cfg.site_description }}">
+    <meta name="author" content="{{ cfg.site_author }}">
+    <meta name="keywords" content="{{ cfg.site_keywords }}">
 
     <!-- properties -->
-    <meta property="og:title" content="{% block og_title %}{{ ctx.site_title }}{% endblock %}">
-    <meta property="og:site_name" content="{{ ctx.site_title }}">
+    <meta property="og:title" content="{% block og_title %}{{ cfg.site_title }}{% endblock %}">
+    <meta property="og:site_name" content="{{ cfg.site_title }}">
     <meta property="og:url" content="{{ ctx.request_url }}">
-    <meta property="og:description" content="{{ ctx.site_description }}">
+    <meta property="og:description" content="{{ cfg.site_description }}">
     <meta property="og:image" content="{{ ctx.favicon_path | as_full_url }}">
 
     <!-- In extra scripts templates can include things like jszip.min.js -->
@@ -98,7 +98,7 @@
     {% block footer %}
     <footer>
         <div class="footer-bottom">
-            <p>Copyright © {{ ctx.site_author }} 2025-{{ ctx.current_year }}</p>
+            <p>Copyright © {{ cfg.site_author }} 2025-{{ ctx.current_year }}</p>
             <p>Generated with <a href="{{ ctx.prog_github_url }}" target="_blank" rel="noopener noreferrer nofollow">kitsunekko-tools</a>, a subtitle catalog generator.</p>
         </div>
     </footer>
