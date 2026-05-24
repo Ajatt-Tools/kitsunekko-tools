@@ -2,12 +2,14 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import pathlib
+import string
 import typing
 from collections.abc import Sequence
 
 S = typing.Final[str]
 P = typing.Final[pathlib.Path]
 SS = typing.Final[Sequence[str]]
+FS = typing.Final[frozenset[str]]
 
 PROG_NAME: S = "kitsunekko-tools"
 PROG_GITHUB_URL: S = "https://github.com/Ajatt-Tools/kitsunekko-tools"
@@ -35,5 +37,7 @@ FALLBACK_MIME_TYPE: S = "application/octet-stream"
 
 # Sitemap namespace used in the sitemap Jinja template.
 SITEMAP_NS: S = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+ASCII_LETTERS: FS = frozenset(string.ascii_letters)
 
 __all__ = [name for name in globals() if name.isupper()]

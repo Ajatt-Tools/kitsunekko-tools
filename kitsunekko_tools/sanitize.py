@@ -18,7 +18,7 @@ from kitsunekko_tools.api_access.root_directory import (
 )
 from kitsunekko_tools.common import SKIP_FILES, KitsuError, fs_name_strip
 from kitsunekko_tools.config import KitsuConfig
-from kitsunekko_tools.consts import TRASH_DIR_NAME
+from kitsunekko_tools.consts import ASCII_LETTERS, TRASH_DIR_NAME
 from kitsunekko_tools.filesystem import iter_subtitle_directories, iter_subtitle_files
 from kitsunekko_tools.ignore import IgnoreTSVForDir, get_ignore_file_path_on_disk
 from kitsunekko_tools.local_state import KitsuDirectoryMeta, read_directory_meta
@@ -135,9 +135,6 @@ def delete_empty_directories(config: KitsuConfig) -> None:
         if not files:
             print(f"deleting empty dir: {directory}")
             nuke_dir(directory)
-
-
-ASCII_LETTERS = frozenset(string.ascii_letters)
 
 
 def count_ascii_letters(s: str) -> int:
