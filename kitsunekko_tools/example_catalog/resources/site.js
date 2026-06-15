@@ -434,12 +434,25 @@
         document.querySelectorAll(".no-js-msg").forEach(el => el.remove());
     }
 
+    /**
+     * Close the mobile sidebar menu by unchecking the #menu-btn checkbox.
+     * The sidebar visibility is CSS-controlled via the :checked pseudo-class.
+     */
+    function close_sidebar() {
+        const btn = document.querySelector("#menu-btn");
+        if (btn) {
+            btn.checked = false;
+        }
+    }
+
     function main() {
         remove_no_js_elements();
         adjustModTimeColumnNameToLocalTimeZone();
         adjustTableRowsToLocalTimeZone();
         addSortingListeners();
         initDownloadCheckboxes();
+        // Close the mobile sidebar on any click in the main content area.
+        document.querySelector(".subtitle_catalog_main_wrap")?.addEventListener("click", close_sidebar);
     }
 
     document.addEventListener("DOMContentLoaded", main);
