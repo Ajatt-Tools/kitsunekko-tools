@@ -49,7 +49,6 @@ main a[href$=".srt"]::before {
     margin: 0 auto;
     width: 100%;
     max-width: var(--index-page-width);
-    box-shadow: 0 1px 4px 0 var(--elem-shadow-color);
     padding: 0;
 }
 
@@ -186,6 +185,10 @@ main a[href$=".srt"]::before {
     &[data-is-sorting="true"] {
         pointer-events: none;
     }
+}
+
+.entries_table.index_table {
+    box-shadow: 0 1px 4px 0 var(--elem-shadow-color);
 }
 
 /* While sorting, show a notification. */
