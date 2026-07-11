@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import datetime
 import pathlib
+import re
 import xml.etree.ElementTree as ET
 from collections.abc import Sequence
 from typing import NamedTuple
@@ -12,6 +13,7 @@ from kitsunekko_tools.common import join_url
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import (
     ARCHIVE_FILE_TYPES,
+    BUNDLED_RESOURCES_DIR,
     FALLBACK_MIME_TYPE,
     SITEMAP_NS,
     SUBTITLE_FILE_TYPES,
@@ -28,6 +30,31 @@ from kitsunekko_tools.website.website import (
     entry_sort_key,
 )
 from tests.helpers import make_paths, mk_entry, mk_file, year
+
+
+def css_property(css: str, selector: str, property_name: str) -> str | None:
+    """Return a property value from a simple CSS rule, or None when it is absent."""
+    rule_match = re.search(rf"{re.escape(selector)}\s*\{{(?P<body>[^}}]*)}}", css)
+    if rule_match is None:
+        raise ValueError(f"CSS selector not found: {selector}")
+    property_match = re.search(
+        rf"(?:^|;)\s*{re.escape(property_name)}\s*:\s*(?P<value>[^;]+)", rule_match.group("body")
+    )
+    return property_match.group("value").strip() if property_match else None
+
+
+@pytest.mark.parametrize(
+    "selector, expected_shadow",
+    [
+        (".subtitle_catalog_main", None),
+        (".entries_table.index_table", "0 1px 4px 0 var(--elem-shadow-color)"),
+    ],
+    ids=["transparent_catalog_main", "index_table"],
+)
+def test_catalog_shadow_is_limited_to_index_table(selector: str, expected_shadow: str | None) -> None:
+    """Keep the index shadow off transparent controls and entry-page tables."""
+    css = BUNDLED_RESOURCES_DIR.joinpath("site.css").read_text(encoding="utf-8")
+    assert css_property(css, selector, "box-shadow") == expected_shadow
 
 
 @pytest.mark.parametrize(
