@@ -300,6 +300,34 @@
     }
 
     /**
+     * Get the inclusive checkbox range between two checkboxes in document order.
+     * @param {HTMLInputElement[]} checkboxes
+     * @param {HTMLInputElement} rangeStart
+     * @param {HTMLInputElement} rangeEnd
+     * @returns {HTMLInputElement[]}
+     */
+    function getCheckboxRange(checkboxes, rangeStart, rangeEnd) {
+        const startIndex = checkboxes.indexOf(rangeStart);
+        const endIndex = checkboxes.indexOf(rangeEnd);
+        if (startIndex === -1 || endIndex === -1) {
+            return [];
+        }
+        return checkboxes.slice(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex) + 1);
+    }
+
+    /**
+     * Apply the current checkbox state to every checkbox in the clicked range.
+     * @param {HTMLElement} section
+     * @param {HTMLInputElement} rangeStart
+     * @param {HTMLInputElement} rangeEnd
+     */
+    function selectCheckboxRange(section, rangeStart, rangeEnd) {
+        getCheckboxRange(getFileCheckboxes(section), rangeStart, rangeEnd).forEach(checkbox => {
+            checkbox.checked = rangeEnd.checked;
+        });
+    }
+
+    /**
      * Trigger a browser download from a Blob.
      * @param {Blob} blob
      * @param {string} filename
@@ -402,6 +430,8 @@
      */
     function initDownloadCheckboxes() {
         for (const section of document.querySelectorAll("section[data-entry-name]")) {
+            let lastClickedCheckbox = null;
+
             // "Select all" button.
             const selectAllBtn = section.querySelector(".select-all-btn");
             if (selectAllBtn) {
@@ -411,6 +441,12 @@
             // Individual file checkboxes.
             for (const checkbox of getFileCheckboxes(section)) {
                 checkbox.addEventListener("change", () => updateDownloadBar(section));
+                checkbox.addEventListener("click", event => {
+                    if (event.shiftKey && lastClickedCheckbox) {
+                        selectCheckboxRange(section, lastClickedCheckbox, checkbox);
+                    }
+                    lastClickedCheckbox = checkbox;
+                });
             }
 
             // "Download selected" button.
