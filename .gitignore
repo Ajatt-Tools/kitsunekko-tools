@@ -13,3 +13,4 @@ __version__*
 .mypy_cache
 .pytest_cache
 .ruff_cache
+node_modules
