@@ -16,4 +16,7 @@ isort "${FILES[@]}"
 echo "Running black"
 black "${FILES[@]}"
 echo "Running prettier"
-prettier -w kitsunekko_tools/example_catalog/resources
+prettier -w kitsunekko_tools/example_catalog/resources \
+	kitsunekko_tools/example_catalog/tests \
+	kitsunekko_tools/example_catalog/*.json \
+	kitsunekko_tools/example_catalog/*.js
