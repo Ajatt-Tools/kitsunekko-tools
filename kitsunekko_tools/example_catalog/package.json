@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "check:site-js": "node --check resources/site.js",
+        "check:site-js": "node --check resources/*.js",
         "test:site-js": "vitest run",
         "coverage:site-js": "vitest run --coverage"
     },

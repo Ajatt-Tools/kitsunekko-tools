@@ -10,7 +10,7 @@ export default defineConfig({
         setupFiles: ["tests/setup.ts"],
         coverage: {
             provider: "v8",
-            include: ["resources/site.js"],
+            include: ["resources/*.js"],
             reporter: ["text"],
         },
     },
