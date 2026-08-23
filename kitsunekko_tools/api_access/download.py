@@ -55,7 +55,7 @@ def get_http_api_client(config: KitsuConfig) -> httpx.AsyncClient:
     )
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ApiBadStatusError(KitsuException):
     status: ApiResponseCode
 
@@ -67,7 +67,7 @@ class ApiBadStatusError(KitsuException):
         return f"got response {self.what}."
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ApiRateLimitedError(ApiBadStatusError):
     rate_limit: RateLimit
 

@@ -55,17 +55,17 @@ def default_config_not_found_description() -> str:
         return si.getvalue()
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ConfigFileNotFoundError(KitsuException, FileNotFoundError):
     what: str = default_config_not_found_description()
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class DestDirNotFoundError(KitsuException):
     what: str
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ConfigFileInvalidError(KitsuException, ValueError):
     what: str
 

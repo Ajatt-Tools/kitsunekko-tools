@@ -19,7 +19,7 @@ from kitsunekko_tools.ignore import IgnoreFileEntry, IgnoreTSVForDir
 SubtitleFileUrl = typing.NewType("SubtitleFileUrl", str)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class KitsuConnectionError(KitsuException):
     """
     Failed to connect. Raised from another exception.

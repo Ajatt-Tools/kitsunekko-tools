@@ -19,7 +19,7 @@ from kitsunekko_tools.filesystem import (
 )
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class IgnoreListException(KitsuException):
     what: str
 

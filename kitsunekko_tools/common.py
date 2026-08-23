@@ -15,7 +15,7 @@ class KitsuException(Exception, abc.ABC):
     what: str
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class KitsuError(KitsuException):
     what: str
 
