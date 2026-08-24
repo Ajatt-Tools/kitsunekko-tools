@@ -426,27 +426,33 @@
     }
 
     /**
+     * Add file checkbox listeners and keep a Shift-click anchor local to one subtitle section.
+     * @param {HTMLElement} section
+     */
+    function addCheckboxListeners(section) {
+        let lastClickedCheckbox = null;
+        for (const checkbox of getFileCheckboxes(section)) {
+            checkbox.addEventListener("change", () => updateDownloadBar(section));
+            checkbox.addEventListener("click", event => {
+                if (event.shiftKey && lastClickedCheckbox) {
+                    selectCheckboxRange(section, lastClickedCheckbox, checkbox);
+                }
+                lastClickedCheckbox = checkbox;
+            });
+        }
+    }
+
+    /**
      * Initialize checkbox listeners and download buttons for all entry sections.
      */
     function initDownloadCheckboxes() {
         for (const section of document.querySelectorAll("section[data-entry-name]")) {
-            let lastClickedCheckbox = null;
+            addCheckboxListeners(section);
 
             // "Select all" button.
             const selectAllBtn = section.querySelector(".select-all-btn");
             if (selectAllBtn) {
                 selectAllBtn.addEventListener("click", () => toggleSelectAll(section));
-            }
-
-            // Individual file checkboxes.
-            for (const checkbox of getFileCheckboxes(section)) {
-                checkbox.addEventListener("change", () => updateDownloadBar(section));
-                checkbox.addEventListener("click", event => {
-                    if (event.shiftKey && lastClickedCheckbox) {
-                        selectCheckboxRange(section, lastClickedCheckbox, checkbox);
-                    }
-                    lastClickedCheckbox = checkbox;
-                });
             }
 
             // "Download selected" button.
