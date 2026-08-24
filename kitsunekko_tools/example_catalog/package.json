@@ -2,9 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "check:site-js": "node --check resources/*.js",
-        "test:site-js": "vitest run",
-        "coverage:site-js": "vitest run --coverage"
+        "test": "vitest run --coverage"
     },
     "devDependencies": {
         "@vitest/coverage-v8": "4.1.10",

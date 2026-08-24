@@ -2,7 +2,8 @@
 
 echo "Formatting $PWD"
 
-readonly ROOT_DIR=$(git rev-parse --show-toplevel)
+ROOT_DIR="$(git rev-parse --show-toplevel)" || exit 1
+readonly ROOT_DIR
 
 cd -- "$ROOT_DIR" || exit 1
 

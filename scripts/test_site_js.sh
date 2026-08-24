@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-readonly ROOT_DIR=$(git rev-parse --show-toplevel)
+ROOT_DIR="$(git rev-parse --show-toplevel)" || exit 1
+readonly ROOT_DIR
 
 die() {
 	echo "oops: $*"
@@ -11,8 +12,7 @@ die() {
 
 main() {
 	cd -- "$ROOT_DIR/kitsunekko_tools/example_catalog" || die "can't CD to example catalog"
-	pnpm run test:site-js
-        pnpm run coverage:site-js
+	pnpm test
 	echo "Done."
 }
 
