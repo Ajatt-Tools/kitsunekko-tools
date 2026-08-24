@@ -20,6 +20,12 @@ type BootSiteOptions = {
     sections?: SectionOptions[];
 };
 
+/**
+ * Build one subtitle checkbox table row for the test DOM.
+ * @param sectionType Subtitle format represented by the row.
+ * @param index One-based row index.
+ * @returns HTML for one checkbox row.
+ */
 function checkboxRow(sectionType: string, index: number): string {
     return `
     <tr data-timestamp="${index}" data-file-size="${index}">
@@ -33,6 +39,11 @@ function checkboxRow(sectionType: string, index: number): string {
     </tr>`;
 }
 
+/**
+ * Build one subtitle format section for the test DOM.
+ * @param options Subtitle format and number of rows to create.
+ * @returns HTML for one subtitle section.
+ */
 function subtitleSection({ type, count }: SectionOptions): string {
     return `
     <section class="group_${type}" data-entry-name="Example ${type}">
@@ -54,6 +65,11 @@ function subtitleSection({ type, count }: SectionOptions): string {
     </section>`;
 }
 
+/**
+ * Create an isolated catalog DOM containing the requested subtitle sections.
+ * @param options Optional section definitions.
+ * @returns The isolated JSDOM instance.
+ */
 function makeSiteDom({ sections = [{ type: "srt", count: 4 }] }: BootSiteOptions = {}): JSDOM {
     return new JSDOM(`<main class="no-js">${sections.map(subtitleSection).join("")}</main>`, {
         runScripts: "outside-only",
@@ -61,11 +77,20 @@ function makeSiteDom({ sections = [{ type: "srt", count: 4 }] }: BootSiteOptions
     });
 }
 
+/**
+ * Evaluate the production site script and trigger its initialization event.
+ * @param win Window belonging to the isolated test DOM.
+ */
 function loadSiteScript(win: Window): void {
     win.eval(`${siteScript}\n//# sourceURL=file://${siteScriptPath}`);
     win.document.dispatchEvent(new win.Event("DOMContentLoaded"));
 }
 
+/**
+ * Create and initialize an isolated catalog page for a test.
+ * @param options Optional section definitions.
+ * @returns The DOM, its window, and initialized subtitle sections.
+ */
 export function bootSite(options: BootSiteOptions = {}): { dom: JSDOM; win: Window; sections: HTMLElement[] } {
     const dom = makeSiteDom(options);
     const win = dom.window;
@@ -79,18 +104,39 @@ export function bootSite(options: BootSiteOptions = {}): { dom: JSDOM; win: Wind
     };
 }
 
+/**
+ * Return all file checkboxes in a subtitle section.
+ * @param section Subtitle section to query.
+ * @returns File checkboxes in document order.
+ */
 export function checkboxes(section: HTMLElement): HTMLInputElement[] {
     return [...section.querySelectorAll(".file-checkbox")] as HTMLInputElement[];
 }
 
+/**
+ * Dispatch a realistic checkbox click with an optional Shift modifier.
+ * @param win Window used to construct the mouse event.
+ * @param checkbox Checkbox receiving the click.
+ * @param shiftKey Whether the Shift key is pressed.
+ */
 export function clickCheckbox(win: Window, checkbox: HTMLInputElement, shiftKey = false): void {
     checkbox.dispatchEvent(new win.MouseEvent("click", { bubbles: true, shiftKey }));
 }
 
+/**
+ * Read the displayed selected-file count from a subtitle section.
+ * @param section Subtitle section to query.
+ * @returns Displayed selected-file count.
+ */
 export function selectedCount(section: HTMLElement): string {
     return section.querySelector(".selected-count")?.textContent ?? "";
 }
 
+/**
+ * Return the download button from a subtitle section.
+ * @param section Subtitle section to query.
+ * @returns The section's download button.
+ */
 export function downloadButton(section: HTMLElement): HTMLButtonElement {
     const win = section.ownerDocument.defaultView;
     const button = section.querySelector(".download-selected-btn");
