@@ -11,10 +11,13 @@ readonly -a FILES
 
 echo "Running pyupgrade"
 pyupgrade --py313-plus "${FILES[@]}"
+
 echo "Running isort"
 isort "${FILES[@]}"
+
 echo "Running black"
 black "${FILES[@]}"
+
 echo "Running prettier"
 prettier -w kitsunekko_tools/example_catalog/resources \
 	kitsunekko_tools/example_catalog/tests \
