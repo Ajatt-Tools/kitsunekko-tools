@@ -29,30 +29,47 @@ describe("subtitle checkbox selection", () => {
         expect(downloadButton(section).disabled).toBe(false);
     });
 
-    test("selects an inclusive range on Shift-click", () => {
+    test.each([
+        {
+            name: "selects an inclusive range on Shift-click",
+            actions: [
+                { index: 0, shiftKey: false },
+                { index: 3, shiftKey: true },
+            ],
+            expectedChecked: [true, true, true, true],
+            expectedCount: "4",
+        },
+        {
+            name: "selects an inclusive range in reverse document order",
+            actions: [
+                { index: 3, shiftKey: false },
+                { index: 0, shiftKey: true },
+            ],
+            expectedChecked: [true, true, true, true],
+            expectedCount: "4",
+        },
+        {
+            name: "applies the current checkbox state when Shift-clicking to deselect a range",
+            actions: [
+                { index: 0, shiftKey: false },
+                { index: 3, shiftKey: true },
+                { index: 1, shiftKey: false },
+                { index: 3, shiftKey: true },
+            ],
+            expectedChecked: [true, false, false, false],
+            expectedCount: "1",
+        },
+    ])("$name", ({ actions, expectedChecked, expectedCount }) => {
         const { win, sections } = bootSite();
         const section = sections[0];
         const files = checkboxes(section);
 
-        clickCheckbox(win, files[0]);
-        clickCheckbox(win, files[3], true);
+        for (const { index, shiftKey } of actions) {
+            clickCheckbox(win, files[index], shiftKey);
+        }
 
-        expect(files.map(file => file.checked)).toEqual([true, true, true, true]);
-        expect(selectedCount(section)).toBe("4");
-    });
-
-    test("applies the current checkbox state when Shift-clicking to deselect a range", () => {
-        const { win, sections } = bootSite();
-        const section = sections[0];
-        const files = checkboxes(section);
-
-        clickCheckbox(win, files[0]);
-        clickCheckbox(win, files[3], true);
-        clickCheckbox(win, files[1]);
-        clickCheckbox(win, files[3], true);
-
-        expect(files.map(file => file.checked)).toEqual([true, false, false, false]);
-        expect(selectedCount(section)).toBe("1");
+        expect(files.map(file => file.checked)).toEqual(expectedChecked);
+        expect(selectedCount(section)).toBe(expectedCount);
     });
 
     test("keeps Shift-click ranges inside the current subtitle format section", () => {
