@@ -6,9 +6,15 @@ on:
       - "v*"
 
 jobs:
+  # Do not build or publish a release unless the reusable checks workflow succeeds.
+  checks:
+    name: Run checks
+    uses: ./.github/workflows/checks.yml
+
   # step 1
   build:
     name: Build distribution
+    needs: checks
     runs-on: ubuntu-latest
 
     steps:
