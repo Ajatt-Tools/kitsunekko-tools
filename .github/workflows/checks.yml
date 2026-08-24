@@ -1,0 +1,45 @@
+name: Checks
+
+on:
+  # Tag pushes invoke this workflow through ci-cd.yml, avoiding duplicate checks before releases.
+  push:
+    branches:
+      - "**"
+  pull_request:
+  # Allow ci-cd.yml to gate release builds on these checks.
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kitsunekko_tools/example_catalog
+    steps:
+      - name: Checkout repository revision
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: kitsunekko_tools/example_catalog/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Check shell scripts
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: scripts
