@@ -3,7 +3,7 @@
     "type": "module",
     "packageManager": "pnpm@11.3.0",
     "engines": {
-        "node": ">=24"
+        "node": ">=26"
     },
     "scripts": {
         "test": "vitest run --coverage"
