@@ -3,11 +3,16 @@
 
 import { afterEach, beforeEach, vi } from "vitest";
 
-beforeEach(() => {
+/** Enable deterministic timers before each catalog JavaScript test. */
+function enableFakeTimers(): void {
     vi.useFakeTimers();
-});
+}
 
-afterEach(() => {
+/** Restore timer and mock state after each catalog JavaScript test. */
+function restoreTestEnvironment(): void {
     vi.useRealTimers();
     vi.restoreAllMocks();
-});
+}
+
+beforeEach(enableFakeTimers);
+afterEach(restoreTestEnvironment);
