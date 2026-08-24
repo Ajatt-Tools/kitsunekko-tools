@@ -72,22 +72,29 @@ describe("subtitle checkbox selection", () => {
         expect(selectedCount(section)).toBe(expectedCount);
     });
 
-    test("keeps Shift-click ranges inside the current subtitle format section", () => {
-        const { win, sections } = bootSite({
-            sections: [
-                { type: "ass", count: 3 },
-                { type: "srt", count: 3 },
-            ],
-        });
-        const assFiles = checkboxes(sections[0]);
-        const srtFiles = checkboxes(sections[1]);
+    test.each([
+        { anchorSectionIndex: 0, otherSectionIndex: 1 },
+        { anchorSectionIndex: 1, otherSectionIndex: 0 },
+    ])(
+        "keeps Shift-click anchors inside subtitle section $anchorSectionIndex",
+        ({ anchorSectionIndex, otherSectionIndex }) => {
+            const { win, sections } = bootSite({
+                sections: [
+                    { type: "ass", count: 3 },
+                    { type: "srt", count: 3 },
+                ],
+            });
+            const anchorFiles = checkboxes(sections[anchorSectionIndex]);
+            const otherFiles = checkboxes(sections[otherSectionIndex]);
 
-        clickCheckbox(win, assFiles[0]);
-        clickCheckbox(win, srtFiles[2], true);
+            clickCheckbox(win, anchorFiles[0]);
+            clickCheckbox(win, otherFiles[1]);
+            clickCheckbox(win, anchorFiles[2], true);
 
-        expect(assFiles.map(file => file.checked)).toEqual([true, false, false]);
-        expect(srtFiles.map(file => file.checked)).toEqual([false, false, true]);
-        expect(selectedCount(sections[0])).toBe("1");
-        expect(selectedCount(sections[1])).toBe("1");
-    });
+            expect(anchorFiles.map(file => file.checked)).toEqual([true, true, true]);
+            expect(otherFiles.map(file => file.checked)).toEqual([false, true, false]);
+            expect(selectedCount(sections[anchorSectionIndex])).toBe("3");
+            expect(selectedCount(sections[otherSectionIndex])).toBe("1");
+        },
+    );
 });
