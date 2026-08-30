@@ -18,15 +18,19 @@ jobs:
     name: Build distribution
     needs: checks
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
+      with:
+        submodules: 'recursive'
 
     - name: Set up Python
       uses: actions/setup-python@v7
       with:
-        python-version: "3.11"
+        python-version: "3.14"
 
     - name: Install hatch
       run: >-
