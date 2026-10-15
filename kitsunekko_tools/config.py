@@ -200,6 +200,7 @@ class KitsuConfig:
 
     @property
     def work_root(self) -> pathlib.Path:
+        """Return the directory containing the mirror and generated catalog."""
         return self.destination.resolve().parent
 
 

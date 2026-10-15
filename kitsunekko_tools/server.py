@@ -21,7 +21,7 @@ def system_browser() -> str:
 
 
 def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
-    """Open a URL in the system browser without blocking the command line."""
+    """Launch the browser without waiting, warning only about startup failures."""
     try:
         return subprocess.Popen(
             # Parse quoted arguments without allowing shell expansion or command execution.

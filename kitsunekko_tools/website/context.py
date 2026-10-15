@@ -26,6 +26,7 @@ FAVICON_FILE_NAME = "logo.webp"
 
 
 def make_site_dir_path(config: KitsuConfig) -> pathlib.Path:
+    """Return the generated catalog directory beside the subtitle mirror."""
     return config.work_root.joinpath(SITE_BUILD_LOCATION_NAME)
 
 
