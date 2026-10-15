@@ -62,10 +62,11 @@ def server_config(config: KitsuConfig, *, address: str | None = None, port: int 
 
 def run_server(server: http.server.ThreadingHTTPServer, config: KitsuConfig, *, launch_browser: bool) -> None:
     """Run the bound server, handling interruption while leaving cleanup to the caller."""
+    url = server_browser_url(server)
     try:
-        print(f"Serving {make_site_dir_path(config)} at {server_browser_url(server)}")
+        print(f"Serving {make_site_dir_path(config)} at {url}")
         if launch_browser:
-            open_page_in_browser(server_browser_url(server))
+            open_page_in_browser(url)
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nKeyboard interrupt.")
