@@ -9,8 +9,8 @@
         "test": "vitest run --coverage"
     },
     "devDependencies": {
-        "@vitest/coverage-v8": "4.1.11",
-        "jsdom": "30.0.1",
-        "vitest": "4.1.11"
+        "@vitest/coverage-v8": "5.0.4",
+        "jsdom": "30.1.2",
+        "vitest": "5.0.4"
     }
 }
