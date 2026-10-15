@@ -15,9 +15,9 @@ from kitsunekko_tools.website.context import make_site_dir_path
 
 
 def system_browser() -> str:
-    """Return the browser command from $BROWSER or fall back to xdg-open."""
-    # substitute xdg-open instead of an empty string or None.
-    return os.environ.get("BROWSER") or "xdg-open"
+    """Return the system browser command from $BROWSER or fall back to xdg-open."""
+    # Substitute xdg-open instead of an unset, empty, or whitespace-only command.
+    return os.environ.get("BROWSER", "").strip() or "xdg-open"
 
 
 def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
