@@ -188,11 +188,6 @@ class KitsuConfig:
     def api_headers(self) -> ApiHeaders:
         return {"Authorization": self.api_key}
 
-    @property
-    def server_url(self) -> str:
-        """Return the local catalog server URL configured for this mirror."""
-        return f"http://{self.server_bind_address}:{self.server_bind_port}/"
-
     def is_allowed_file_type(self, file_path: pathlib.Path) -> bool:
         if not self.allowed_file_types:
             return True
