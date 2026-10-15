@@ -1,18 +1,54 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import dataclasses
 import datetime
+import http.server
 import pathlib
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
+from unittest.mock import create_autospec
 
 from kitsunekko_tools.api_access.root_directory import KitsunekkoId, parse_api_time
+from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.entry import EntryType
 from kitsunekko_tools.ignore import FileMetaData, IgnoreFileEntry
 from kitsunekko_tools.local_state import KitsuDirectoryMeta
 from kitsunekko_tools.scrapper.types import NoMetaDirectoryEntry
+from kitsunekko_tools.server import make_server
 from kitsunekko_tools.website.context import (
     SITE_BUILD_LOCATION_NAME,
     WebSiteBuilderPaths,
 )
 from kitsunekko_tools.website.website import LocalDirectoryEntry
+
+
+def make_server_config(tmp_path: pathlib.Path) -> KitsuConfig:
+    """Create a catalog configuration rooted in a temporary directory."""
+    return dataclasses.replace(KitsuConfig.default(), destination=tmp_path / "subtitles")
+
+
+def mock_catalog_server() -> http.server.ThreadingHTTPServer:
+    """Create an autospecced server that behaves as its own context manager."""
+    server = create_autospec(http.server.ThreadingHTTPServer, instance=True)
+    server.server_address = ("127.0.0.1", 49152)
+    server.__enter__.return_value = server
+    server.server_close.return_value = None
+    server.__exit__.side_effect = lambda *_: server.server_close()
+    return server
+
+
+@contextmanager
+def running_catalog_server(config: KitsuConfig) -> Iterator[http.server.ThreadingHTTPServer]:
+    """Serve real HTTP requests on a background thread with guaranteed cleanup."""
+    with make_server(config) as server:
+        thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+        thread.start()
+        try:
+            yield server
+        finally:
+            server.shutdown()
+            thread.join(timeout=5)
 
 
 def year(year_: int) -> datetime.datetime:
