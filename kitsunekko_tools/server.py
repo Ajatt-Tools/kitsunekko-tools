@@ -4,6 +4,7 @@ import dataclasses
 import functools
 import http.server
 import os
+import shlex
 import subprocess
 import sys
 
@@ -21,7 +22,9 @@ def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
     """Open a URL in the system browser without blocking the command line."""
     try:
         return subprocess.Popen(
-            (system_browser(), url),
+            # Parse quoted arguments without allowing shell expansion or command execution.
+            # Support env vars like: BROWSER="firefox --new-window"
+            (*shlex.split(system_browser()), url),
             stderr=subprocess.STDOUT,
             stdout=subprocess.DEVNULL,
             shell=False,
