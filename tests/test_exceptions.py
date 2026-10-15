@@ -20,6 +20,18 @@ from kitsunekko_tools.ignore import IgnoreListException
 from kitsunekko_tools.mega_upload import MegaError
 
 
+class TestKitsuError:
+    """Verify user-facing messages regardless of how the exception is constructed."""
+
+    @pytest.mark.parametrize("message", ["test error", "", "字幕が見つかりません"])
+    @pytest.mark.parametrize("keyword", [False, True], ids=["positional", "keyword"])
+    def test_message(self, message: str, keyword: bool) -> None:
+        """String conversion uses the message rather than Exception.args."""
+        # Keyword construction does not populate Exception.args with the message.
+        error = KitsuError(what=message) if keyword else KitsuError(message)
+        assert str(error) == message
+
+
 @pytest.mark.parametrize(
     "exception",
     [
