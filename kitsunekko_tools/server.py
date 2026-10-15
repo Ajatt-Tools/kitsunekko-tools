@@ -32,7 +32,8 @@ def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
             shell=False,
             start_new_session=True,  # The browser should survive a server keyboard interrupt.
         )
-    except OSError as ex:
+    except (OSError, ValueError) as ex:
+        # shlex.split() raises ValueError for malformed quoting.
         print(f"Warning: could not open the browser: {ex}", file=sys.stderr)
 
 
