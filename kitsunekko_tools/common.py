@@ -7,6 +7,8 @@ import datetime
 import functools
 import re
 
+from beartype import beartype
+
 from kitsunekko_tools.consts import IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME
 from kitsunekko_tools.entry import EntryType
 
@@ -15,9 +17,16 @@ class KitsuException(Exception, abc.ABC):
     what: str
 
 
+@beartype
 @dataclasses.dataclass
 class KitsuError(KitsuException):
-    what: str
+    """Base exception for all Kitsunekko errors."""
+    # Cannot use frozen=True because Python sets __traceback__ on raised exceptions, which requires mutation.
+
+    what: str  # message.
+
+    def __str__(self) -> str:
+        return self.what
 
 
 SKIP_FILES = (IGNORE_FILENAME, INFO_FILENAME, TRASH_DIR_NAME, *(et.name for et in EntryType))
