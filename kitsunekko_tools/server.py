@@ -25,7 +25,7 @@ def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
             stderr=subprocess.STDOUT,
             stdout=subprocess.DEVNULL,
             shell=False,
-            start_new_session=True,
+            start_new_session=True,  # The browser should survive a server keyboard interrupt.
         )
     except OSError as ex:
         print(f"Warning: could not open the browser: {ex}", file=sys.stderr)
