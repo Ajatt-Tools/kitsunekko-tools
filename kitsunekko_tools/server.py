@@ -63,7 +63,12 @@ def serve_site(
 ) -> None:
     """Serve the generated site and optionally open its local URL in the system browser."""
     config = server_config(config, address=address, port=port)
-    server = make_server(config)
+    with make_server(config) as server:
+        run_server(server, config=config, launch_browser=launch_browser)
+
+
+def run_server(server: http.server.ThreadingHTTPServer, config: KitsuConfig, *, launch_browser: bool) -> None:
+    """Run the bound server, handling interruption while leaving cleanup to the caller."""
     try:
         print(f"Serving {make_site_dir_path(config)} at {config.server_url}")
         if launch_browser:
@@ -72,5 +77,4 @@ def serve_site(
     except KeyboardInterrupt:
         print("\nKeyboard interrupt.")
     finally:
-        server.server_close()
         print("Server stopped.")
