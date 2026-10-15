@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 
+from kitsunekko_tools.common import KitsuError
 from kitsunekko_tools.config import KitsuConfig
 from kitsunekko_tools.consts import DEFAULT_SERVER_BIND_ADDRESS
 from kitsunekko_tools.website.context import make_site_dir_path
@@ -36,7 +37,10 @@ def open_page_in_browser(url: str) -> subprocess.Popen[bytes] | None:
 
 
 def make_server(config: KitsuConfig) -> http.server.ThreadingHTTPServer:
-    """Create a threaded HTTP server for the generated site using configured network settings."""
+    """Create an IPv4 HTTP server, rejecting unsupported IPv6 bind addresses."""
+    # ThreadingHTTPServer uses AF_INET. Reject IPv6 before exposing a low-level socket error.
+    if ":" in config.server_bind_address:
+        raise KitsuError("The catalog server supports IPv4 only. Use an IPv4 address or hostname.")
     return http.server.ThreadingHTTPServer(
         server_address=(config.server_bind_address, config.server_bind_port),
         RequestHandlerClass=functools.partial(
