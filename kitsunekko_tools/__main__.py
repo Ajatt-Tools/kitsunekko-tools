@@ -23,6 +23,7 @@ from kitsunekko_tools.sanitize import (
     delete_trash_dirs,
     sanitize_directories,
 )
+from kitsunekko_tools.server import serve_site
 from kitsunekko_tools.website.website import WebSiteBuilder, build_website
 
 
@@ -200,6 +201,21 @@ class Application:
             print(ex.what)
         else:
             build_website(data)
+
+    def server(self, address: str | None = None, port: int | None = None, no_browser: bool = False) -> None:
+        """Serve the generated catalog, opening it in the system browser.
+
+        Args:
+            address: Override the configured server bind address.
+            port: Override the configured server bind port.
+            no_browser: Do not open the site in the system browser.
+        """
+        serve_site(
+            self._config.data(),
+            address=address,
+            port=port,
+            launch_browser=not no_browser,
+        )
 
     def copy_site_resources(self) -> None:
         try:

@@ -25,6 +25,10 @@ JS_FILE_NAME = "site.js"
 FAVICON_FILE_NAME = "logo.webp"
 
 
+def make_site_dir_path(config: KitsuConfig) -> pathlib.Path:
+    return config.work_root.joinpath(SITE_BUILD_LOCATION_NAME)
+
+
 @dataclasses.dataclass(frozen=True)
 class WebSiteBuilderPaths:
     work_root: pathlib.Path
@@ -40,13 +44,12 @@ class WebSiteBuilderPaths:
 
     @classmethod
     def new(cls, config: KitsuConfig):
-        work_root = config.destination.resolve().parent
-        site_dir_path = work_root.joinpath(SITE_BUILD_LOCATION_NAME)
+        site_dir_path = make_site_dir_path(config)
         return cls(
-            work_root=work_root,
+            work_root=config.work_root,
             site_dir_path=site_dir_path,
-            templates_dir_path=work_root.joinpath(TEMPLATES_DIR_NAME),
-            resources_dir_path=work_root.joinpath(RESOURCES_DIR_NAME),
+            templates_dir_path=config.work_root.joinpath(TEMPLATES_DIR_NAME),
+            resources_dir_path=config.work_root.joinpath(RESOURCES_DIR_NAME),
             index_file_path=site_dir_path / INDEX_TEMPLATE_NAME,
             not_found_file_path=site_dir_path / NOT_FOUND_TEMPLATE_NAME,
             drama_index_file_path=site_dir_path / DRAMA_INDEX_TEMPLATE_NAME,

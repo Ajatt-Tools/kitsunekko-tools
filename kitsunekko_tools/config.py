@@ -17,6 +17,8 @@ from beartype.door import die_if_unbearable
 from kitsunekko_tools.common import KitsuException
 from kitsunekko_tools.consts import (
     ARCHIVE_FILE_TYPES,
+    DEFAULT_SERVER_BIND_ADDRESS,
+    DEFAULT_SERVER_BIND_PORT,
     PROG_NAME,
     SETTINGS_FILE_NAME,
     SUBTITLE_FILE_TYPES,
@@ -131,6 +133,9 @@ class KitsuConfig:
     site_title: str = "Japanese subtitles - AJATT"
     site_author: str = "Tatsumoto Ren"
     site_keywords: str = "japanese, subtitles, anime, TV, dramas, AJATT"
+    # Local catalog server settings. Command-line options take precedence over these defaults.
+    server_bind_address: str = DEFAULT_SERVER_BIND_ADDRESS
+    server_bind_port: int = DEFAULT_SERVER_BIND_PORT
 
     @classmethod
     def default(cls) -> typing.Self:
@@ -183,6 +188,11 @@ class KitsuConfig:
     def api_headers(self) -> ApiHeaders:
         return {"Authorization": self.api_key}
 
+    @property
+    def server_url(self) -> str:
+        """Return the local catalog server URL configured for this mirror."""
+        return f"http://{self.server_bind_address}:{self.server_bind_port}/"
+
     def is_allowed_file_type(self, file_path: pathlib.Path) -> bool:
         if not self.allowed_file_types:
             return True
@@ -192,6 +202,10 @@ class KitsuConfig:
             return frozenset(f".{ext}".lower() for ext in allowed_file_types)
 
         return file_path.suffix.lower() in allowed_file_extensions(self.allowed_file_types)
+
+    @property
+    def work_root(self) -> pathlib.Path:
+        return self.destination.resolve().parent
 
 
 class ReadConfigResult(typing.NamedTuple):

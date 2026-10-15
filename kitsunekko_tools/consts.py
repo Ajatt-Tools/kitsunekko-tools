@@ -18,6 +18,8 @@ KITSUNEKKO_DOMAIN_URL: S = "https://kitsunekko.net"
 IGNORE_FILENAME: S = ".kitsuignore"
 INFO_FILENAME: S = ".kitsuinfo.json"
 TRASH_DIR_NAME: S = "extra"
+DEFAULT_SERVER_BIND_ADDRESS: S = "127.0.0.1"
+DEFAULT_SERVER_BIND_PORT: typing.Final[int] = 8801
 
 THIS_DIR: P = pathlib.Path(__file__).resolve().parent
 BUNDLED_RESOURCES_DIR: P = THIS_DIR / "example_catalog" / "resources"
