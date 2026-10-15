@@ -59,6 +59,19 @@ def server_config(config: KitsuConfig, *, address: str | None = None, port: int 
     )
 
 
+def run_server(server: http.server.ThreadingHTTPServer, config: KitsuConfig, *, launch_browser: bool) -> None:
+    """Run the bound server, handling interruption while leaving cleanup to the caller."""
+    try:
+        print(f"Serving {make_site_dir_path(config)} at {server_browser_url(server)}")
+        if launch_browser:
+            open_page_in_browser(server_browser_url(server))
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt.")
+    finally:
+        print("Server stopped.")
+
+
 def serve_site(
     config: KitsuConfig,
     *,
@@ -78,16 +91,3 @@ def server_browser_url(server: http.server.ThreadingHTTPServer) -> str:
     # Use loopback for wildcard listeners rather than browser-specific wildcard handling.
     host = DEFAULT_SERVER_BIND_ADDRESS if address == "0.0.0.0" else address
     return f"http://{host}:{port}/"
-
-
-def run_server(server: http.server.ThreadingHTTPServer, config: KitsuConfig, *, launch_browser: bool) -> None:
-    """Run the bound server, handling interruption while leaving cleanup to the caller."""
-    try:
-        print(f"Serving {make_site_dir_path(config)} at {server_browser_url(server)}")
-        if launch_browser:
-            open_page_in_browser(server_browser_url(server))
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nKeyboard interrupt.")
-    finally:
-        print("Server stopped.")
