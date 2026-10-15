@@ -20,12 +20,14 @@ class KitsuException(Exception, abc.ABC):
 @beartype
 @dataclasses.dataclass
 class KitsuError(KitsuException):
-    """Base exception for all Kitsunekko errors."""
+    """Represent a general-purpose Kitsunekko error with a user-facing message."""
+
     # Cannot use frozen=True because Python sets __traceback__ on raised exceptions, which requires mutation.
 
     what: str  # message.
 
     def __str__(self) -> str:
+        """Return the error message."""
         return self.what
 
 
