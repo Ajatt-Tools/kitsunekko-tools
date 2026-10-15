@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 from kitsunekko_tools.config import KitsuConfig
+from kitsunekko_tools.consts import DEFAULT_SERVER_BIND_ADDRESS
 from kitsunekko_tools.website.context import make_site_dir_path
 
 
@@ -67,12 +68,20 @@ def serve_site(
         run_server(server, config=config, launch_browser=launch_browser)
 
 
+def server_browser_url(server: http.server.ThreadingHTTPServer) -> str:
+    """Return a navigable IPv4 URL using the listener's actual assigned port."""
+    address, port = server.server_address
+    # Use loopback for wildcard listeners rather than browser-specific wildcard handling.
+    host = DEFAULT_SERVER_BIND_ADDRESS if address == "0.0.0.0" else address
+    return f"http://{host}:{port}/"
+
+
 def run_server(server: http.server.ThreadingHTTPServer, config: KitsuConfig, *, launch_browser: bool) -> None:
     """Run the bound server, handling interruption while leaving cleanup to the caller."""
     try:
-        print(f"Serving {make_site_dir_path(config)} at {config.server_url}")
+        print(f"Serving {make_site_dir_path(config)} at {server_browser_url(server)}")
         if launch_browser:
-            open_page_in_browser(config.server_url)
+            open_page_in_browser(server_browser_url(server))
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nKeyboard interrupt.")
