@@ -92,7 +92,9 @@ ktools server --address=127.0.0.1 --port=9000
 ```
 
 Use `--no-browser` when running without a graphical browser.
-Browser launch failures are warnings and do not stop the server.
+The server supports IPv4 addresses and hostnames.
+Use `--port=0` to let the OS choose an available port.
+Browser startup failures are warnings and do not stop the server.
 
 ## Upload your mirror to Mega
 
