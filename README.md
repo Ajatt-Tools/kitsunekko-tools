@@ -74,6 +74,26 @@ ktools sync
 
 The `skip_older` config parameter controls what files should be skipped during regular runs.
 
+## Preview the catalog
+
+Build the catalog, then serve the generated `_site` directory locally.
+
+```bash
+ktools build
+ktools server
+```
+
+The server opens `http://127.0.0.1:8801/` in your system browser.
+Configure `server_bind_address` and `server_bind_port` in `kitsunekko-tools.toml`,
+or override either value for one run:
+
+```bash
+ktools server --address=127.0.0.1 --port=9000
+```
+
+Use `--no-browser` when running without a graphical browser.
+Browser launch failures are warnings and do not stop the server.
+
 ## Upload your mirror to Mega
 
 1) Install [megatools](https://archlinux.org/packages/extra/x86_64/megatools/).
