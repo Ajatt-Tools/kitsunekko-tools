@@ -1,5 +1,22 @@
 version: 2
 updates:
+  # The npm ecosystem also updates pnpm manifests and lockfiles.
+  - package-ecosystem: "npm"
+    directory: "/kitsunekko_tools/example_catalog"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 20
+    labels:
+      - "area/dependencies"
+    groups:
+      # Group minor/patch updates together. Review major updates individually.
+      minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
